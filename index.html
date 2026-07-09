@@ -533,6 +533,359 @@ button {
 .whyus-contact a:hover { color: var(--orange); }
 .whyus-contact svg { width: 18px; height: 18px; color: var(--orange); flex-shrink: 0; }
 
+.pillars {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-bottom: 44px;
+}
+
+.pillar {
+  padding: 26px 24px;
+  border-radius: 14px;
+  border: 1px solid rgba(167,159,155,0.16);
+  background: rgba(255,90,31,0.04);
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  transition: border-color 0.3s var(--ease-out), background 0.3s var(--ease-out);
+}
+.pillar:hover { border-color: rgba(255,90,31,0.45); background: rgba(255,90,31,0.08); }
+
+.pillar .ic {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  background: var(--orange);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.pillar .ic svg { width: 19px; height: 19px; color: var(--navy-deep); }
+
+.pillar h4 {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  margin-bottom: 6px;
+}
+.pillar p { font-size: 0.84rem; color: var(--fog); line-height: 1.5; }
+
+/* ============================================
+   PORTFOLIO (Instagram-style grid)
+   ============================================ */
+.portfolio {
+  padding: 100px var(--edge) 120px;
+  max-width: var(--container);
+  margin: 0 auto;
+  border-top: 1px solid rgba(167,159,155,0.12);
+}
+
+.portfolio-head {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+}
+
+.portfolio-avatar {
+  width: 62px; height: 62px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--orange), var(--navy-raise));
+  display: flex; align-items: center; justify-content: center;
+  padding: 3px;
+  flex-shrink: 0;
+}
+.portfolio-avatar .mark { width: 100%; height: 100%; background: var(--navy-ink); border-radius: 50%; padding: 12px; }
+
+.portfolio-id .handle { font-family: var(--font-display); font-weight: 700; font-size: 1.2rem; }
+.portfolio-id .stats { font-size: 0.82rem; color: var(--fog); margin-top: 3px; }
+
+.portfolio-follow {
+  margin-left: auto;
+  padding: 11px 22px;
+  border-radius: 999px;
+  background: var(--orange);
+  color: var(--navy-deep);
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.ig-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+
+.ig-tile {
+  position: relative;
+  aspect-ratio: 1/1;
+  overflow: hidden;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.ig-tile .swatch {
+  position: absolute; inset: 0;
+  background:
+    repeating-linear-gradient(125deg, rgba(255,255,255,0.06) 0px, rgba(255,255,255,0.06) 2px, transparent 2px, transparent 40px),
+    var(--tile-grad);
+  transition: transform 0.5s var(--ease-out);
+}
+.ig-tile:hover .swatch { transform: scale(1.08); }
+
+.ig-tile:nth-child(1) { --tile-grad: linear-gradient(135deg, #1D2544, #FF5A1F); }
+.ig-tile:nth-child(2) { --tile-grad: linear-gradient(135deg, #0A0D1E, #A79F9B); }
+.ig-tile:nth-child(3) { --tile-grad: linear-gradient(135deg, #FF5A1F, #0A0D1E); }
+.ig-tile:nth-child(4) { --tile-grad: linear-gradient(135deg, #1D2544, #A79F9B); }
+.ig-tile:nth-child(5) { --tile-grad: linear-gradient(135deg, #C7431A, #1D2544); }
+.ig-tile:nth-child(6) { --tile-grad: linear-gradient(135deg, #0A0D1E, #FF5A1F); }
+.ig-tile:nth-child(7) { --tile-grad: linear-gradient(135deg, #A79F9B, #0A0D1E); }
+.ig-tile:nth-child(8) { --tile-grad: linear-gradient(135deg, #FF5A1F, #A79F9B); }
+.ig-tile:nth-child(9) { --tile-grad: linear-gradient(135deg, #1D2544, #C7431A); }
+
+.ig-tile .overlay {
+  position: absolute; inset: 0;
+  background: rgba(10,13,30,0.55);
+  display: flex; align-items: center; justify-content: center;
+  gap: 18px;
+  opacity: 0;
+  transition: opacity 0.3s var(--ease-out);
+}
+.ig-tile:hover .overlay { opacity: 1; }
+
+.ig-tile .overlay span {
+  display: flex; align-items: center; gap: 6px;
+  color: var(--paper);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+.ig-tile .overlay svg { width: 16px; height: 16px; }
+
+.ig-tile .play-mini {
+  position: absolute;
+  top: 10px; right: 10px;
+  width: 22px; height: 22px;
+  opacity: 0.85;
+}
+
+/* ============================================
+   BEFORE / AFTER RESULTS
+   ============================================ */
+.results {
+  padding: 100px var(--edge) 120px;
+  max-width: var(--container);
+  margin: 0 auto;
+  border-top: 1px solid rgba(167,159,155,0.12);
+}
+
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-top: 48px;
+}
+
+.result-card {
+  padding: 30px 26px;
+  border-radius: 16px;
+  border: 1px solid rgba(167,159,155,0.16);
+  background: linear-gradient(165deg, var(--navy-raise), var(--navy-deep));
+}
+
+.result-card .client {
+  font-size: 0.74rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fog);
+  margin-bottom: 18px;
+}
+
+.result-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.result-block { flex: 1; text-align: center; }
+.result-block .tag { font-size: 0.68rem; color: var(--fog); text-transform: uppercase; letter-spacing: 0.08em; }
+.result-block .val { font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; margin-top: 4px; }
+.result-block.before .val { color: var(--fog); }
+.result-block.after .val { color: var(--orange); }
+
+.result-row svg { width: 20px; height: 20px; color: var(--orange); flex-shrink: 0; }
+
+.result-badge {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(255,90,31,0.14);
+  color: var(--orange);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+/* ============================================
+   CONTENT CALCULATOR
+   ============================================ */
+.calc {
+  padding: 100px var(--edge) 120px;
+  max-width: var(--container);
+  margin: 0 auto;
+  border-top: 1px solid rgba(167,159,155,0.12);
+}
+
+.calc-box {
+  margin-top: 48px;
+  padding: 44px;
+  border-radius: 20px;
+  border: 1px solid rgba(167,159,155,0.16);
+  background: linear-gradient(165deg, var(--navy-raise), var(--navy-deep));
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 50px;
+  align-items: center;
+}
+
+.calc-control label {
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fog);
+}
+
+.calc-control .big-num {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 2.6rem;
+  color: var(--orange);
+  margin: 10px 0 22px;
+}
+
+.calc-control input[type="range"] {
+  width: 100%;
+  -webkit-appearance: none;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(167,159,155,0.25);
+  outline: none;
+}
+.calc-control input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--orange);
+  cursor: pointer;
+  box-shadow: 0 0 0 6px rgba(255,90,31,0.18);
+}
+.calc-control input[type="range"]::-moz-range-thumb {
+  width: 20px; height: 20px;
+  border: none;
+  border-radius: 50%;
+  background: var(--orange);
+  cursor: pointer;
+  box-shadow: 0 0 0 6px rgba(255,90,31,0.18);
+}
+
+.calc-note { margin-top: 16px; font-size: 0.78rem; color: var(--fog); }
+
+.calc-output { display: flex; flex-direction: column; gap: 18px; }
+
+.calc-out-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(167,159,155,0.14);
+}
+.calc-out-row .lbl { font-size: 0.88rem; color: var(--fog); }
+.calc-out-row .num { font-family: var(--font-display); font-weight: 700; font-size: 1.6rem; }
+
+.calc-box .btn-primary { margin-top: 8px; }
+
+/* ============================================
+   FAQ
+   ============================================ */
+.faq {
+  padding: 100px var(--edge) 140px;
+  max-width: 900px;
+  margin: 0 auto;
+  border-top: 1px solid rgba(167,159,155,0.12);
+}
+
+.faq-item {
+  border-bottom: 1px solid rgba(167,159,155,0.16);
+}
+
+.faq-q {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding: 26px 4px;
+  text-align: left;
+  font-family: var(--font-display);
+  font-size: 1.12rem;
+  color: var(--paper);
+}
+
+.faq-q .plus {
+  flex-shrink: 0;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 1px solid rgba(167,159,155,0.3);
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.35s var(--ease-out), background 0.35s var(--ease-out), border-color 0.35s var(--ease-out);
+}
+.faq-q .plus svg { width: 13px; height: 13px; }
+
+.faq-item.is-open .faq-q .plus {
+  transform: rotate(135deg);
+  background: var(--orange);
+  border-color: var(--orange);
+}
+
+.faq-a {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s var(--ease-out);
+}
+.faq-a p {
+  padding: 0 4px 26px;
+  color: var(--fog);
+  font-size: 0.92rem;
+  line-height: 1.65;
+  max-width: 700px;
+}
+
+/* ============================================
+   STICKY CTA
+   ============================================ */
+.sticky-cta {
+  position: fixed;
+  right: 26px;
+  bottom: 26px;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px 22px;
+  border-radius: 999px;
+  background: #25D366;
+  color: #08210F;
+  font-size: 0.88rem;
+  font-weight: 700;
+  box-shadow: 0 14px 34px rgba(0,0,0,0.4);
+  opacity: 0;
+  transform: translateY(16px) scale(0.94);
+  pointer-events: none;
+  transition: opacity 0.35s var(--ease-out), transform 0.35s var(--ease-out);
+}
+.sticky-cta.is-visible { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+.sticky-cta:hover { transform: translateY(-3px) scale(1.03); }
+.sticky-cta svg { width: 19px; height: 19px; }
+
 /* ============================================
    SERVICES
    ============================================ */
@@ -894,7 +1247,10 @@ button {
 @media (max-width: 1080px) {
   .filmstrip { grid-template-columns: repeat(3, 1fr); }
   .whyus-grid { grid-template-columns: repeat(2, 1fr); }
+  .pillars { grid-template-columns: 1fr; }
   .footer-top { grid-template-columns: 1.2fr 1fr 1fr; gap: 28px; }
+  .results-grid { grid-template-columns: 1fr; }
+  .calc-box { grid-template-columns: 1fr; gap: 34px; padding: 32px; }
 }
 
 @media (max-width: 860px) {
@@ -903,6 +1259,8 @@ button {
   .hero { padding-top: 140px; }
   .filmstrip { grid-template-columns: repeat(2, 1fr); }
   .footer-top { grid-template-columns: 1fr 1fr; }
+  .ig-grid { grid-template-columns: repeat(3, 1fr); }
+  .portfolio-follow { margin-left: 0; }
 }
 
 @media (max-width: 560px) {
@@ -913,6 +1271,8 @@ button {
   .whyus-head { flex-direction: column; align-items: flex-start; gap: 14px; }
   .footer-top { grid-template-columns: 1fr; padding-top: 64px; }
   .footer-bottom { flex-direction: column; align-items: flex-start; }
+  .sticky-cta span.txt { display: none; }
+  .sticky-cta { padding: 15px; }
 }
 
 </style>
@@ -956,7 +1316,7 @@ button {
     <h1>Your brand,<br>always <em>in frame.</em></h1>
     <p class="hero-sub">We run the account, the ads, the edits and the influencers — so your page stays active, your leads stay cheap, and your content actually gets finished. You focus on the business.</p>
     <div class="hero-cta">
-      <a href="#services" class="btn-primary">
+      <a href="#work" class="btn-primary">
         <span class="play-chip">
           <svg viewBox="0 0 20 20" width="12" height="12" fill="currentColor"><path d="M5 3l12 7-12 7V3z"/></svg>
         </span>
@@ -1014,6 +1374,36 @@ button {
     </div>
   </div>
 
+  <div class="pillars">
+    <div class="pillar">
+      <span class="ic">
+        <svg viewBox="0 0 20 20" fill="none" stroke="var(--navy-deep)" stroke-width="1.8" stroke-linejoin="round"><path d="M10 3l1.8 3.8 4.2.6-3 3 .7 4.1L10 12.6 6.3 14.5 7 10.4l-3-3 4.2-.6z"/></svg>
+      </span>
+      <div>
+        <h4>Celebrity-Handled</h4>
+        <p>We've managed accounts for celebrities, not just local brands — same rigor, bigger stage.</p>
+      </div>
+    </div>
+    <div class="pillar">
+      <span class="ic">
+        <svg viewBox="0 0 20 20" fill="none" stroke="var(--navy-deep)" stroke-width="1.8"><rect x="3" y="5" width="14" height="12" rx="2"/><path d="M3 9h14M7 3v4M13 3v4"/></svg>
+      </span>
+      <div>
+        <h4>Month-to-Month</h4>
+        <p>No annual lock-in. If we're not delivering, you can walk — that keeps us honest.</p>
+      </div>
+    </div>
+    <div class="pillar">
+      <span class="ic">
+        <svg viewBox="0 0 20 20" fill="none" stroke="var(--navy-deep)" stroke-width="1.8"><circle cx="10" cy="10" r="7"/><path d="M10 6v4l3 2"/></svg>
+      </span>
+      <div>
+        <h4>48-Hour Turnaround</h4>
+        <p>Most edits land back with you in two days, not two weeks — content moves at the speed of the feed.</p>
+      </div>
+    </div>
+  </div>
+
   <div class="whyus-contact">
     <a href="tel:+918072702652">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 4h3l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v3a2 2 0 01-2 2A16 16 0 016 6a2 2 0 012-2z"/></svg>
@@ -1027,6 +1417,93 @@ button {
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="4" width="16" height="16" rx="4"/><circle cx="12" cy="12" r="3.4"/><circle cx="16.6" cy="7.4" r="0.6" fill="currentColor" stroke="none"/></svg>
       @dreamholic.media
     </a>
+  </div>
+</section>
+
+<!-- ============ PORTFOLIO (WORK) ============ -->
+<section class="portfolio" id="work">
+  <div class="portfolio-head">
+    <div class="portfolio-avatar"><svg class="mark" viewBox="0 0 100 100" style="width:100%;height:100%"><use href="#mark-d"/></svg></div>
+    <div class="portfolio-id">
+      <div class="handle">@dreamholic.media</div>
+      <div class="stats">70+ campaigns · 700+ edits · real client work</div>
+    </div>
+    <a href="https://www.instagram.com/dreamholic.media" target="_blank" rel="noopener" class="portfolio-follow">Follow</a>
+  </div>
+
+  <div class="ig-grid">
+    <div class="ig-tile"><div class="swatch"></div>
+      <svg class="play-mini" viewBox="0 0 20 20" fill="var(--paper)" opacity="0.85"><path d="M5 3l12 7-12 7V3z"/></svg>
+      <div class="overlay"><span><svg viewBox="0 0 20 20" fill="var(--paper)"><path d="M10 17s-6-4-6-8a4 4 0 018-1 4 4 0 018 1c0 4-6 8-6 8z"/></svg> 1.2k</span></div>
+    </div>
+    <div class="ig-tile"><div class="swatch"></div>
+      <svg class="play-mini" viewBox="0 0 20 20" fill="var(--paper)" opacity="0.85"><path d="M5 3l12 7-12 7V3z"/></svg>
+      <div class="overlay"><span><svg viewBox="0 0 20 20" fill="var(--paper)"><path d="M10 17s-6-4-6-8a4 4 0 018-1 4 4 0 018 1c0 4-6 8-6 8z"/></svg> 3.4k</span></div>
+    </div>
+    <div class="ig-tile"><div class="swatch"></div>
+      <svg class="play-mini" viewBox="0 0 20 20" fill="var(--paper)" opacity="0.85"><path d="M5 3l12 7-12 7V3z"/></svg>
+      <div class="overlay"><span><svg viewBox="0 0 20 20" fill="var(--paper)"><path d="M10 17s-6-4-6-8a4 4 0 018-1 4 4 0 018 1c0 4-6 8-6 8z"/></svg> 890</span></div>
+    </div>
+    <div class="ig-tile"><div class="swatch"></div>
+      <svg class="play-mini" viewBox="0 0 20 20" fill="var(--paper)" opacity="0.85"><path d="M5 3l12 7-12 7V3z"/></svg>
+      <div class="overlay"><span><svg viewBox="0 0 20 20" fill="var(--paper)"><path d="M10 17s-6-4-6-8a4 4 0 018-1 4 4 0 018 1c0 4-6 8-6 8z"/></svg> 2.1k</span></div>
+    </div>
+    <div class="ig-tile"><div class="swatch"></div>
+      <svg class="play-mini" viewBox="0 0 20 20" fill="var(--paper)" opacity="0.85"><path d="M5 3l12 7-12 7V3z"/></svg>
+      <div class="overlay"><span><svg viewBox="0 0 20 20" fill="var(--paper)"><path d="M10 17s-6-4-6-8a4 4 0 018-1 4 4 0 018 1c0 4-6 8-6 8z"/></svg> 5.6k</span></div>
+    </div>
+    <div class="ig-tile"><div class="swatch"></div>
+      <svg class="play-mini" viewBox="0 0 20 20" fill="var(--paper)" opacity="0.85"><path d="M5 3l12 7-12 7V3z"/></svg>
+      <div class="overlay"><span><svg viewBox="0 0 20 20" fill="var(--paper)"><path d="M10 17s-6-4-6-8a4 4 0 018-1 4 4 0 018 1c0 4-6 8-6 8z"/></svg> 1.8k</span></div>
+    </div>
+    <div class="ig-tile"><div class="swatch"></div>
+      <svg class="play-mini" viewBox="0 0 20 20" fill="var(--paper)" opacity="0.85"><path d="M5 3l12 7-12 7V3z"/></svg>
+      <div class="overlay"><span><svg viewBox="0 0 20 20" fill="var(--paper)"><path d="M10 17s-6-4-6-8a4 4 0 018-1 4 4 0 018 1c0 4-6 8-6 8z"/></svg> 940</span></div>
+    </div>
+    <div class="ig-tile"><div class="swatch"></div>
+      <svg class="play-mini" viewBox="0 0 20 20" fill="var(--paper)" opacity="0.85"><path d="M5 3l12 7-12 7V3z"/></svg>
+      <div class="overlay"><span><svg viewBox="0 0 20 20" fill="var(--paper)"><path d="M10 17s-6-4-6-8a4 4 0 018-1 4 4 0 018 1c0 4-6 8-6 8z"/></svg> 4.3k</span></div>
+    </div>
+    <div class="ig-tile"><div class="swatch"></div>
+      <svg class="play-mini" viewBox="0 0 20 20" fill="var(--paper)" opacity="0.85"><path d="M5 3l12 7-12 7V3z"/></svg>
+      <div class="overlay"><span><svg viewBox="0 0 20 20" fill="var(--paper)"><path d="M10 17s-6-4-6-8a4 4 0 018-1 4 4 0 018 1c0 4-6 8-6 8z"/></svg> 2.7k</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BEFORE / AFTER RESULTS ============ -->
+<section class="results">
+  <div class="eyebrow"><span class="dot"></span> RESULTS</div>
+  <h2 style="font-family:var(--font-display);font-weight:700;font-size:clamp(2rem,3.6vw,2.8rem);margin-top:18px;max-width:560px;">Real accounts.<br>Real movement.</h2>
+
+  <div class="results-grid">
+    <div class="result-card">
+      <div class="client">CLIENT A — FITNESS BRAND</div>
+      <div class="result-row">
+        <div class="result-block before"><span class="tag">Before</span><div class="val">4.2k</div></div>
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 10h12M11 5l5 5-5 5"/></svg>
+        <div class="result-block after"><span class="tag">After (90 days)</span><div class="val">18.6k</div></div>
+      </div>
+      <span class="result-badge">+340% followers</span>
+    </div>
+    <div class="result-card">
+      <div class="client">CLIENT B — D2C SKINCARE</div>
+      <div class="result-row">
+        <div class="result-block before"><span class="tag">Before</span><div class="val">₹38 CPL</div></div>
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 10h12M11 5l5 5-5 5"/></svg>
+        <div class="result-block after"><span class="tag">After (60 days)</span><div class="val">₹14 CPL</div></div>
+      </div>
+      <span class="result-badge">−63% cost per lead</span>
+    </div>
+    <div class="result-card">
+      <div class="client">CLIENT C — RESTAURANT CHAIN</div>
+      <div class="result-row">
+        <div class="result-block before"><span class="tag">Before</span><div class="val">1.1%</div></div>
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 10h12M11 5l5 5-5 5"/></svg>
+        <div class="result-block after"><span class="tag">After (90 days)</span><div class="val">6.4%</div></div>
+      </div>
+      <span class="result-badge">+480% engagement rate</span>
+    </div>
   </div>
 </section>
 
@@ -1101,6 +1578,73 @@ button {
 
   </div>
 </section>
+
+<!-- ============ CONTENT CALCULATOR ============ -->
+<section class="calc">
+  <div class="eyebrow"><span class="dot"></span> ESTIMATE YOUR REACH</div>
+  <h2 style="font-family:var(--font-display);font-weight:700;font-size:clamp(2rem,3.6vw,2.8rem);margin-top:18px;max-width:600px;">See what consistent posting could do for you.</h2>
+
+  <div class="calc-box">
+    <div class="calc-control">
+      <label>Reels per month</label>
+      <div class="big-num" id="calcReels">12</div>
+      <input type="range" id="reelsSlider" min="4" max="30" value="12" step="1">
+      <p class="calc-note">Based on average performance across current Dreamholic accounts. Illustrative estimate, not a guarantee.</p>
+    </div>
+
+    <div class="calc-output">
+      <div class="calc-out-row">
+        <span class="lbl">Estimated monthly reach</span>
+        <span class="num" id="calcReach">18.4k</span>
+      </div>
+      <div class="calc-out-row">
+        <span class="lbl">Estimated new followers</span>
+        <span class="num" id="calcFollowers">240</span>
+      </div>
+      <div class="calc-out-row">
+        <span class="lbl">Estimated qualified leads</span>
+        <span class="num" id="calcLeads">9</span>
+      </div>
+      <a href="contact.html" class="btn-primary">
+        <span class="play-chip"><svg viewBox="0 0 20 20" width="12" height="12" fill="currentColor"><path d="M5 3l12 7-12 7V3z"/></svg></span>
+        Get This For My Brand
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section class="faq">
+  <div class="eyebrow"><span class="dot"></span> FAQ</div>
+  <h2 style="font-family:var(--font-display);font-weight:700;font-size:clamp(2rem,3.6vw,2.8rem);margin-top:18px;margin-bottom:30px;">Good questions.</h2>
+
+  <div class="faq-item">
+    <button class="faq-q"><span>Do I have to sign a long-term contract?</span><span class="plus"><svg viewBox="0 0 20 20" fill="none" stroke="var(--paper)" stroke-width="2"><path d="M10 4v12M4 10h12"/></svg></span></button>
+    <div class="faq-a"><p>No — we work month-to-month. If we're not delivering, you're free to walk away anytime. No 6–12 month lock-ins.</p></div>
+  </div>
+  <div class="faq-item">
+    <button class="faq-q"><span>How fast do you turn around edited content?</span><span class="plus"><svg viewBox="0 0 20 20" fill="none" stroke="var(--paper)" stroke-width="2"><path d="M10 4v12M4 10h12"/></svg></span></button>
+    <div class="faq-a"><p>Most edits come back within 48 hours. Bigger campaign shoots or celebrity-level projects may take a little longer, but we always set expectations upfront.</p></div>
+  </div>
+  <div class="faq-item">
+    <button class="faq-q"><span>Do you only work with celebrities, or small businesses too?</span><span class="plus"><svg viewBox="0 0 20 20" fill="none" stroke="var(--paper)" stroke-width="2"><path d="M10 4v12M4 10h12"/></svg></span></button>
+    <div class="faq-a"><p>Both. We've handled celebrity accounts, but the same process and rigor is applied to every client — from local businesses to larger brands.</p></div>
+  </div>
+  <div class="faq-item">
+    <button class="faq-q"><span>What's included in "account handling"?</span><span class="plus"><svg viewBox="0 0 20 20" fill="none" stroke="var(--paper)" stroke-width="2"><path d="M10 4v12M4 10h12"/></svg></span></button>
+    <div class="faq-a"><p>Daily posting, story activity, replying to DMs and comments, and keeping your page consistently active — so it never looks abandoned.</p></div>
+  </div>
+  <div class="faq-item">
+    <button class="faq-q"><span>How do we get started?</span><span class="plus"><svg viewBox="0 0 20 20" fill="none" stroke="var(--paper)" stroke-width="2"><path d="M10 4v12M4 10h12"/></svg></span></button>
+    <div class="faq-a"><p>Book a call, tell us about your brand and goals, and we'll put together a plan across the services you need — no pressure, no long forms.</p></div>
+  </div>
+</section>
+
+<!-- ============ STICKY CTA ============ -->
+<a href="https://wa.me/918072702652" target="_blank" rel="noopener" class="sticky-cta" id="stickyCta">
+  <svg viewBox="0 0 24 24" fill="none" stroke="#08210F" stroke-width="1.8"><path d="M21 11.5a8.5 8.5 0 01-12.4 7.55L4 20l1.05-4.44A8.5 8.5 0 1121 11.5z"/><path d="M8.5 9.8c.3 3 2.7 5.4 5.7 5.7"/></svg>
+  <span class="txt">Chat on WhatsApp</span>
+</a>
 
 <!-- ============ FOOTER ============ -->
 <footer class="footer">
@@ -1203,7 +1747,7 @@ window.addEventListener('load', () => {
 
 /* ---------- SCROLL REVEAL (everything below the fold) ---------- */
 const scrollTargets = document.querySelectorAll(
-  '.whyus-head, .stat-card, .whyus-contact, .reel-card, .footer-brand, .footer-col'
+  '.whyus-head, .stat-card, .pillar, .whyus-contact, .ig-tile, .result-card, .reel-card, .calc-box, .faq-item, .footer-brand, .footer-col'
 );
 scrollTargets.forEach((el) => el.classList.add('load-in'));
 
@@ -1260,6 +1804,60 @@ playToggle.addEventListener('click', () => {
 });
 
 tcNow.textContent = formatTC(elapsed);
+
+/* ---------- STICKY WHATSAPP CTA ---------- */
+const stickyCta = document.getElementById('stickyCta');
+if (stickyCta) {
+  const toggleSticky = () => {
+    stickyCta.classList.toggle('is-visible', window.scrollY > 500);
+  };
+  window.addEventListener('scroll', toggleSticky, { passive: true });
+  toggleSticky();
+}
+
+/* ---------- FAQ ACCORDION ---------- */
+document.querySelectorAll('.faq-item').forEach((item) => {
+  const q = item.querySelector('.faq-q');
+  const a = item.querySelector('.faq-a');
+  q.addEventListener('click', () => {
+    const isOpen = item.classList.contains('is-open');
+    document.querySelectorAll('.faq-item.is-open').forEach((openItem) => {
+      openItem.classList.remove('is-open');
+      openItem.querySelector('.faq-a').style.maxHeight = null;
+    });
+    if (!isOpen) {
+      item.classList.add('is-open');
+      a.style.maxHeight = a.scrollHeight + 'px';
+    }
+  });
+});
+
+/* ---------- CONTENT CALCULATOR ---------- */
+const reelsSlider = document.getElementById('reelsSlider');
+if (reelsSlider) {
+  const calcReels = document.getElementById('calcReels');
+  const calcReach = document.getElementById('calcReach');
+  const calcFollowers = document.getElementById('calcFollowers');
+  const calcLeads = document.getElementById('calcLeads');
+
+  const fmt = (n) => (n >= 1000 ? (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : Math.round(n));
+
+  function updateCalc() {
+    const reels = parseInt(reelsSlider.value, 10);
+    // Illustrative formula only — not a performance guarantee.
+    const reach = reels * 1530;
+    const followers = Math.round(reels * 20);
+    const leads = Math.max(1, Math.round(reels * 0.75));
+
+    calcReels.textContent = reels;
+    calcReach.textContent = fmt(reach);
+    calcFollowers.textContent = fmt(followers);
+    calcLeads.textContent = leads;
+  }
+
+  reelsSlider.addEventListener('input', updateCalc);
+  updateCalc();
+}
 
 </script>
 </body>
