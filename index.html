@@ -433,6 +433,107 @@ button {
 }
 
 /* ============================================
+   WHY US
+   ============================================ */
+.whyus {
+  position: relative;
+  padding: 100px var(--edge) 120px;
+  max-width: var(--container);
+  margin: 0 auto;
+  border-top: 1px solid rgba(167,159,155,0.12);
+}
+
+.whyus-head {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  margin-bottom: 56px;
+}
+
+.whyus-arrow {
+  flex-shrink: 0;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: var(--orange);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.4s var(--ease-out);
+}
+.whyus-head:hover .whyus-arrow { transform: rotate(45deg); }
+.whyus-arrow svg { width: 22px; height: 22px; }
+
+.whyus-head h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(2rem, 4vw, 3rem);
+}
+.whyus-head h2 em { font-style: italic; color: var(--orange); }
+
+.whyus-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin-bottom: 44px;
+}
+
+.stat-card {
+  padding: 30px 24px;
+  border-radius: 14px;
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid rgba(167,159,155,0.16);
+  background: linear-gradient(165deg, var(--navy-raise), var(--navy-deep));
+  transition: transform 0.3s var(--ease-out), border-color 0.3s var(--ease-out);
+}
+.stat-card:hover { transform: translateY(-4px); border-color: rgba(255,90,31,0.4); }
+
+.stat-card.hi {
+  background: var(--orange);
+  border-color: var(--orange);
+}
+
+.stat-card .num {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 2.6rem;
+  color: var(--paper);
+  line-height: 1;
+}
+.stat-card.hi .num { color: var(--navy-deep); }
+
+.stat-card .label {
+  font-size: 0.82rem;
+  color: var(--fog);
+  font-weight: 500;
+}
+.stat-card.hi .label { color: rgba(10,13,30,0.72); }
+
+.whyus-contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px 48px;
+  padding-top: 34px;
+  border-top: 1px solid rgba(167,159,155,0.14);
+}
+
+.whyus-contact a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--paper);
+  transition: color 0.3s var(--ease-out);
+}
+.whyus-contact a:hover { color: var(--orange); }
+.whyus-contact svg { width: 18px; height: 18px; color: var(--orange); flex-shrink: 0; }
+
+/* ============================================
    SERVICES
    ============================================ */
 .services {
@@ -548,10 +649,252 @@ button {
 .reel-card:hover .corner { opacity: 1; transform: translate(2px, -2px); }
 
 /* ============================================
+   CONTACT PAGE
+   ============================================ */
+.contact-hero {
+  padding: 168px var(--edge) 60px;
+  max-width: var(--container);
+  margin: 0 auto;
+}
+.contact-hero .eyebrow { margin-bottom: 24px; }
+.contact-hero h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(2.4rem, 5vw, 4rem);
+  line-height: 1.08;
+  max-width: 760px;
+}
+.contact-hero h1 em { font-style: italic; color: var(--orange); }
+.contact-hero p {
+  margin-top: 22px;
+  max-width: 520px;
+  color: var(--fog);
+  font-size: 1.05rem;
+  line-height: 1.65;
+}
+
+.contact-grid {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 20px var(--edge) 140px;
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  gap: 50px;
+}
+
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.info-card {
+  padding: 26px 26px;
+  border-radius: 14px;
+  border: 1px solid rgba(167,159,155,0.16);
+  background: linear-gradient(165deg, var(--navy-raise), var(--navy-deep));
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  transition: transform 0.3s var(--ease-out), border-color 0.3s var(--ease-out);
+}
+.info-card:hover { transform: translateY(-3px); border-color: rgba(255,90,31,0.4); }
+
+.info-card .ic {
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  background: rgba(255,90,31,0.12);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.info-card .ic svg { width: 20px; height: 20px; color: var(--orange); }
+
+.info-card .label {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fog);
+  margin-bottom: 4px;
+}
+.info-card .value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--paper);
+}
+
+.contact-form {
+  padding: 40px;
+  border-radius: 18px;
+  border: 1px solid rgba(167,159,155,0.16);
+  background: linear-gradient(165deg, var(--navy-raise), var(--navy-deep));
+}
+
+.contact-form .tc-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  color: var(--orange);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.contact-form h3 {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  margin-top: 10px;
+  margin-bottom: 28px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.field { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+.field label {
+  font-size: 0.76rem;
+  letter-spacing: 0.06em;
+  color: var(--fog);
+  text-transform: uppercase;
+}
+.field input, .field textarea, .field select {
+  font-family: var(--font-body);
+  background: rgba(10,13,30,0.5);
+  border: 1px solid rgba(167,159,155,0.2);
+  border-radius: 8px;
+  padding: 13px 15px;
+  color: var(--paper);
+  font-size: 0.94rem;
+  transition: border-color 0.3s var(--ease-out);
+}
+.field input:focus, .field textarea:focus, .field select:focus {
+  border-color: var(--orange);
+  outline: none;
+}
+.field textarea { resize: vertical; min-height: 110px; }
+
+.contact-form .btn-primary { margin-top: 6px; width: 100%; justify-content: center; }
+
+@media (max-width: 860px) {
+  .contact-grid { grid-template-columns: 1fr; }
+  .form-row { grid-template-columns: 1fr; gap: 0; }
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+.footer {
+  position: relative;
+  overflow: hidden;
+  margin-top: 60px;
+  border-top: 1px solid rgba(167,159,155,0.14);
+  background: linear-gradient(180deg, var(--navy-ink), var(--navy-deep));
+}
+
+.footer-watermark {
+  position: absolute;
+  right: -80px;
+  bottom: -120px;
+  width: 480px;
+  height: 480px;
+  color: rgba(247,245,241,0.025);
+  pointer-events: none;
+}
+
+.footer-top {
+  position: relative;
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 90px var(--edge) 60px;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 40px;
+}
+
+.footer-brand .nav-logo { margin-bottom: 18px; }
+
+.footer-brand p {
+  max-width: 320px;
+  color: var(--fog);
+  font-size: 0.92rem;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.footer-socials {
+  display: flex;
+  gap: 12px;
+}
+.footer-socials a {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(167,159,155,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s var(--ease-out), border-color 0.3s var(--ease-out), transform 0.3s var(--ease-out);
+}
+.footer-socials a:hover {
+  background: var(--orange);
+  border-color: var(--orange);
+  transform: translateY(-3px);
+}
+.footer-socials svg { width: 17px; height: 17px; }
+
+.footer-col h4 {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--paper);
+  margin-bottom: 22px;
+}
+
+.footer-col ul { display: flex; flex-direction: column; gap: 13px; }
+.footer-col a {
+  font-size: 0.9rem;
+  color: var(--fog);
+  transition: color 0.3s var(--ease-out), padding-left 0.3s var(--ease-out);
+}
+.footer-col a:hover { color: var(--orange); padding-left: 4px; }
+
+.footer-bottom {
+  position: relative;
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 24px var(--edge) 36px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  border-top: 1px solid rgba(167,159,155,0.1);
+  font-size: 0.78rem;
+  color: var(--fog);
+}
+
+.footer-bottom .tagline { font-style: italic; }
+
+/* ============================================
+   PAGE LOAD INTRO
+   ============================================ */
+.load-in {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.9s var(--ease-out), transform 0.9s var(--ease-out);
+}
+.load-in.is-in { opacity: 1; transform: translateY(0); }
+
+/* ============================================
    RESPONSIVE
    ============================================ */
 @media (max-width: 1080px) {
   .filmstrip { grid-template-columns: repeat(3, 1fr); }
+  .whyus-grid { grid-template-columns: repeat(2, 1fr); }
+  .footer-top { grid-template-columns: 1.2fr 1fr 1fr; gap: 28px; }
 }
 
 @media (max-width: 860px) {
@@ -559,12 +902,17 @@ button {
   .nav-burger { display: block; }
   .hero { padding-top: 140px; }
   .filmstrip { grid-template-columns: repeat(2, 1fr); }
+  .footer-top { grid-template-columns: 1fr 1fr; }
 }
 
 @media (max-width: 560px) {
   .hero-frame { border-radius: 16px 60px 60px 16px; aspect-ratio: 4/5; }
   .filmstrip { grid-template-columns: 1fr; }
   .scrub .tc { display: none; }
+  .whyus-grid { grid-template-columns: 1fr 1fr; }
+  .whyus-head { flex-direction: column; align-items: flex-start; gap: 14px; }
+  .footer-top { grid-template-columns: 1fr; padding-top: 64px; }
+  .footer-bottom { flex-direction: column; align-items: flex-start; }
 }
 
 </style>
@@ -604,12 +952,11 @@ button {
 
 <!-- ============ HERO ============ -->
 <section class="hero">
-  <div class="hero-copy">
-    <div class="eyebrow"><span class="dot"></span> TIMECODE 00:00:00:00 — LIVE</div>
+  <div class="hero-copy load-in">
     <h1>Your brand,<br>always <em>in frame.</em></h1>
     <p class="hero-sub">We run the account, the ads, the edits and the influencers — so your page stays active, your leads stay cheap, and your content actually gets finished. You focus on the business.</p>
     <div class="hero-cta">
-      <a href="#work" class="btn-primary">
+      <a href="#services" class="btn-primary">
         <span class="play-chip">
           <svg viewBox="0 0 20 20" width="12" height="12" fill="currentColor"><path d="M5 3l12 7-12 7V3z"/></svg>
         </span>
@@ -619,7 +966,7 @@ button {
     </div>
   </div>
 
-  <div class="hero-frame-wrap">
+  <div class="hero-frame-wrap load-in">
     <div class="hero-frame" id="heroFrame">
       <div class="placeholder-reel"></div>
       <div class="scrim"></div>
@@ -636,6 +983,50 @@ button {
         <span class="tc" id="tcTotal">00:00:16:00</span>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- ============ WHY US ============ -->
+<section class="whyus" id="why-us">
+  <div class="whyus-head">
+    <span class="whyus-arrow">
+      <svg viewBox="0 0 20 20" fill="none" stroke="var(--navy-deep)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10h12M11 5l5 5-5 5"/></svg>
+    </span>
+    <h2>Why <em>choose</em> us</h2>
+  </div>
+
+  <div class="whyus-grid">
+    <div class="stat-card">
+      <span class="num">2+</span>
+      <span class="label">Years of Experience</span>
+    </div>
+    <div class="stat-card">
+      <span class="num">60+</span>
+      <span class="label">Happy Clients</span>
+    </div>
+    <div class="stat-card">
+      <span class="num">700+</span>
+      <span class="label">Videos Done</span>
+    </div>
+    <div class="stat-card hi">
+      <span class="num">70+</span>
+      <span class="label">Campaigns Created</span>
+    </div>
+  </div>
+
+  <div class="whyus-contact">
+    <a href="tel:+918072702652">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 4h3l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v3a2 2 0 01-2 2A16 16 0 016 6a2 2 0 012-2z"/></svg>
+      +91 80727 02652
+    </a>
+    <a href="mailto:contactdreamholicmedia@gmail.com">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6h16v12H4z"/><path d="M4 7l8 6 8-6"/></svg>
+      contactdreamholicmedia@gmail.com
+    </a>
+    <a href="https://www.instagram.com/dreamholic.media" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="4" width="16" height="16" rx="4"/><circle cx="12" cy="12" r="3.4"/><circle cx="16.6" cy="7.4" r="0.6" fill="currentColor" stroke="none"/></svg>
+      @dreamholic.media
+    </a>
   </div>
 </section>
 
@@ -711,6 +1102,59 @@ button {
   </div>
 </section>
 
+<!-- ============ FOOTER ============ -->
+<footer class="footer">
+  <svg class="footer-watermark" viewBox="0 0 100 100"><use href="#mark-d"/></svg>
+
+  <div class="footer-top">
+    <div class="footer-brand">
+      <a href="index.html" class="nav-logo">
+        <svg class="mark"><use href="#mark-d"/></svg>
+        <span>
+          <span class="word">Dream<b>holic</b></span>
+          <span class="sub">MEDIA HOUSE</span>
+        </span>
+      </a>
+      <p>Account handling, ads, edits, influencers and celebrity management — run end to end so you can focus on the business, not the babysitting.</p>
+      <div class="footer-socials">
+        <a href="https://www.instagram.com/dreamholic.media" target="_blank" rel="noopener" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--paper)" stroke-width="1.6"><rect x="4" y="4" width="16" height="16" rx="4"/><circle cx="12" cy="12" r="3.4"/><circle cx="16.6" cy="7.4" r="0.6" fill="var(--paper)" stroke="none"/></svg>
+        </a>
+        <a href="https://wa.me/918072702652" target="_blank" rel="noopener" aria-label="WhatsApp">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--paper)" stroke-width="1.6"><path d="M6 4h3l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v3a2 2 0 01-2 2A16 16 0 016 6a2 2 0 012-2z"/></svg>
+        </a>
+        <a href="mailto:contactdreamholicmedia@gmail.com" aria-label="Email">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--paper)" stroke-width="1.6"><path d="M4 6h16v12H4z"/><path d="M4 7l8 6 8-6"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <div class="footer-col">
+      <h4>Quick Links</h4>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="index.html#why-us">Why Us</a></li>
+        <li><a href="index.html#services">Services</a></li>
+        <li><a href="contact.html">Book a Call</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h4>Get in Touch</h4>
+      <ul>
+        <li><a href="tel:+918072702652">+91 80727 02652</a></li>
+        <li><a href="mailto:contactdreamholicmedia@gmail.com">contactdreamholicmedia@gmail.com</a></li>
+        <li><a href="https://www.instagram.com/dreamholic.media" target="_blank" rel="noopener">@dreamholic.media</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <span>© 2026 Dreamholic Media House. All rights reserved.</span>
+    <span class="tagline">Cut like a reel, run like a studio.</span>
+  </div>
+</footer>
+
 <script>
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -749,28 +1193,33 @@ function attachTilt(el, strength = 10) {
 attachTilt(document.getElementById('heroFrame'), 6);
 document.querySelectorAll('.reel-card').forEach((card) => attachTilt(card, 8));
 
-/* ---------- SCROLL REVEAL ---------- */
-const revealTargets = document.querySelectorAll('.reel-card, .hero-copy, .hero-frame-wrap');
-revealTargets.forEach((el) => {
-  el.style.opacity = 0;
-  el.style.transform += ' translateY(24px)';
-  el.style.transition = 'opacity 0.8s var(--ease-out), transform 0.8s var(--ease-out)';
+/* ---------- PAGE-LOAD INTRO (hero) ---------- */
+const introTargets = document.querySelectorAll('.hero .load-in');
+window.addEventListener('load', () => {
+  introTargets.forEach((el, i) => {
+    setTimeout(() => el.classList.add('is-in'), reduceMotion ? 0 : 150 + i * 180);
+  });
 });
 
+/* ---------- SCROLL REVEAL (everything below the fold) ---------- */
+const scrollTargets = document.querySelectorAll(
+  '.whyus-head, .stat-card, .whyus-contact, .reel-card, .footer-brand, .footer-col'
+);
+scrollTargets.forEach((el) => el.classList.add('load-in'));
+
 const io = new IntersectionObserver((entries) => {
-  entries.forEach((entry, i) => {
+  entries.forEach((entry) => {
     if (entry.isIntersecting) {
       const el = entry.target;
-      setTimeout(() => {
-        el.style.opacity = 1;
-        el.style.transform = el.style.transform.replace('translateY(24px)', 'translateY(0)');
-      }, reduceMotion ? 0 : i * 60);
+      const group = [...el.parentElement.children].indexOf(el);
+      const delay = reduceMotion ? 0 : (group % 5) * 80;
+      setTimeout(() => el.classList.add('is-in'), delay);
       io.unobserve(el);
     }
   });
 }, { threshold: 0.15 });
 
-revealTargets.forEach((el) => io.observe(el));
+scrollTargets.forEach((el) => io.observe(el));
 
 /* ---------- HERO PLAY TOGGLE + LIVE TIMECODE ---------- */
 const playToggle = document.getElementById('playToggle');
