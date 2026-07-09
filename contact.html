@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact — Dreamholic Media House</title>
+<meta name="description" content="Tell Dreamholic Media House about your brand and get a plan for account handling, Meta Ads, video editing and influencer marketing.">
+<link rel="icon" href="assets/logo-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<div class="scrubber">
+  <div class="scrubber__chapters"></div>
+  <div class="scrubber__fill"></div>
+  <div class="scrubber__head"></div>
+</div>
+
+<header class="nav">
+  <div class="wrap nav__row">
+    <a href="index.html" class="brand">
+      <img src="assets/logo-icon.png" alt="Dreamholic Media House">
+      <span>
+        <span class="brand__word">Dreamholic</span>
+        <span class="brand__sub">MEDIA HOUSE</span>
+      </span>
+    </a>
+    <ul class="chapters">
+      <li><a href="index.html#services">Services</a></li>
+      <li><a href="index.html#work">Work</a></li>
+      <li><a href="index.html#why">Why us</a></li>
+    </ul>
+    <div style="display:flex; align-items:center; gap:14px;">
+      <a href="index.html" class="nav__cta">Back home</a>
+      <button class="nav__burger" aria-label="Toggle menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section id="contact-hero" data-chapter>
+    <div class="wrap">
+      <div class="contact">
+        <div>
+          <span class="hero__live" style="margin-bottom:24px;">
+            <span class="dot"></span>
+            Taking on new accounts this month
+          </span>
+          <h1 class="contact__title">Let's talk shop.</h1>
+          <p class="contact__sub">Tell us about your brand and what's not working on the page right now. We'll come back within 24 hours with a plan.</p>
+
+          <div class="info-list">
+            <div>
+              <b>Email</b>
+              <a href="mailto:hello@dreamholicmedia.com">hello@dreamholicmedia.com</a>
+            </div>
+            <div>
+              <b>Phone / WhatsApp</b>
+              <a href="tel:+910000000000">+91 00000 00000</a>
+            </div>
+            <div>
+              <b>Instagram</b>
+              <a href="#">@dreamholicmedia</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <form id="contact-form">
+            <div class="field">
+              <label for="name">Your name</label>
+              <input id="name" name="name" type="text" placeholder="Full name" required>
+            </div>
+            <div class="field">
+              <label for="email">Email</label>
+              <input id="email" name="email" type="email" placeholder="you@brand.com" required>
+            </div>
+            <div class="field">
+              <label for="handle">Instagram handle</label>
+              <input id="handle" name="handle" type="text" placeholder="@yourbrand">
+            </div>
+            <div class="field">
+              <label for="service">What do you need most right now?</label>
+              <select id="service" name="service">
+                <option>Account handling</option>
+                <option>Meta Ads</option>
+                <option>Video editing</option>
+                <option>Influencer marketing</option>
+                <option>Celebrity management</option>
+                <option>Not sure yet</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="message">Message</label>
+              <textarea id="message" name="message" placeholder="A little about your brand and what you're looking for"></textarea>
+            </div>
+            <button type="submit" class="btn btn--solid form-submit">
+              Send it over
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </button>
+            <p class="status-note" id="form-status">We reply within 24 hours, on weekdays.</p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot__bottom" style="border-top:none; padding-top:0;">
+      <span>© 2026 Dreamholic Media House. All rights reserved.</span>
+      <a href="index.html" style="color:var(--stone);">Back to site</a>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/site.js"></script>
+</body>
+</html>
