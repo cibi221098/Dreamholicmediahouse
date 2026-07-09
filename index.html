@@ -630,28 +630,36 @@ button {
 .portfolio-id .handle { font-family: var(--font-display); font-weight: 700; font-size: 1.2rem; }
 .portfolio-id .stats { font-size: 0.82rem; color: var(--fog); margin-top: 3px; }
 
-.portfolio-follow {
+.portfolio-cta {
   margin-left: auto;
-  padding: 11px 22px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
   border-radius: 999px;
   background: var(--orange);
   color: var(--navy-deep);
   font-size: 0.84rem;
-  font-weight: 600;
+  font-weight: 700;
+  transition: transform 0.3s var(--ease-out), box-shadow 0.3s var(--ease-out);
+  box-shadow: 0 8px 20px rgba(255,90,31,0.2);
 }
+.portfolio-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(255,90,31,0.3); }
+.portfolio-cta svg { width: 15px; height: 15px; }
 
 .ig-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 4px;
+  gap: 10px;
 }
 
 .ig-tile {
   position: relative;
-  aspect-ratio: 1/1;
+  aspect-ratio: 9/16;
   overflow: hidden;
-  border-radius: 4px;
+  border-radius: 14px;
   cursor: pointer;
+  border: 1px solid rgba(167,159,155,0.14);
 }
 
 .ig-tile .swatch {
@@ -663,15 +671,12 @@ button {
 }
 .ig-tile:hover .swatch { transform: scale(1.08); }
 
-.ig-tile:nth-child(1) { --tile-grad: linear-gradient(135deg, #1D2544, #FF5A1F); }
-.ig-tile:nth-child(2) { --tile-grad: linear-gradient(135deg, #0A0D1E, #A79F9B); }
-.ig-tile:nth-child(3) { --tile-grad: linear-gradient(135deg, #FF5A1F, #0A0D1E); }
-.ig-tile:nth-child(4) { --tile-grad: linear-gradient(135deg, #1D2544, #A79F9B); }
-.ig-tile:nth-child(5) { --tile-grad: linear-gradient(135deg, #C7431A, #1D2544); }
-.ig-tile:nth-child(6) { --tile-grad: linear-gradient(135deg, #0A0D1E, #FF5A1F); }
-.ig-tile:nth-child(7) { --tile-grad: linear-gradient(135deg, #A79F9B, #0A0D1E); }
-.ig-tile:nth-child(8) { --tile-grad: linear-gradient(135deg, #FF5A1F, #A79F9B); }
-.ig-tile:nth-child(9) { --tile-grad: linear-gradient(135deg, #1D2544, #C7431A); }
+.ig-tile:nth-child(1) { --tile-grad: linear-gradient(160deg, #1D2544, #FF5A1F); }
+.ig-tile:nth-child(2) { --tile-grad: linear-gradient(160deg, #0A0D1E, #A79F9B); }
+.ig-tile:nth-child(3) { --tile-grad: linear-gradient(160deg, #FF5A1F, #0A0D1E); }
+.ig-tile:nth-child(4) { --tile-grad: linear-gradient(160deg, #1D2544, #A79F9B); }
+.ig-tile:nth-child(5) { --tile-grad: linear-gradient(160deg, #C7431A, #1D2544); }
+.ig-tile:nth-child(6) { --tile-grad: linear-gradient(160deg, #0A0D1E, #FF5A1F); }
 
 .ig-tile .overlay {
   position: absolute; inset: 0;
@@ -1384,7 +1389,7 @@ button {
   .filmstrip { grid-template-columns: repeat(2, 1fr); }
   .footer-top { grid-template-columns: 1fr 1fr; }
   .ig-grid { grid-template-columns: repeat(3, 1fr); }
-  .portfolio-follow { margin-left: 0; }
+  .portfolio-cta { margin-left: 0; }
 }
 
 @media (max-width: 560px) {
@@ -1397,6 +1402,7 @@ button {
   .footer-bottom { flex-direction: column; align-items: flex-start; }
   .sticky-cta span.txt { display: none; }
   .sticky-cta { padding: 15px; }
+  .ig-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 </style>
@@ -1560,7 +1566,10 @@ button {
       <div class="handle">@dreamholic.media</div>
       <div class="stats">70+ campaigns · 700+ edits · real client work</div>
     </div>
-    <a href="https://www.instagram.com/dreamholic.media" target="_blank" rel="noopener" class="portfolio-follow">Follow</a>
+    <a href="video-editing.html" class="portfolio-cta">
+      Need Your Videos Edited?
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 10h12M11 5l5 5-5 5"/></svg>
+    </a>
   </div>
 
   <div class="ig-grid">
@@ -1592,21 +1601,6 @@ button {
     <div class="ig-tile"><div class="swatch"></div>
       <svg class="play-mini" viewBox="0 0 20 20" fill="var(--paper)" opacity="0.85"><path d="M5 3l12 7-12 7V3z"/></svg>
       <div class="stat-badge"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z"/><circle cx="10" cy="10" r="2.4"/></svg><span class="tile-count" data-fallback="1.8k">1.8k</span></div>
-      <div class="overlay"><span><svg viewBox="0 0 20 20" fill="var(--paper)"><path d="M5 3l12 7-12 7V3z"/></svg> Watch</span></div>
-    </div>
-    <div class="ig-tile"><div class="swatch"></div>
-      <svg class="play-mini" viewBox="0 0 20 20" fill="var(--paper)" opacity="0.85"><path d="M5 3l12 7-12 7V3z"/></svg>
-      <div class="stat-badge"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z"/><circle cx="10" cy="10" r="2.4"/></svg><span class="tile-count" data-fallback="940">940</span></div>
-      <div class="overlay"><span><svg viewBox="0 0 20 20" fill="var(--paper)"><path d="M5 3l12 7-12 7V3z"/></svg> Watch</span></div>
-    </div>
-    <div class="ig-tile"><div class="swatch"></div>
-      <svg class="play-mini" viewBox="0 0 20 20" fill="var(--paper)" opacity="0.85"><path d="M5 3l12 7-12 7V3z"/></svg>
-      <div class="stat-badge"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z"/><circle cx="10" cy="10" r="2.4"/></svg><span class="tile-count" data-fallback="4.3k">4.3k</span></div>
-      <div class="overlay"><span><svg viewBox="0 0 20 20" fill="var(--paper)"><path d="M5 3l12 7-12 7V3z"/></svg> Watch</span></div>
-    </div>
-    <div class="ig-tile"><div class="swatch"></div>
-      <svg class="play-mini" viewBox="0 0 20 20" fill="var(--paper)" opacity="0.85"><path d="M5 3l12 7-12 7V3z"/></svg>
-      <div class="stat-badge"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z"/><circle cx="10" cy="10" r="2.4"/></svg><span class="tile-count" data-fallback="2.7k">2.7k</span></div>
       <div class="overlay"><span><svg viewBox="0 0 20 20" fill="var(--paper)"><path d="M5 3l12 7-12 7V3z"/></svg> Watch</span></div>
     </div>
   </div>
@@ -1884,9 +1878,6 @@ const VIDEO_IDS = {
    ===================================================== */
 const YOUTUBE_API_KEY = '';
 const PORTFOLIO_VIDEOS = [
-  { id: '', views: '' },
-  { id: '', views: '' },
-  { id: '', views: '' },
   { id: '', views: '' },
   { id: '', views: '' },
   { id: '', views: '' },
