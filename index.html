@@ -2344,7 +2344,7 @@ button {
   <div class="eyebrow"><span class="dot"></span> RESULTS</div>
   <h2 style="font-family:var(--font-display);font-weight:700;font-size:clamp(2rem,3.6vw,2.8rem);margin-top:18px;max-width:560px;">Real accounts.<br>Real movement.</h2>
 
-  <div class="results-grid">
+  <div class="results-grid" id="resultsGrid">
     <div class="result-card">
       <div class="client">FITNESS BRAND, INSTAGRAM GROWTH</div>
       <div class="result-row">
@@ -3097,6 +3097,82 @@ if (reelsSlider) {
       resetChat();
     });
   });
+})();
+
+/* =====================================================
+   SITE CONTENT — pulls admin-managed values from Supabase
+   ("site_content" key/value table and "client_results"
+   table) and overrides the page's built-in placeholders.
+   Runs on any page that has the matching elements; does
+   nothing if Supabase isn't connected or the tables are
+   empty, so the existing hardcoded content just stays.
+   ===================================================== */
+(function () {
+  if (!supabaseClient) return;
+
+  const statNumsForContent = document.querySelectorAll('.whyus-grid .num[data-target]');
+  const resultsGrid = document.getElementById('resultsGrid');
+  const compareBefore = document.getElementById('compareBefore');
+  const compareAfter = document.getElementById('compareAfter');
+  const needsHero = document.querySelectorAll('[data-yt]').length > 0;
+
+  if (!statNumsForContent.length && !resultsGrid && !compareBefore && !needsHero) return;
+
+  function parseStat(str) {
+    const m = String(str).trim().match(/^(-?\d+(?:\.\d+)?)(.*)$/);
+    if (!m) return null;
+    return { num: parseFloat(m[1]), suffix: m[2] };
+  }
+
+  supabaseClient.from('site_content').select('*').then(({ data }) => {
+    const content = {};
+    (data || []).forEach((r) => { content[r.key] = r.value; });
+    if (!Object.keys(content).length) return;
+
+    if (content.hero_showreel && typeof VIDEO_IDS !== 'undefined') {
+      VIDEO_IDS.hero = content.hero_showreel;
+    }
+
+    if (statNumsForContent.length === 4) {
+      const keys = ['stat_years', 'stat_reach', 'stat_videos', 'stat_clients'];
+      keys.forEach((key, i) => {
+        if (!content[key]) return;
+        const parsed = parseStat(content[key]);
+        if (!parsed) return;
+        statNumsForContent[i].dataset.target = parsed.num;
+        statNumsForContent[i].dataset.suffix = parsed.suffix;
+      });
+    }
+
+    if (compareBefore && content.raw_video_id) {
+      compareBefore.style.backgroundImage = `url(https://img.youtube.com/vi/${content.raw_video_id}/hqdefault.jpg)`;
+      compareBefore.style.backgroundSize = 'cover';
+      compareBefore.style.backgroundPosition = 'center';
+      compareBefore.style.filter = 'grayscale(0.7) brightness(0.7) contrast(0.9)';
+    }
+    if (compareAfter && content.edited_video_id) {
+      compareAfter.style.backgroundImage = `url(https://img.youtube.com/vi/${content.edited_video_id}/hqdefault.jpg)`;
+      compareAfter.style.backgroundSize = 'cover';
+      compareAfter.style.backgroundPosition = 'center';
+    }
+  }).catch(() => {});
+
+  if (resultsGrid) {
+    supabaseClient.from('client_results').select('*').order('sort_order', { ascending: true }).then(({ data }) => {
+      if (!data || !data.length) return;
+      resultsGrid.innerHTML = data.map((r) => `
+        <div class="result-card">
+          <div class="client">${r.client_label || ''}</div>
+          <div class="result-row">
+            <div class="result-block before"><span class="tag">${r.before_label || 'Before'}</span><div class="val">${r.before_value || ''}</div></div>
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 10h12M11 5l5 5-5 5"/></svg>
+            <div class="result-block after"><span class="tag">${r.after_label || 'After'}</span><div class="val">${r.after_value || ''}</div></div>
+          </div>
+          <span class="result-badge">${r.badge_text || ''}</span>
+        </div>
+      `).join('');
+    }).catch(() => {});
+  }
 })();
 
 </script>
