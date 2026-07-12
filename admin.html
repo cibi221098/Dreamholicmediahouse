@@ -2140,16 +2140,28 @@ button {
 
 </style>
 <style>
-  .admin-wrap { max-width: 960px; margin: 0 auto; padding: 140px var(--edge) 120px; }
-  .admin-note { border-radius: 12px; padding: 18px 22px; margin-bottom: 44px; font-size: 0.86rem; line-height: 1.6; }
+  .admin-shell { max-width: 1240px; margin: 0 auto; padding: 130px var(--edge) 100px; display: flex; gap: 40px; align-items: flex-start; }
+  .admin-sidebar { width: 210px; flex-shrink: 0; position: sticky; top: 130px; }
+  .admin-tab-btn {
+    display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 12px 14px;
+    border-radius: 10px; background: none; border: none; color: var(--fog); font-size: 0.86rem; font-weight: 600;
+    cursor: pointer; margin-bottom: 4px; font-family: var(--font-body);
+  }
+  .admin-tab-btn:hover { background: rgba(255,90,31,0.06); color: var(--paper); }
+  .admin-tab-btn.is-active { background: rgba(255,90,31,0.12); color: var(--orange); }
+  .admin-tab-btn .count { margin-left: auto; font-size: 0.7rem; color: var(--fog); }
+  .admin-main { flex: 1; min-width: 0; }
+  .admin-panel { display: none; }
+  .admin-panel.is-active { display: block; }
+  .admin-note { border-radius: 12px; padding: 18px 22px; margin-bottom: 40px; font-size: 0.86rem; line-height: 1.6; }
   .admin-note.warn { background: rgba(226,75,74,0.08); border: 1px solid rgba(226,75,74,0.35); color: var(--paper); }
   .admin-note.ok { background: rgba(255,90,31,0.08); border: 1px solid rgba(255,90,31,0.3); color: var(--paper); }
   .admin-note strong { color: var(--orange); }
   .admin-note.warn strong { color: #E24B4A; }
-  .admin-section { margin-bottom: 60px; }
-  .admin-section h2 { font-family: var(--font-display); font-weight: 700; font-size: 1.6rem; margin-bottom: 8px; }
-  .admin-section .sub { color: var(--fog); font-size: 0.86rem; margin-bottom: 24px; }
-  .admin-subhead { font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--orange); margin: 26px 0 12px; }
+  .admin-section { margin-bottom: 56px; }
+  .admin-section h2 { font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; margin-bottom: 8px; }
+  .admin-section .sub { color: var(--fog); font-size: 0.86rem; margin-bottom: 22px; }
+  .admin-subhead { font-size: 0.76rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--orange); margin: 24px 0 12px; }
   .admin-subhead:first-child { margin-top: 0; }
   .admin-row {
     display: grid; grid-template-columns: 1.4fr 1fr 1fr auto; gap: 12px; align-items: center;
@@ -2166,12 +2178,17 @@ button {
     padding: 12px 14px; border: 1px solid rgba(167,159,155,0.16); border-radius: 10px; margin-bottom: 8px;
     background: linear-gradient(165deg, var(--navy-raise), var(--navy-deep));
   }
-  .admin-row input, .admin-row select,
-  .admin-tier-row input, .admin-addon-row input {
-    background: rgba(10,13,30,0.5); border: 1px solid rgba(167,159,155,0.2); border-radius: 6px;
-    padding: 9px 10px; color: var(--paper); font-size: 0.82rem; font-family: var(--font-body);
+  .admin-result-row {
+    display: grid; grid-template-columns: 1.2fr 0.7fr 0.8fr 0.7fr 0.8fr 1fr auto; gap: 10px; align-items: center;
+    padding: 12px 14px; border: 1px solid rgba(167,159,155,0.16); border-radius: 10px; margin-bottom: 8px;
+    background: linear-gradient(165deg, var(--navy-raise), var(--navy-deep));
   }
-  .admin-row .del, .admin-tier-row .del, .admin-addon-row .del {
+  .admin-row input, .admin-row select,
+  .admin-tier-row input, .admin-addon-row input, .admin-result-row input {
+    background: rgba(10,13,30,0.5); border: 1px solid rgba(167,159,155,0.2); border-radius: 6px;
+    padding: 9px 10px; color: var(--paper); font-size: 0.8rem; font-family: var(--font-body); width: 100%; box-sizing: border-box;
+  }
+  .admin-row .del, .admin-tier-row .del, .admin-addon-row .del, .admin-result-row .del {
     width: 30px; height: 30px; border-radius: 50%; border: 1px solid rgba(226,75,74,0.4);
     color: #E24B4A; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;
   }
@@ -2184,25 +2201,24 @@ button {
     background: rgba(10,13,30,0.5); border: 1px solid rgba(167,159,155,0.2); border-radius: 6px;
     padding: 9px 10px; color: var(--paper); font-size: 0.82rem; font-family: var(--font-body);
   }
+  .admin-simple-field { margin-bottom: 14px; }
+  .admin-simple-field label { display: block; font-size: 0.76rem; color: var(--fog); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .admin-simple-field input {
+    width: 100%; box-sizing: border-box; background: rgba(10,13,30,0.5); border: 1px solid rgba(167,159,155,0.2);
+    border-radius: 8px; padding: 11px 13px; color: var(--paper); font-size: 0.86rem; font-family: var(--font-body);
+  }
+  .admin-simple-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   .admin-add { margin-top: 6px; }
   .admin-status { font-size: 0.76rem; color: var(--orange); margin-top: 10px; min-height: 18px; }
-  .leads-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-  .leads-table th {
-    text-align: left; padding: 12px 14px; color: var(--fog); font-size: 0.72rem;
-    text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid rgba(167,159,155,0.2);
-    white-space: nowrap;
-  }
-  .leads-table td {
-    padding: 12px 14px; color: var(--paper); border-bottom: 1px solid rgba(167,159,155,0.12);
-    vertical-align: top;
-  }
-  .leads-table tr:hover td { background: rgba(255,90,31,0.04); }
-  .leads-table .when { color: var(--fog); font-size: 0.76rem; white-space: nowrap; }
-  .leads-table-wrap { overflow-x: auto; border: 1px solid rgba(167,159,155,0.16); border-radius: 12px; }
+  .loading-msg { color: var(--fog); font-size: 0.84rem; padding: 20px 0; }
   #gate { max-width: 380px; margin: 180px auto; text-align: center; padding: 0 var(--edge); }
   #gate input { width: 100%; margin-top: 20px; margin-bottom: 16px; }
   #gate .field { text-align: left; }
-  .loading-msg { color: var(--fog); font-size: 0.84rem; padding: 20px 0; }
+  @media (max-width: 860px) {
+    .admin-shell { flex-direction: column; }
+    .admin-sidebar { position: static; width: 100%; display: flex; overflow-x: auto; gap: 6px; padding-bottom: 8px; }
+    .admin-tab-btn { white-space: nowrap; width: auto; margin-bottom: 0; }
+  }
 </style>
 </head>
 <body>
@@ -2236,49 +2252,121 @@ button {
   <button class="nav-burger" aria-label="Open menu"><span></span><span></span><span></span></button>
 </header>
 
-<div class="admin-wrap">
-  <div id="connectionNote"></div>
-
-  <div class="admin-section">
-    <h2>Recent Edits (portfolio)</h2>
-    <div class="sub">Powers the video-editing page carousel. Changes save automatically.</div>
-    <div id="portfolioRows"><div class="loading-msg">Loading...</div></div>
-    <button class="btn-outline admin-add" onclick="addPortfolioRow()">+ Add Video</button>
-    <div class="admin-status" id="portfolioStatus"></div>
+<div class="admin-shell">
+  <div class="admin-sidebar" id="adminSidebar">
+    <button class="admin-tab-btn is-active" data-tab="homepage">Homepage</button>
+    <button class="admin-tab-btn" data-tab="videoediting">Video Editing Page</button>
+    <button class="admin-tab-btn" data-tab="quotebuilder">Quote Builder</button>
+    <button class="admin-tab-btn" data-tab="leads">Leads</button>
   </div>
 
-  <div class="admin-section">
-    <h2>Category Reference Videos</h2>
-    <div class="sub">Shown on the quote page when a client picks that style category.</div>
-    <div id="categoryVideoRows"><div class="loading-msg">Loading...</div></div>
-    <div class="admin-status" id="categoryVideoStatus"></div>
-  </div>
+  <div class="admin-main">
+    <div id="connectionNote"></div>
 
-  <div class="admin-section">
-    <h2>Pricing Tiers</h2>
-    <div class="sub">The variations under each style on the quote page (e.g. "Level 1 | ₹1,800"). Add as many per category as you want.</div>
-    <div id="tiersByCategory"><div class="loading-msg">Loading...</div></div>
-    <div class="admin-status" id="tiersStatus"></div>
-  </div>
+    <!-- ============ HOMEPAGE TAB ============ -->
+    <div class="admin-panel is-active" data-panel="homepage">
 
-  <div class="admin-section">
-    <h2>Add-ons</h2>
-    <div class="sub">Optional extras clients can tick on the quote page (e.g. "Need fast delivery +₹500/video").</div>
-    <div id="addonRows"><div class="loading-msg">Loading...</div></div>
-    <button class="btn-outline admin-add" onclick="addAddonRow()">+ Add Add-on</button>
-    <div class="admin-status" id="addonStatus"></div>
-  </div>
+      <div class="admin-section">
+        <h2>Showreel</h2>
+        <div class="sub">The main video behind "Watch the Reel" and the hero play button.</div>
+        <div class="admin-simple-field">
+          <label>YouTube ID or link</label>
+          <input id="showreelInput" placeholder="YouTube ID or link">
+        </div>
+        <button class="btn-outline admin-add" onclick="saveShowreel()">Save Showreel</button>
+        <div class="admin-status" id="showreelStatus"></div>
+      </div>
 
-  <div class="admin-section">
-    <h2>Recent Quote Requests</h2>
-    <div class="sub">Live submissions from the quote page, newest first.</div>
-    <div id="leadsList"><div class="loading-msg">Loading...</div></div>
-  </div>
+      <div class="admin-section">
+        <h2>What Sets Us Apart</h2>
+        <div class="sub">The 4 stat cards on the homepage. Type the number exactly how it should display (e.g. "2+", "12M+").</div>
+        <div class="admin-simple-grid">
+          <div class="admin-simple-field"><label>Years of Experience</label><input id="statYears" placeholder="e.g. 2+"></div>
+          <div class="admin-simple-field"><label>Total Reach Generated</label><input id="statReach" placeholder="e.g. 12M+"></div>
+          <div class="admin-simple-field"><label>Videos Done</label><input id="statVideos" placeholder="e.g. 700+"></div>
+          <div class="admin-simple-field"><label>Happy Clients</label><input id="statClients" placeholder="e.g. 90+"></div>
+        </div>
+        <button class="btn-outline admin-add" onclick="saveStats()">Save Stats</button>
+        <div class="admin-status" id="statsStatus"></div>
+      </div>
 
-  <div class="admin-section">
-    <h2>Recent Call Bookings</h2>
-    <div class="sub">Live submissions from the "Book a Call" chat, newest first.</div>
-    <div id="bookingsList"><div class="loading-msg">Loading...</div></div>
+      <div class="admin-section">
+        <h2>Real Accounts. Real Movement.</h2>
+        <div class="sub">The before/after results cards. Add as many as you want.</div>
+        <div id="resultsRows"><div class="loading-msg">Loading...</div></div>
+        <button class="btn-outline admin-add" onclick="addResultRow()">+ Add Result</button>
+        <div class="admin-status" id="resultsStatus"></div>
+      </div>
+
+    </div>
+
+    <!-- ============ VIDEO EDITING TAB ============ -->
+    <div class="admin-panel" data-panel="videoediting">
+
+      <div class="admin-section">
+        <h2>Recent Edits (portfolio)</h2>
+        <div class="sub">Powers the video-editing page carousel. Changes save automatically.</div>
+        <div id="portfolioRows"><div class="loading-msg">Loading...</div></div>
+        <button class="btn-outline admin-add" onclick="addPortfolioRow()">+ Add Video</button>
+        <div class="admin-status" id="portfolioStatus"></div>
+      </div>
+
+      <div class="admin-section">
+        <h2>Raw vs Edited (Before/After)</h2>
+        <div class="sub">The drag-to-compare slider on the video-editing page.</div>
+        <div class="admin-simple-grid">
+          <div class="admin-simple-field"><label>Raw video — YouTube ID or link</label><input id="rawVideoInput" placeholder="YouTube ID or link"></div>
+          <div class="admin-simple-field"><label>Edited video — YouTube ID or link</label><input id="editedVideoInput" placeholder="YouTube ID or link"></div>
+        </div>
+        <button class="btn-outline admin-add" onclick="saveCompareVideos()">Save</button>
+        <div class="admin-status" id="compareStatus"></div>
+      </div>
+
+    </div>
+
+    <!-- ============ QUOTE BUILDER TAB ============ -->
+    <div class="admin-panel" data-panel="quotebuilder">
+
+      <div class="admin-section">
+        <h2>Category Reference Videos</h2>
+        <div class="sub">Shown on the quote page when a client picks that style category.</div>
+        <div id="categoryVideoRows"><div class="loading-msg">Loading...</div></div>
+        <div class="admin-status" id="categoryVideoStatus"></div>
+      </div>
+
+      <div class="admin-section">
+        <h2>Pricing Tiers</h2>
+        <div class="sub">The variations under each style on the quote page (e.g. "Level 1 | ₹1,800"). Add as many per category as you want.</div>
+        <div id="tiersByCategory"><div class="loading-msg">Loading...</div></div>
+        <div class="admin-status" id="tiersStatus"></div>
+      </div>
+
+      <div class="admin-section">
+        <h2>Add-ons</h2>
+        <div class="sub">Optional extras clients can tick on the quote page (e.g. "Need fast delivery +₹500/video").</div>
+        <div id="addonRows"><div class="loading-msg">Loading...</div></div>
+        <button class="btn-outline admin-add" onclick="addAddonRow()">+ Add Add-on</button>
+        <div class="admin-status" id="addonStatus"></div>
+      </div>
+
+    </div>
+
+    <!-- ============ LEADS TAB ============ -->
+    <div class="admin-panel" data-panel="leads">
+
+      <div class="admin-section">
+        <h2>Recent Quote Requests</h2>
+        <div class="sub">Live submissions from the quote page, newest first.</div>
+        <div id="leadsList"><div class="loading-msg">Loading...</div></div>
+      </div>
+
+      <div class="admin-section">
+        <h2>Recent Call Bookings</h2>
+        <div class="sub">Live submissions from the "Book a Call" chat, newest first.</div>
+        <div id="bookingsList"><div class="loading-msg">Loading...</div></div>
+      </div>
+
+    </div>
   </div>
 </div>
 
@@ -2811,6 +2899,82 @@ if (reelsSlider) {
   });
 })();
 
+/* =====================================================
+   SITE CONTENT — pulls admin-managed values from Supabase
+   ("site_content" key/value table and "client_results"
+   table) and overrides the page's built-in placeholders.
+   Runs on any page that has the matching elements; does
+   nothing if Supabase isn't connected or the tables are
+   empty, so the existing hardcoded content just stays.
+   ===================================================== */
+(function () {
+  if (!supabaseClient) return;
+
+  const statNumsForContent = document.querySelectorAll('.whyus-grid .num[data-target]');
+  const resultsGrid = document.getElementById('resultsGrid');
+  const compareBefore = document.getElementById('compareBefore');
+  const compareAfter = document.getElementById('compareAfter');
+  const needsHero = document.querySelectorAll('[data-yt]').length > 0;
+
+  if (!statNumsForContent.length && !resultsGrid && !compareBefore && !needsHero) return;
+
+  function parseStat(str) {
+    const m = String(str).trim().match(/^(-?\d+(?:\.\d+)?)(.*)$/);
+    if (!m) return null;
+    return { num: parseFloat(m[1]), suffix: m[2] };
+  }
+
+  supabaseClient.from('site_content').select('*').then(({ data }) => {
+    const content = {};
+    (data || []).forEach((r) => { content[r.key] = r.value; });
+    if (!Object.keys(content).length) return;
+
+    if (content.hero_showreel && typeof VIDEO_IDS !== 'undefined') {
+      VIDEO_IDS.hero = content.hero_showreel;
+    }
+
+    if (statNumsForContent.length === 4) {
+      const keys = ['stat_years', 'stat_reach', 'stat_videos', 'stat_clients'];
+      keys.forEach((key, i) => {
+        if (!content[key]) return;
+        const parsed = parseStat(content[key]);
+        if (!parsed) return;
+        statNumsForContent[i].dataset.target = parsed.num;
+        statNumsForContent[i].dataset.suffix = parsed.suffix;
+      });
+    }
+
+    if (compareBefore && content.raw_video_id) {
+      compareBefore.style.backgroundImage = `url(https://img.youtube.com/vi/${content.raw_video_id}/hqdefault.jpg)`;
+      compareBefore.style.backgroundSize = 'cover';
+      compareBefore.style.backgroundPosition = 'center';
+      compareBefore.style.filter = 'grayscale(0.7) brightness(0.7) contrast(0.9)';
+    }
+    if (compareAfter && content.edited_video_id) {
+      compareAfter.style.backgroundImage = `url(https://img.youtube.com/vi/${content.edited_video_id}/hqdefault.jpg)`;
+      compareAfter.style.backgroundSize = 'cover';
+      compareAfter.style.backgroundPosition = 'center';
+    }
+  }).catch(() => {});
+
+  if (resultsGrid) {
+    supabaseClient.from('client_results').select('*').order('sort_order', { ascending: true }).then(({ data }) => {
+      if (!data || !data.length) return;
+      resultsGrid.innerHTML = data.map((r) => `
+        <div class="result-card">
+          <div class="client">${r.client_label || ''}</div>
+          <div class="result-row">
+            <div class="result-block before"><span class="tag">${r.before_label || 'Before'}</span><div class="val">${r.before_value || ''}</div></div>
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 10h12M11 5l5 5-5 5"/></svg>
+            <div class="result-block after"><span class="tag">${r.after_label || 'After'}</span><div class="val">${r.after_value || ''}</div></div>
+          </div>
+          <span class="result-badge">${r.badge_text || ''}</span>
+        </div>
+      `).join('');
+    }).catch(() => {});
+  }
+})();
+
 </script>
 <script>
   function checkGate() {
@@ -2825,6 +2989,15 @@ if (reelsSlider) {
   }
   document.getElementById('gatePass').addEventListener('keydown', (e) => { if (e.key === 'Enter') checkGate(); });
 
+  document.querySelectorAll('.admin-tab-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.admin-tab-btn').forEach((b) => b.classList.remove('is-active'));
+      document.querySelectorAll('.admin-panel').forEach((p) => p.classList.remove('is-active'));
+      btn.classList.add('is-active');
+      document.querySelector(`.admin-panel[data-panel="${btn.dataset.tab}"]`).classList.add('is-active');
+    });
+  });
+
   const CATEGORY_LIST = [
     { key: 'personal', label: 'Personal Branding' },
     { key: 'business', label: 'Business Video' },
@@ -2836,8 +3009,9 @@ if (reelsSlider) {
   function flash(id, msg) {
     const el = document.getElementById(id);
     el.textContent = msg;
-    setTimeout(() => { if (el.textContent === msg) el.textContent = ''; }, 2000);
+    setTimeout(() => { if (el.textContent === msg) el.textContent = ''; }, 2200);
   }
+  function ytId(val) { return val.trim().split('v=').pop().split('/').pop(); }
 
   async function init() {
     const note = document.getElementById('connectionNote');
@@ -2846,12 +3020,104 @@ if (reelsSlider) {
       return;
     }
     note.innerHTML = `<div class="admin-note ok"><strong>Connected.</strong> Everything below reads and writes live to Supabase.</div>`;
+    await loadSiteContent();
+    await loadResults();
     await loadPortfolio();
     await loadCategoryVideos();
     await loadTiers();
     await loadAddons();
     await loadLeads();
     await loadBookings();
+  }
+
+  /* ---------- SITE CONTENT (showreel, stats, compare videos) ---------- */
+  let siteContentCache = {};
+  async function loadSiteContent() {
+    const { data, error } = await supabaseClient.from('site_content').select('*');
+    if (!error && data) {
+      data.forEach((r) => { siteContentCache[r.key] = r.value; });
+    }
+    document.getElementById('showreelInput').value = siteContentCache.hero_showreel || '';
+    document.getElementById('statYears').value = siteContentCache.stat_years || '';
+    document.getElementById('statReach').value = siteContentCache.stat_reach || '';
+    document.getElementById('statVideos').value = siteContentCache.stat_videos || '';
+    document.getElementById('statClients').value = siteContentCache.stat_clients || '';
+    document.getElementById('rawVideoInput').value = siteContentCache.raw_video_id || '';
+    document.getElementById('editedVideoInput').value = siteContentCache.edited_video_id || '';
+  }
+
+  async function upsertContent(key, value) {
+    const { error } = await supabaseClient.from('site_content').upsert([{ key, value }], { onConflict: 'key' });
+    return error;
+  }
+
+  async function saveShowreel() {
+    const val = ytId(document.getElementById('showreelInput').value);
+    const error = await upsertContent('hero_showreel', val);
+    flash('showreelStatus', error ? `Failed: ${error.message}` : 'Saved ✓');
+  }
+
+  async function saveStats() {
+    const fields = [
+      ['stat_years', 'statYears'], ['stat_reach', 'statReach'],
+      ['stat_videos', 'statVideos'], ['stat_clients', 'statClients']
+    ];
+    for (const [key, id] of fields) {
+      const error = await upsertContent(key, document.getElementById(id).value.trim());
+      if (error) { flash('statsStatus', `Failed: ${error.message}`); return; }
+    }
+    flash('statsStatus', 'Saved ✓');
+  }
+
+  async function saveCompareVideos() {
+    const raw = ytId(document.getElementById('rawVideoInput').value);
+    const edited = ytId(document.getElementById('editedVideoInput').value);
+    let error = await upsertContent('raw_video_id', raw);
+    if (!error) error = await upsertContent('edited_video_id', edited);
+    flash('compareStatus', error ? `Failed: ${error.message}` : 'Saved ✓');
+  }
+
+  /* ---------- CLIENT RESULTS ---------- */
+  async function loadResults() {
+    const { data, error } = await supabaseClient.from('client_results').select('*').order('sort_order', { ascending: true });
+    if (error) { document.getElementById('resultsRows').innerHTML = `<div class="loading-msg">Couldn't load: ${error.message}</div>`; return; }
+    renderResults(data || []);
+  }
+  function renderResults(rows) {
+    const wrap = document.getElementById('resultsRows');
+    wrap.innerHTML = '';
+    rows.forEach((row) => {
+      const el = document.createElement('div');
+      el.className = 'admin-result-row';
+      el.innerHTML = `
+        <input placeholder="Client label" value="${row.client_label || ''}" data-field="client_label">
+        <input placeholder="Before label" value="${row.before_label || 'Before'}" data-field="before_label">
+        <input placeholder="Before value" value="${row.before_value || ''}" data-field="before_value">
+        <input placeholder="After label" value="${row.after_label || 'After'}" data-field="after_label">
+        <input placeholder="After value" value="${row.after_value || ''}" data-field="after_value">
+        <input placeholder="Badge text" value="${row.badge_text || ''}" data-field="badge_text">
+        <span class="del">✕</span>
+      `;
+      el.querySelectorAll('input').forEach((input) => {
+        input.addEventListener('change', () => updateResultRow(row.id, input.dataset.field, input.value));
+      });
+      el.querySelector('.del').addEventListener('click', () => deleteResultRow(row.id, el));
+      wrap.appendChild(el);
+    });
+  }
+  async function updateResultRow(id, field, value) {
+    const { error } = await supabaseClient.from('client_results').update({ [field]: value }).eq('id', id);
+    flash('resultsStatus', error ? `Failed: ${error.message}` : 'Saved ✓');
+  }
+  async function addResultRow() {
+    const { error } = await supabaseClient.from('client_results').insert([{ client_label: 'New Client', before_label: 'Before', after_label: 'After', sort_order: Math.floor(Date.now() / 1000) }]);
+    if (error) { flash('resultsStatus', `Failed: ${error.message}`); return; }
+    loadResults();
+  }
+  async function deleteResultRow(id, el) {
+    const { error } = await supabaseClient.from('client_results').delete().eq('id', id);
+    if (error) { flash('resultsStatus', `Failed: ${error.message}`); return; }
+    el.remove();
   }
 
   /* ---------- PORTFOLIO ---------- */
@@ -2882,7 +3148,7 @@ if (reelsSlider) {
     });
   }
   async function updatePortfolioRow(id, field, value) {
-    if (field === 'youtube_id') value = value.split('v=').pop().split('/').pop();
+    if (field === 'youtube_id') value = ytId(value);
     const { error } = await supabaseClient.from('portfolio_videos').update({ [field]: value }).eq('id', id);
     flash('portfolioStatus', error ? `Failed: ${error.message}` : 'Saved ✓');
   }
@@ -2918,10 +3184,7 @@ if (reelsSlider) {
       const el = document.createElement('div');
       el.className = 'admin-ref-row';
       el.innerHTML = `<span class="name">${c.label}</span><input placeholder="YouTube ID or link" value="${row.youtube_id || ''}">`;
-      el.querySelector('input').addEventListener('change', (e) => {
-        const val = e.target.value.split('v=').pop().split('/').pop();
-        updateCategoryVideo(row.id, val);
-      });
+      el.querySelector('input').addEventListener('change', (e) => updateCategoryVideo(row.id, ytId(e.target.value)));
       wrap.appendChild(el);
     });
   }
@@ -3042,22 +3305,13 @@ if (reelsSlider) {
     wrap.innerHTML = `
       <div class="leads-table-wrap">
       <table class="leads-table">
-        <thead>
-          <tr>
-            <th>Name</th><th>Phone</th><th>Style</th><th>Tier</th><th>Qty</th><th>Estimate</th><th>Comments</th><th>When</th>
-          </tr>
-        </thead>
+        <thead><tr><th>Name</th><th>Phone</th><th>Style</th><th>Tier</th><th>Qty</th><th>Estimate</th><th>Comments</th><th>When</th></tr></thead>
         <tbody>
           ${data.map((r) => `
             <tr>
-              <td>${r.name || '—'}</td>
-              <td>${r.phone || '—'}</td>
-              <td>${r.video_type || '—'}</td>
-              <td>${r.editing_style || '—'}</td>
-              <td>${r.quantity || '—'}</td>
-              <td>${r.budget || '—'}</td>
-              <td>${r.message || '—'}</td>
-              <td class="when">${new Date(r.created_at).toLocaleString('en-IN')}</td>
+              <td>${r.name || '—'}</td><td>${r.phone || '—'}</td><td>${r.video_type || '—'}</td>
+              <td>${r.editing_style || '—'}</td><td>${r.quantity || '—'}</td><td>${r.budget || '—'}</td>
+              <td>${r.message || '—'}</td><td class="when">${new Date(r.created_at).toLocaleString('en-IN')}</td>
             </tr>
           `).join('')}
         </tbody>
@@ -3075,19 +3329,12 @@ if (reelsSlider) {
     wrap.innerHTML = `
       <div class="leads-table-wrap">
       <table class="leads-table">
-        <thead>
-          <tr>
-            <th>Name</th><th>Phone</th><th>Need</th><th>About their brand</th><th>When</th>
-          </tr>
-        </thead>
+        <thead><tr><th>Name</th><th>Phone</th><th>Need</th><th>About their brand</th><th>When</th></tr></thead>
         <tbody>
           ${data.map((r) => `
             <tr>
-              <td>${r.name || '—'}</td>
-              <td>${r.phone || '—'}</td>
-              <td>${r.need || '—'}</td>
-              <td>${r.brand_message || '—'}</td>
-              <td class="when">${new Date(r.created_at).toLocaleString('en-IN')}</td>
+              <td>${r.name || '—'}</td><td>${r.phone || '—'}</td><td>${r.need || '—'}</td>
+              <td>${r.brand_message || '—'}</td><td class="when">${new Date(r.created_at).toLocaleString('en-IN')}</td>
             </tr>
           `).join('')}
         </tbody>
