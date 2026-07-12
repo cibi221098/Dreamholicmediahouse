@@ -2111,15 +2111,19 @@ button {
   }
   .admin-add { margin-top: 6px; }
   .admin-status { font-size: 0.76rem; color: var(--orange); margin-top: 10px; min-height: 18px; }
-  .lead-card {
-    padding: 16px 18px; border: 1px solid rgba(167,159,155,0.16); border-radius: 10px; margin-bottom: 10px;
-    background: linear-gradient(165deg, var(--navy-raise), var(--navy-deep));
+  .leads-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  .leads-table th {
+    text-align: left; padding: 12px 14px; color: var(--fog); font-size: 0.72rem;
+    text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid rgba(167,159,155,0.2);
+    white-space: nowrap;
   }
-  .lead-card .top { display: flex; justify-content: space-between; margin-bottom: 8px; flex-wrap: wrap; gap: 6px; }
-  .lead-card .top .name { font-weight: 700; color: var(--paper); font-size: 0.94rem; }
-  .lead-card .top .when { font-size: 0.72rem; color: var(--fog); }
-  .lead-card .details { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 0.78rem; color: var(--fog); }
-  .lead-card .details b { color: var(--paper); font-weight: 600; }
+  .leads-table td {
+    padding: 12px 14px; color: var(--paper); border-bottom: 1px solid rgba(167,159,155,0.12);
+    vertical-align: top;
+  }
+  .leads-table tr:hover td { background: rgba(255,90,31,0.04); }
+  .leads-table .when { color: var(--fog); font-size: 0.76rem; white-space: nowrap; }
+  .leads-table-wrap { overflow-x: auto; border: 1px solid rgba(167,159,155,0.16); border-radius: 12px; }
   #gate { max-width: 380px; margin: 180px auto; text-align: center; padding: 0 var(--edge); }
   #gate input { width: 100%; margin-top: 20px; margin-bottom: 16px; }
   #gate .field { text-align: left; }
@@ -2638,7 +2642,7 @@ if (reelsSlider) {
     flash('portfolioStatus', error ? `Failed: ${error.message}` : 'Saved ✓');
   }
   async function addPortfolioRow() {
-    const { error } = await supabaseClient.from('portfolio_videos').insert([{ youtube_id: '', views: '', category: 'business', sort_order: Date.now() }]);
+    const { error } = await supabaseClient.from('portfolio_videos').insert([{ youtube_id: '', views: '', category: 'business', sort_order: Math.floor(Date.now() / 1000) }]);
     if (error) { flash('portfolioStatus', `Failed: ${error.message}`); return; }
     loadPortfolio();
   }
@@ -2734,7 +2738,7 @@ if (reelsSlider) {
     flash('tiersStatus', error ? `Failed: ${error.message}` : 'Saved ✓');
   }
   async function addTierRow(categoryKey) {
-    const { error } = await supabaseClient.from('pricing_tiers').insert([{ category: categoryKey, tier_name: 'New Tier', description: '', price: 0, sort_order: Date.now() }]);
+    const { error } = await supabaseClient.from('pricing_tiers').insert([{ category: categoryKey, tier_name: 'New Tier', description: '', price: 0, sort_order: Math.floor(Date.now() / 1000) }]);
     if (error) { flash('tiersStatus', `Failed: ${error.message}`); return; }
     loadTiers();
   }
@@ -2774,7 +2778,7 @@ if (reelsSlider) {
     flash('addonStatus', error ? `Failed: ${error.message}` : 'Saved ✓');
   }
   async function addAddonRow() {
-    const { error } = await supabaseClient.from('addons').insert([{ name: 'New Add-on', price: 0, sort_order: Date.now() }]);
+    const { error } = await supabaseClient.from('addons').insert([{ name: 'New Add-on', price: 0, sort_order: Math.floor(Date.now() / 1000) }]);
     if (error) { flash('addonStatus', `Failed: ${error.message}`); return; }
     loadAddons();
   }
@@ -2790,19 +2794,31 @@ if (reelsSlider) {
     const wrap = document.getElementById('leadsList');
     if (error) { wrap.innerHTML = `<div class="loading-msg">Couldn't load: ${error.message}</div>`; return; }
     if (!data || !data.length) { wrap.innerHTML = `<div class="loading-msg">No quote requests yet.</div>`; return; }
-    wrap.innerHTML = data.map((r) => `
-      <div class="lead-card">
-        <div class="top">
-          <span class="name">${r.name || 'Unknown'} — ${r.phone || ''}</span>
-          <span class="when">${new Date(r.created_at).toLocaleString('en-IN')}</span>
-        </div>
-        <div class="details">
-          <span><b>Style:</b> ${r.video_type || '—'} ${r.editing_style ? '— ' + r.editing_style : ''}</span>
-          <span><b>Qty:</b> ${r.quantity || '—'}</span>
-          <span><b>Est.:</b> ${r.budget || '—'}</span>
-        </div>
+    wrap.innerHTML = `
+      <div class="leads-table-wrap">
+      <table class="leads-table">
+        <thead>
+          <tr>
+            <th>Name</th><th>Phone</th><th>Style</th><th>Tier</th><th>Qty</th><th>Estimate</th><th>Comments</th><th>When</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${data.map((r) => `
+            <tr>
+              <td>${r.name || '—'}</td>
+              <td>${r.phone || '—'}</td>
+              <td>${r.video_type || '—'}</td>
+              <td>${r.editing_style || '—'}</td>
+              <td>${r.quantity || '—'}</td>
+              <td>${r.budget || '—'}</td>
+              <td>${r.message || '—'}</td>
+              <td class="when">${new Date(r.created_at).toLocaleString('en-IN')}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
       </div>
-    `).join('');
+    `;
   }
 </script>
 </body>
