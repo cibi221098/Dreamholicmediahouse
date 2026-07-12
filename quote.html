@@ -2028,6 +2028,81 @@ button {
 }
 
 /* ============================================
+   BOOK A CALL — conversational modal
+   ============================================ */
+.bc-overlay {
+  position: fixed; inset: 0; z-index: 300;
+  background: rgba(6,8,18,0.82); backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+  opacity: 0; pointer-events: none; transition: opacity 0.3s var(--ease-out);
+}
+.bc-overlay.is-open { opacity: 1; pointer-events: auto; }
+
+.bc-modal {
+  width: 100%; max-width: 420px; max-height: 88vh;
+  background: var(--navy-ink); border-radius: 18px; border: 1px solid rgba(167,159,155,0.2);
+  overflow: hidden; display: flex; flex-direction: column;
+  transform: scale(0.95); transition: transform 0.3s var(--ease-out);
+}
+.bc-overlay.is-open .bc-modal { transform: scale(1); }
+
+.bc-head {
+  display: flex; align-items: center; gap: 10px;
+  padding: 16px 18px; border-bottom: 1px solid rgba(167,159,155,0.16);
+}
+.bc-head .avatar {
+  width: 34px; height: 34px; border-radius: 50%; background: var(--orange);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.bc-head .avatar svg { width: 14px; height: 14px; }
+.bc-head .who { flex: 1; }
+.bc-head .who .name { color: var(--paper); font-size: 0.86rem; font-weight: 700; }
+.bc-head .who .status { color: var(--fog); font-size: 0.7rem; }
+.bc-close {
+  width: 30px; height: 30px; border-radius: 50%; border: 1px solid rgba(167,159,155,0.3);
+  background: none; color: var(--paper); cursor: pointer; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.bc-close:hover { border-color: var(--orange); }
+
+.bc-log {
+  padding: 18px; display: flex; flex-direction: column; gap: 12px;
+  min-height: 220px; max-height: 360px; overflow-y: auto; flex: 1;
+}
+.bc-bubble-bot, .bc-bubble-user {
+  max-width: 82%; padding: 10px 14px; font-size: 0.86rem; line-height: 1.5;
+}
+.bc-bubble-bot { align-self: flex-start; background: var(--navy-raise); color: var(--paper); border-radius: 14px 14px 14px 4px; }
+.bc-bubble-user { align-self: flex-end; background: var(--orange); color: var(--navy-deep); font-weight: 600; border-radius: 14px 14px 4px 14px; }
+
+.bc-input-wrap { padding: 14px 18px 18px; border-top: 1px solid rgba(167,159,155,0.14); }
+.bc-chips { display: none; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.bc-chips.is-visible { display: flex; }
+.bc-chip {
+  padding: 9px 14px; border-radius: 999px; border: 1px solid rgba(255,90,31,0.4);
+  color: var(--paper); font-size: 0.78rem; cursor: pointer; background: none;
+  transition: background 0.25s var(--ease-out), color 0.25s var(--ease-out);
+}
+.bc-chip:hover { background: rgba(255,90,31,0.12); }
+
+.bc-text-row { display: flex; gap: 8px; }
+.bc-text-row.is-hidden { display: none; }
+.bc-text-row input {
+  flex: 1; background: rgba(10,13,30,0.5); border: 1px solid rgba(167,159,155,0.25);
+  border-radius: 999px; padding: 11px 16px; color: var(--paper); font-size: 0.86rem; font-family: var(--font-body);
+}
+.bc-send {
+  width: 40px; height: 40px; border-radius: 50%; background: var(--orange); border: none;
+  display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;
+}
+.bc-send svg { width: 15px; height: 15px; }
+
+@media (max-width: 480px) {
+  .bc-modal { max-height: 92vh; }
+  .bc-log { max-height: none; }
+}
+
+/* ============================================
    RESPONSIVE
    ============================================ */
 @media (max-width: 1080px) {
@@ -2218,7 +2293,7 @@ button {
         <li><a href="index.html">Home</a></li>
         <li><a href="video-editing.html">Video Editing</a></li>
         <li><a href="video-editing.html#reel">Recent Edits</a></li>
-        <li><a href="contact.html">General Contact</a></li>
+        <li><a href="#" data-book-call>Book a Call</a></li>
       </ul>
     </div>
 
@@ -2595,6 +2670,169 @@ if (reelsSlider) {
   reelsSlider.addEventListener('input', updateCalc);
   updateCalc();
 }
+
+/* =====================================================
+   BOOK A CALL — conversational modal, shared across
+   every page. Any element with [data-book-call] opens it.
+   Submits to Supabase table "call_bookings" (if connected)
+   and opens WhatsApp with the same details either way.
+   ===================================================== */
+(function () {
+  const triggers = document.querySelectorAll('[data-book-call]');
+  if (!triggers.length) return;
+
+  const NEEDS = ['Social Media Handling', 'Video Editing', 'Influencer Marketing', 'Meta Ads', 'Celebrity Management', 'Not sure, need to consult'];
+
+  const overlay = document.createElement('div');
+  overlay.className = 'bc-overlay';
+  overlay.id = 'bcOverlay';
+  overlay.innerHTML = `
+    <div class="bc-modal">
+      <div class="bc-head">
+        <span class="avatar"><svg viewBox="0 0 20 20" fill="var(--navy-deep)"><path d="M5 3l12 7-12 7V3z"/></svg></span>
+        <span class="who">
+          <span class="name">Dreamholic Team</span>
+          <span class="status">Usually replies in a few minutes</span>
+        </span>
+        <button class="bc-close" id="bcClose" aria-label="Close">
+          <svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 5l10 10M15 5L5 15"/></svg>
+        </button>
+      </div>
+      <div class="bc-log" id="bcLog"></div>
+      <div class="bc-input-wrap">
+        <div class="bc-chips" id="bcChips"></div>
+        <div class="bc-text-row" id="bcTextRow">
+          <input id="bcInput" placeholder="Type here...">
+          <button class="bc-send" id="bcSend" aria-label="Send">
+            <svg viewBox="0 0 20 20" fill="var(--navy-deep)"><path d="M5 3l12 7-12 7V3z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  const log = overlay.querySelector('#bcLog');
+  const input = overlay.querySelector('#bcInput');
+  const send = overlay.querySelector('#bcSend');
+  const chipsWrap = overlay.querySelector('#bcChips');
+  const textRow = overlay.querySelector('#bcTextRow');
+  const closeBtn = overlay.querySelector('#bcClose');
+
+  let state = 0;
+  let answers = {};
+
+  function bot(msg) {
+    const b = document.createElement('div');
+    b.className = 'bc-bubble-bot';
+    b.textContent = msg;
+    log.appendChild(b);
+    log.scrollTop = log.scrollHeight;
+  }
+  function user(msg) {
+    const b = document.createElement('div');
+    b.className = 'bc-bubble-user';
+    b.textContent = msg;
+    log.appendChild(b);
+    log.scrollTop = log.scrollHeight;
+  }
+  function showChips() {
+    textRow.classList.add('is-hidden');
+    chipsWrap.classList.add('is-visible');
+    chipsWrap.innerHTML = '';
+    NEEDS.forEach((n) => {
+      const c = document.createElement('span');
+      c.className = 'bc-chip';
+      c.textContent = n;
+      c.addEventListener('click', () => {
+        user(n);
+        answers.need = n;
+        chipsWrap.classList.remove('is-visible');
+        textRow.classList.remove('is-hidden');
+        state = 3;
+        setTimeout(() => bot('Understood. Tell us a little about your brand, so we walk into the call prepared.'), 400);
+      });
+      chipsWrap.appendChild(c);
+    });
+  }
+
+  function resetChat() {
+    state = 0;
+    answers = {};
+    log.innerHTML = '';
+    chipsWrap.classList.remove('is-visible');
+    textRow.classList.remove('is-hidden');
+    input.value = '';
+    bot('Welcome to Dreamholic. Who do we have the pleasure of speaking with?');
+  }
+
+  function finishBooking() {
+    if (supabaseClient) {
+      supabaseClient.from('call_bookings').insert([{
+        name: answers.name, phone: answers.phone, need: answers.need, brand_message: answers.brand
+      }]).then(({ error }) => { if (error) console.error('Supabase save failed:', error); });
+    }
+    const lines = [
+      `Hi Dreamholic team, I'd like to book a call — ${answers.name}`,
+      `Phone: ${answers.phone}`,
+      `Need: ${answers.need}`,
+      `About their brand: ${answers.brand}`
+    ].join('\n');
+    setTimeout(() => {
+      window.open(`https://wa.me/918072702652?text=${encodeURIComponent(lines)}`, '_blank');
+    }, 1200);
+  }
+
+  function handleSend() {
+    const val = input.value.trim();
+    if (!val) return;
+
+    if (state === 0) {
+      if (val.length < 2 || /^\d+$/.test(val)) {
+        user(val); input.value = '';
+        setTimeout(() => bot('Could you share your actual name? Just want to make sure we address you correctly.'), 400);
+        return;
+      }
+      user(val); answers.name = val; input.value = '';
+      setTimeout(() => { bot(`Wonderful to connect with you, ${val}. Can you please share your contact number?`); state = 1; }, 400);
+
+    } else if (state === 1) {
+      const digitsOnly = val.replace(/\D/g, '');
+      if (!/^\d{10}$/.test(digitsOnly)) {
+        user(val); input.value = '';
+        setTimeout(() => bot("That doesn't look like a 10-digit number. Could you share it again, without the country code?"), 400);
+        return;
+      }
+      user(digitsOnly); answers.phone = digitsOnly; input.value = '';
+      setTimeout(() => { bot('Excellent. What brings you to Dreamholic today?'); showChips(); state = 2; }, 400);
+
+    } else if (state === 3) {
+      if (val.length < 5) {
+        user(val); input.value = '';
+        setTimeout(() => bot('A little more detail would help us prepare — could you tell us a bit more?'), 400);
+        return;
+      }
+      user(val); answers.brand = val; input.value = '';
+      setTimeout(() => {
+        bot(`Thank you, ${answers.name || ''}. Our team will review this and connect with you shortly to take things forward.`);
+        finishBooking();
+      }, 500);
+    }
+  }
+
+  send.addEventListener('click', handleSend);
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleSend(); });
+  closeBtn.addEventListener('click', () => overlay.classList.remove('is-open'));
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('is-open'); });
+
+  triggers.forEach((trigger) => {
+    trigger.addEventListener('click', (e) => {
+      e.preventDefault();
+      overlay.classList.add('is-open');
+      resetChat();
+    });
+  });
+})();
 
 </script>
 <script>
