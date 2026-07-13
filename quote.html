@@ -2940,7 +2940,7 @@ if (reelsSlider) {
     });
   });
 
-  const CATEGORY_LIST = [
+  let CATEGORY_LIST = [
     { key: 'personal', label: 'Personal Branding' },
     { key: 'business', label: 'Business Video' },
     { key: 'longform', label: 'Long Video' },
@@ -2985,11 +2985,15 @@ if (reelsSlider) {
   async function loadBuilderData() {
     if (supabaseClient) {
       try {
-        const [tiersRes, videosRes, addonsRes] = await Promise.all([
+        const [categoriesRes, tiersRes, videosRes, addonsRes] = await Promise.all([
+          supabaseClient.from('categories').select('*').order('sort_order', { ascending: true }),
           supabaseClient.from('pricing_tiers').select('*').order('sort_order', { ascending: true }),
           supabaseClient.from('category_videos').select('*'),
           supabaseClient.from('addons').select('*').order('sort_order', { ascending: true })
         ]);
+        if (categoriesRes.data && categoriesRes.data.length) {
+          CATEGORY_LIST = categoriesRes.data.map((r) => ({ key: r.key, label: r.label }));
+        }
         if (tiersRes.data && tiersRes.data.length) {
           const grouped = {};
           tiersRes.data.forEach((t) => {
