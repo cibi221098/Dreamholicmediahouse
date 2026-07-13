@@ -2364,6 +2364,14 @@ button {
     <div class="admin-panel" data-panel="videoediting">
 
       <div class="admin-section">
+        <h2>Style Categories</h2>
+        <div class="sub">Used everywhere on the site — the portfolio dropdown below, the filter pills on the video-editing page, and the categories in the quote builder. Add, rename, or remove as needed.</div>
+        <div id="categoryRows"><div class="loading-msg">Loading...</div></div>
+        <button class="btn-outline admin-add" onclick="addCategoryRow()">+ Add Category</button>
+        <div class="admin-status" id="categoryStatus"></div>
+      </div>
+
+      <div class="admin-section">
         <h2>Recent Edits (portfolio)</h2>
         <div class="sub">Powers the video-editing page carousel. Changes save automatically.</div>
         <div id="portfolioRows"><div class="loading-msg">Loading...</div></div>
@@ -3020,7 +3028,7 @@ if (reelsSlider) {
     });
   });
 
-  const CATEGORY_LIST = [
+  let CATEGORY_LIST = [
     { key: 'personal', label: 'Personal Branding' },
     { key: 'business', label: 'Business Video' },
     { key: 'longform', label: 'Long Video' },
@@ -3042,6 +3050,7 @@ if (reelsSlider) {
       return;
     }
     note.innerHTML = `<div class="admin-note ok"><strong>Connected.</strong> Everything below reads and writes live to Supabase.</div>`;
+    await loadCategories();
     await loadSiteContent();
     await loadResults();
     await loadPortfolio();
@@ -3050,6 +3059,49 @@ if (reelsSlider) {
     await loadAddons();
     await loadLeads();
     await loadBookings();
+  }
+
+  /* ---------- STYLE CATEGORIES ---------- */
+  async function loadCategories() {
+    const { data, error } = await supabaseClient.from('categories').select('*').order('sort_order', { ascending: true });
+    const wrap = document.getElementById('categoryRows');
+    if (error) { wrap.innerHTML = `<div class="loading-msg">Couldn't load: ${error.message}</div>`; return; }
+    if (data && data.length) {
+      CATEGORY_LIST = data.map((r) => ({ key: r.key, label: r.label, id: r.id }));
+    }
+    renderCategoryRows(data || []);
+  }
+  function slugify(text) {
+    return text.toLowerCase().trim().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || `cat_${Date.now()}`;
+  }
+  function renderCategoryRows(rows) {
+    const wrap = document.getElementById('categoryRows');
+    wrap.innerHTML = '';
+    rows.forEach((row) => {
+      const el = document.createElement('div');
+      el.className = 'admin-ref-row';
+      el.innerHTML = `<input value="${row.label || ''}" placeholder="Category name" data-field="label"><span class="del">✕</span>`;
+      el.querySelector('input').addEventListener('change', (e) => updateCategoryRow(row.id, e.target.value));
+      el.querySelector('.del').addEventListener('click', () => deleteCategoryRow(row.id, el));
+      wrap.appendChild(el);
+    });
+  }
+  async function updateCategoryRow(id, label) {
+    const { error } = await supabaseClient.from('categories').update({ label }).eq('id', id);
+    flash('categoryStatus', error ? `Failed: ${error.message}` : 'Saved ✓ — refresh other sections to see the new name');
+    if (!error) loadCategories();
+  }
+  async function addCategoryRow() {
+    const label = 'New Category';
+    const { error } = await supabaseClient.from('categories').insert([{ key: slugify(label + '_' + Date.now()), label, sort_order: Math.floor(Date.now() / 1000) }]);
+    if (error) { flash('categoryStatus', `Failed: ${error.message}`); return; }
+    loadCategories();
+  }
+  async function deleteCategoryRow(id, el) {
+    const { error } = await supabaseClient.from('categories').delete().eq('id', id);
+    if (error) { flash('categoryStatus', `Failed: ${error.message} (videos/tiers using this category will need reassigning)`); return; }
+    el.remove();
+    loadCategories();
   }
 
   /* ---------- SITE CONTENT (showreel, stats, compare videos) ---------- */
