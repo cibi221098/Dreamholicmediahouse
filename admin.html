@@ -1746,6 +1746,21 @@ button {
 .ve3-hero .byline strong { color: var(--paper); font-weight: 600; }
 .ve3-hero .cta-row { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 30px; }
 
+/* ---- glow orb (still used by quote.html's hero) ---- */
+.ve3-orb-wrap { display: flex; justify-content: center; margin-bottom: 30px; }
+.ve3-orb {
+  width: 128px; height: 128px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,90,31,0.4), rgba(255,90,31,0) 70%);
+  display: flex; align-items: center; justify-content: center;
+}
+.ve3-orb-inner {
+  width: 62px; height: 62px; border-radius: 50%; background: var(--orange);
+  display: flex; align-items: center; justify-content: center;
+  animation: orbPulse 3.2s ease-in-out infinite;
+}
+@keyframes orbPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.07); } }
+.ve3-orb-inner svg { width: 22px; height: 22px; }
+
 .ve3-fan-wrap {
   position: relative;
   height: 300px;
@@ -2210,6 +2225,11 @@ button {
   .admin-tab-btn:hover { background: rgba(255,90,31,0.06); color: var(--paper); }
   .admin-tab-btn.is-active { background: rgba(255,90,31,0.12); color: var(--orange); }
   .admin-tab-btn .count { margin-left: auto; font-size: 0.7rem; color: var(--fog); }
+  .tab-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px;
+    background: #E24B4A; color: #fff; font-size: 0.68rem; font-weight: 700; line-height: 1;
+  }
   .admin-main { flex: 1; min-width: 0; }
   .admin-panel { display: none; }
   .admin-panel.is-active { display: block; }
@@ -2278,7 +2298,38 @@ button {
     .admin-shell { flex-direction: column; }
     .admin-sidebar { position: static; width: 100%; display: flex; overflow-x: auto; gap: 6px; padding-bottom: 8px; }
     .admin-tab-btn { white-space: nowrap; width: auto; margin-bottom: 0; }
+  }  .admin-thumb-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 14px; margin-bottom: 14px; }
+  .admin-thumb-card {
+    border: 1px solid rgba(167,159,155,0.18); border-radius: 12px; overflow: hidden; cursor: pointer;
+    background: linear-gradient(165deg, var(--navy-raise), var(--navy-deep));
+    transition: border-color 0.2s ease;
   }
+  .admin-thumb-card:hover { border-color: rgba(255,90,31,0.5); }
+  .admin-thumb-card .thumb { width: 100%; aspect-ratio: 9/16; background-size: cover; background-position: center; background-color: rgba(10,13,30,0.5); display: flex; align-items: center; justify-content: center; color: var(--fog); font-size: 0.7rem; }
+  .admin-thumb-card .meta { padding: 8px 10px; }
+  .admin-thumb-card .meta .cat { font-size: 0.72rem; font-weight: 600; color: var(--paper); }
+  .admin-thumb-card .meta .views { font-size: 0.66rem; color: var(--fog); }
+
+  .admin-modal-overlay {
+    position: fixed; inset: 0; z-index: 400; background: rgba(6,8,18,0.82); backdrop-filter: blur(6px);
+    display: none; align-items: center; justify-content: center; padding: 20px;
+  }
+  .admin-modal-overlay.is-open { display: flex; }
+  .admin-modal {
+    width: 100%; max-width: 420px; max-height: 88vh; overflow-y: auto;
+    background: var(--navy-ink); border-radius: 16px; border: 1px solid rgba(167,159,155,0.2); padding: 26px;
+  }
+  .admin-modal h3 { font-family: var(--font-display); font-weight: 700; font-size: 1.2rem; margin-bottom: 18px; }
+  .admin-modal .field { margin-bottom: 14px; }
+  .admin-modal .field label { display: block; font-size: 0.74rem; color: var(--fog); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .admin-modal .field input, .admin-modal .field select {
+    width: 100%; box-sizing: border-box; background: rgba(10,13,30,0.5); border: 1px solid rgba(167,159,155,0.2);
+    border-radius: 8px; padding: 10px 12px; color: var(--paper); font-size: 0.86rem; font-family: var(--font-body);
+  }
+  .admin-modal .thumb-preview { width: 100px; aspect-ratio: 9/16; border-radius: 8px; background-size: cover; background-position: center; background-color: rgba(10,13,30,0.5); margin-bottom: 10px; }
+  .admin-modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+  .admin-modal-actions .btn-outline { flex: 1; text-align: center; justify-content: center; }
+  .admin-modal-close { float: right; background: none; border: none; color: var(--fog); cursor: pointer; font-size: 1.1rem; }
 </style>
 </head>
 <body>
@@ -2317,7 +2368,7 @@ button {
     <button class="admin-tab-btn is-active" data-tab="homepage">Homepage</button>
     <button class="admin-tab-btn" data-tab="videoediting">Video Editing Page</button>
     <button class="admin-tab-btn" data-tab="quotebuilder">Quote Builder</button>
-    <button class="admin-tab-btn" data-tab="leads">Leads</button>
+    <button class="admin-tab-btn" data-tab="leads">Leads <span class="tab-badge" id="leadsBadge" style="display:none;">0</span></button>
   </div>
 
   <div class="admin-main">
@@ -2373,9 +2424,9 @@ button {
 
       <div class="admin-section">
         <h2>Recent Edits (portfolio)</h2>
-        <div class="sub">Powers the video-editing page carousel. Changes save automatically.</div>
-        <div id="portfolioRows"><div class="loading-msg">Loading...</div></div>
-        <button class="btn-outline admin-add" onclick="addPortfolioRow()">+ Add Video</button>
+        <div class="sub">Powers the video-editing page carousel and hero. Click any card to edit it.</div>
+        <div id="portfolioRows" class="admin-thumb-grid"><div class="loading-msg">Loading...</div></div>
+        <button class="btn-outline admin-add" onclick="openPortfolioModal(null)">+ Add Video</button>
         <div class="admin-status" id="portfolioStatus"></div>
       </div>
 
@@ -2444,6 +2495,37 @@ button {
   </div>
 </footer>
 
+</div>
+
+<div class="admin-modal-overlay" id="portfolioModalOverlay">
+  <div class="admin-modal">
+    <button class="admin-modal-close" id="portfolioModalClose">✕</button>
+    <h3 id="portfolioModalTitle">Edit Video</h3>
+
+    <div class="field">
+      <label>Thumbnail</label>
+      <div class="thumb-preview" id="portfolioThumbPreview"></div>
+      <input type="file" accept="image/*" id="portfolioThumbFile">
+    </div>
+    <div class="field">
+      <label>YouTube ID or link</label>
+      <input id="portfolioModalYt" placeholder="YouTube ID or link">
+    </div>
+    <div class="field">
+      <label>Views (e.g. 104K)</label>
+      <input id="portfolioModalViews" placeholder="e.g. 104K">
+    </div>
+    <div class="field">
+      <label>Category</label>
+      <select id="portfolioModalCategory"></select>
+    </div>
+
+    <div class="admin-modal-actions">
+      <button class="btn-outline" id="portfolioModalDelete" style="border-color:rgba(226,75,74,0.4);color:#E24B4A;">Delete</button>
+      <button class="btn-primary" id="portfolioModalSave" style="flex:1;justify-content:center;">Save</button>
+    </div>
+    <div class="admin-status" id="portfolioModalStatus"></div>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -3095,13 +3177,19 @@ if (reelsSlider) {
     const label = 'New Category';
     const { error } = await supabaseClient.from('categories').insert([{ key: slugify(label + '_' + Date.now()), label, sort_order: Math.floor(Date.now() / 1000) }]);
     if (error) { flash('categoryStatus', `Failed: ${error.message}`); return; }
-    loadCategories();
+    await loadCategories();
+    await loadCategoryVideos();
+    await loadTiers();
+    await loadPortfolio();
   }
   async function deleteCategoryRow(id, el) {
     const { error } = await supabaseClient.from('categories').delete().eq('id', id);
     if (error) { flash('categoryStatus', `Failed: ${error.message} (videos/tiers using this category will need reassigning)`); return; }
     el.remove();
-    loadCategories();
+    await loadCategories();
+    await loadCategoryVideos();
+    await loadTiers();
+    await loadPortfolio();
   }
 
   /* ---------- SITE CONTENT (showreel, stats, compare videos) ---------- */
@@ -3200,42 +3288,96 @@ if (reelsSlider) {
     if (error) { document.getElementById('portfolioRows').innerHTML = `<div class="loading-msg">Couldn't load: ${error.message}</div>`; return; }
     renderPortfolio(data || []);
   }
+  let portfolioCache = [];
   function renderPortfolio(rows) {
+    portfolioCache = rows;
     const wrap = document.getElementById('portfolioRows');
     wrap.innerHTML = '';
     rows.forEach((row) => {
       const el = document.createElement('div');
-      el.className = 'admin-row';
+      el.className = 'admin-thumb-card';
+      const bg = row.thumbnail_url
+        ? `background-image:url(${row.thumbnail_url});`
+        : (row.youtube_id ? `background-image:url(https://img.youtube.com/vi/${row.youtube_id}/hqdefault.jpg);` : '');
+      const catLabel = (CATEGORY_LIST.find((c) => c.key === row.category) || {}).label || row.category || '—';
       el.innerHTML = `
-        <input placeholder="YouTube ID or link" value="${row.youtube_id || ''}" data-field="youtube_id">
-        <input placeholder="Views e.g. 104K" value="${row.views || ''}" data-field="views">
-        <select data-field="category">
-          ${CATEGORY_LIST.map((c) => `<option value="${c.key}" ${c.key === row.category ? 'selected' : ''}>${c.label}</option>`).join('')}
-        </select>
-        <span class="del">✕</span>
+        <div class="thumb" style="${bg}">${bg ? '' : 'No thumbnail'}</div>
+        <div class="meta"><div class="cat">${catLabel}</div><div class="views">${row.views || ''}</div></div>
       `;
-      el.querySelectorAll('input, select').forEach((input) => {
-        input.addEventListener('change', () => updatePortfolioRow(row.id, input.dataset.field, input.value));
-      });
-      el.querySelector('.del').addEventListener('click', () => deletePortfolioRow(row.id, el));
+      el.addEventListener('click', () => openPortfolioModal(row));
       wrap.appendChild(el);
     });
   }
-  async function updatePortfolioRow(id, field, value) {
-    if (field === 'youtube_id') value = ytId(value);
-    const { error } = await supabaseClient.from('portfolio_videos').update({ [field]: value }).eq('id', id);
-    flash('portfolioStatus', error ? `Failed: ${error.message}` : 'Saved ✓');
+
+  let currentPortfolioId = null;
+  function openPortfolioModal(row) {
+    currentPortfolioId = row ? row.id : null;
+    document.getElementById('portfolioModalTitle').textContent = row ? 'Edit Video' : 'Add Video';
+    document.getElementById('portfolioModalYt').value = row ? (row.youtube_id || '') : '';
+    document.getElementById('portfolioModalViews').value = row ? (row.views || '') : '';
+    const catSelect = document.getElementById('portfolioModalCategory');
+    catSelect.innerHTML = CATEGORY_LIST.map((c) => `<option value="${c.key}" ${row && c.key === row.category ? 'selected' : ''}>${c.label}</option>`).join('');
+    const preview = document.getElementById('portfolioThumbPreview');
+    const thumbUrl = row && (row.thumbnail_url || (row.youtube_id ? `https://img.youtube.com/vi/${row.youtube_id}/hqdefault.jpg` : ''));
+    preview.style.backgroundImage = thumbUrl ? `url(${thumbUrl})` : 'none';
+    document.getElementById('portfolioThumbFile').value = '';
+    document.getElementById('portfolioModalDelete').style.display = row ? 'block' : 'none';
+    document.getElementById('portfolioModalStatus').textContent = '';
+    document.getElementById('portfolioModalOverlay').classList.add('is-open');
   }
-  async function addPortfolioRow() {
-    const { error } = await supabaseClient.from('portfolio_videos').insert([{ youtube_id: '', views: '', category: 'business', sort_order: Math.floor(Date.now() / 1000) }]);
-    if (error) { flash('portfolioStatus', `Failed: ${error.message}`); return; }
+  function closePortfolioModal() {
+    document.getElementById('portfolioModalOverlay').classList.remove('is-open');
+  }
+  document.getElementById('portfolioModalClose').addEventListener('click', closePortfolioModal);
+  document.getElementById('portfolioModalOverlay').addEventListener('click', (e) => {
+    if (e.target.id === 'portfolioModalOverlay') closePortfolioModal();
+  });
+  document.getElementById('portfolioThumbFile').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    document.getElementById('portfolioThumbPreview').style.backgroundImage = `url(${URL.createObjectURL(file)})`;
+  });
+
+  async function savePortfolioModal() {
+    const status = document.getElementById('portfolioModalStatus');
+    status.textContent = 'Saving...';
+    const youtube_id = ytId(document.getElementById('portfolioModalYt').value);
+    const views = document.getElementById('portfolioModalViews').value;
+    const category = document.getElementById('portfolioModalCategory').value;
+    const file = document.getElementById('portfolioThumbFile').files[0];
+    let thumbnail_url;
+
+    if (file) {
+      const fileName = `portfolio/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+      const { error: uploadError } = await supabaseClient.storage.from('thumbnails').upload(fileName, file, { upsert: true });
+      if (uploadError) { status.textContent = `Upload failed: ${uploadError.message}`; return; }
+      const { data: urlData } = supabaseClient.storage.from('thumbnails').getPublicUrl(fileName);
+      thumbnail_url = urlData.publicUrl;
+    }
+
+    const payload = { youtube_id, views, category };
+    if (thumbnail_url) payload.thumbnail_url = thumbnail_url;
+
+    let error;
+    if (currentPortfolioId) {
+      ({ error } = await supabaseClient.from('portfolio_videos').update(payload).eq('id', currentPortfolioId));
+    } else {
+      payload.sort_order = Math.floor(Date.now() / 1000);
+      ({ error } = await supabaseClient.from('portfolio_videos').insert([payload]));
+    }
+    if (error) { status.textContent = `Failed: ${error.message}`; return; }
+    closePortfolioModal();
     loadPortfolio();
   }
-  async function deletePortfolioRow(id, el) {
-    const { error } = await supabaseClient.from('portfolio_videos').delete().eq('id', id);
-    if (error) { flash('portfolioStatus', `Failed: ${error.message}`); return; }
-    el.remove();
-  }
+  document.getElementById('portfolioModalSave').addEventListener('click', savePortfolioModal);
+
+  document.getElementById('portfolioModalDelete').addEventListener('click', async () => {
+    if (!currentPortfolioId) return;
+    const { error } = await supabaseClient.from('portfolio_videos').delete().eq('id', currentPortfolioId);
+    if (error) { document.getElementById('portfolioModalStatus').textContent = `Failed: ${error.message}`; return; }
+    closePortfolioModal();
+    loadPortfolio();
+  });
 
   /* ---------- CATEGORY VIDEOS ---------- */
   async function loadCategoryVideos() {
@@ -3371,10 +3513,32 @@ if (reelsSlider) {
   }
 
   /* ---------- LEADS ---------- */
+  let latestLeadTimes = [];
+
+  function updateLeadsBadge() {
+    const lastSeen = localStorage.getItem('dh_leads_last_seen');
+    const lastSeenTime = lastSeen ? new Date(lastSeen).getTime() : 0;
+    const unseenCount = latestLeadTimes.filter((t) => new Date(t).getTime() > lastSeenTime).length;
+    const badge = document.getElementById('leadsBadge');
+    if (unseenCount > 0) {
+      badge.textContent = unseenCount;
+      badge.style.display = 'inline-flex';
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+
+  document.querySelector('[data-tab="leads"]').addEventListener('click', () => {
+    localStorage.setItem('dh_leads_last_seen', new Date().toISOString());
+    updateLeadsBadge();
+  });
+
   async function loadLeads() {
     const { data, error } = await supabaseClient.from('quote_requests').select('*').order('created_at', { ascending: false }).limit(30);
     const wrap = document.getElementById('leadsList');
     if (error) { wrap.innerHTML = `<div class="loading-msg">Couldn't load: ${error.message}</div>`; return; }
+    if (data) latestLeadTimes.push(...data.map((r) => r.created_at));
+    updateLeadsBadge();
     if (!data || !data.length) { wrap.innerHTML = `<div class="loading-msg">No quote requests yet.</div>`; return; }
     wrap.innerHTML = `
       <div class="leads-table-wrap">
@@ -3399,6 +3563,8 @@ if (reelsSlider) {
     const { data, error } = await supabaseClient.from('call_bookings').select('*').order('created_at', { ascending: false }).limit(30);
     const wrap = document.getElementById('bookingsList');
     if (error) { wrap.innerHTML = `<div class="loading-msg">Couldn't load: ${error.message}</div>`; return; }
+    if (data) latestLeadTimes.push(...data.map((r) => r.created_at));
+    updateLeadsBadge();
     if (!data || !data.length) { wrap.innerHTML = `<div class="loading-msg">No call bookings yet.</div>`; return; }
     wrap.innerHTML = `
       <div class="leads-table-wrap">
