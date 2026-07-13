@@ -1746,6 +1746,21 @@ button {
 .ve3-hero .byline strong { color: var(--paper); font-weight: 600; }
 .ve3-hero .cta-row { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 30px; }
 
+/* ---- glow orb (still used by quote.html's hero) ---- */
+.ve3-orb-wrap { display: flex; justify-content: center; margin-bottom: 30px; }
+.ve3-orb {
+  width: 128px; height: 128px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,90,31,0.4), rgba(255,90,31,0) 70%);
+  display: flex; align-items: center; justify-content: center;
+}
+.ve3-orb-inner {
+  width: 62px; height: 62px; border-radius: 50%; background: var(--orange);
+  display: flex; align-items: center; justify-content: center;
+  animation: orbPulse 3.2s ease-in-out infinite;
+}
+@keyframes orbPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.07); } }
+.ve3-orb-inner svg { width: 22px; height: 22px; }
+
 .ve3-fan-wrap {
   position: relative;
   height: 300px;
@@ -2657,7 +2672,7 @@ const VIDEO_IDS = {
    the manual ones once they load.
    ===================================================== */
 const YOUTUBE_API_KEY = '';
-const PORTFOLIO_VIDEOS = [
+const PORTFOLIO_VIDEOS_FALLBACK = [
   { id: '', views: '' },
   { id: '', views: '' },
   { id: '', views: '' },
@@ -2665,6 +2680,8 @@ const PORTFOLIO_VIDEOS = [
   { id: '', views: '' },
   { id: '', views: '' }
 ];
+let PORTFOLIO_VIDEOS = PORTFOLIO_VIDEOS_FALLBACK;
+function isValidYtId(id) { return !!id && /^[a-zA-Z0-9_-]{9,15}$/.test(id); }
 
 function parseViewsNum(str) {
   if (!str) return 0;
@@ -2710,58 +2727,78 @@ if (videoModal) {
     }
   });
 
-  // Portfolio tiles -> thumbnail, click-to-play, and view-count badge
+  // Portfolio tiles -> live video (autoplay muted loop), thumbnail fallback, and view-count badge
   const tiles = document.querySelectorAll('.ig-tile');
-  const liveIds = [];
-  tiles.forEach((tile, i) => {
-    const entry = PORTFOLIO_VIDEOS[i];
-    if (!entry) return;
-    const badge = tile.querySelector('.stat-badge');
-    const countEl = tile.querySelector('.tile-count');
 
-    if (entry.id) {
-      liveIds.push(entry.id);
-      tile.style.cursor = 'pointer';
-      const swatch = tile.querySelector('.swatch');
-      swatch.style.backgroundImage = `url(https://img.youtube.com/vi/${entry.id}/hqdefault.jpg)`;
-      swatch.style.backgroundSize = 'cover';
-      swatch.style.backgroundPosition = 'center';
-      tile.addEventListener('click', () => openVideoModal(entry.id));
+  async function loadHomepagePortfolio() {
+    if (supabaseClient) {
+      try {
+        const { data, error } = await supabaseClient.from('portfolio_videos').select('*').order('sort_order', { ascending: true });
+        if (!error && data && data.length) {
+          PORTFOLIO_VIDEOS = data.map((d) => ({ id: d.youtube_id || '', views: d.views || '', thumbnail_url: d.thumbnail_url || '' }));
+        }
+      } catch (e) { /* keep fallback */ }
     }
-
-    if (entry.views) {
-      countEl.textContent = entry.views;
-      if (parseViewsNum(entry.views) >= 100000) badge.classList.add('is-milestone');
-    }
-  });
-
-  // Real view counts, one batched request for all tiles (overrides manual numbers once loaded)
-  if (YOUTUBE_API_KEY && liveIds.length) {
-    const fmtViews = (n) => {
-      if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
-      if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
-      return String(n);
-    };
-
-    fetch(`https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${liveIds.join(',')}&key=${YOUTUBE_API_KEY}`)
-      .then((r) => r.json())
-      .then((data) => {
-        const viewsById = {};
-        (data.items || []).forEach((item) => {
-          viewsById[item.id] = parseInt(item.statistics.viewCount, 10);
-        });
-        tiles.forEach((tile, i) => {
-          const entry = PORTFOLIO_VIDEOS[i];
-          if (!entry || !entry.id || !(entry.id in viewsById)) return;
-          const liveCount = viewsById[entry.id];
-          const countEl = tile.querySelector('.tile-count');
-          const badge = tile.querySelector('.stat-badge');
-          if (countEl) countEl.textContent = fmtViews(liveCount);
-          if (badge) badge.classList.toggle('is-milestone', liveCount >= 100000);
-        });
-      })
-      .catch(() => { /* API not reachable / key not restricted yet — manual numbers stay as-is */ });
+    renderHomepageTiles();
   }
+
+  function renderHomepageTiles() {
+    const liveIds = [];
+    tiles.forEach((tile, i) => {
+      const entry = PORTFOLIO_VIDEOS[i];
+      if (!entry) return;
+      const badge = tile.querySelector('.stat-badge');
+      const countEl = tile.querySelector('.tile-count');
+      const swatch = tile.querySelector('.swatch');
+
+      if (isValidYtId(entry.id)) {
+        liveIds.push(entry.id);
+        tile.style.cursor = 'pointer';
+        const embedSrc = `https://www.youtube.com/embed/${entry.id}?autoplay=1&mute=1&loop=1&playlist=${entry.id}&controls=0&modestbranding=1&playsinline=1&rel=0`;
+        swatch.innerHTML = `<iframe src="${embedSrc}" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;" frameborder="0" allow="autoplay; encrypted-media" loading="lazy"></iframe>`;
+        tile.addEventListener('click', () => openVideoModal(entry.id));
+      } else if (entry.thumbnail_url) {
+        swatch.style.backgroundImage = `url(${entry.thumbnail_url})`;
+        swatch.style.backgroundSize = 'cover';
+        swatch.style.backgroundPosition = 'center';
+      }
+
+      if (entry.views) {
+        countEl.textContent = entry.views;
+        if (parseViewsNum(entry.views) >= 100000) badge.classList.add('is-milestone');
+      }
+    });
+
+    // Real view counts, one batched request for all tiles (overrides manual numbers once loaded)
+    if (YOUTUBE_API_KEY && liveIds.length) {
+      const fmtViews = (n) => {
+        if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+        if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+        return String(n);
+      };
+
+      fetch(`https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${liveIds.join(',')}&key=${YOUTUBE_API_KEY}`)
+        .then((r) => r.json())
+        .then((data) => {
+          const viewsById = {};
+          (data.items || []).forEach((item) => {
+            viewsById[item.id] = parseInt(item.statistics.viewCount, 10);
+          });
+          tiles.forEach((tile, i) => {
+            const entry = PORTFOLIO_VIDEOS[i];
+            if (!entry || !entry.id || !(entry.id in viewsById)) return;
+            const liveCount = viewsById[entry.id];
+            const countEl = tile.querySelector('.tile-count');
+            const badge = tile.querySelector('.stat-badge');
+            if (countEl) countEl.textContent = fmtViews(liveCount);
+            if (badge) badge.classList.toggle('is-milestone', liveCount >= 100000);
+          });
+        })
+        .catch(() => { /* API not reachable / key not restricted yet — manual numbers stay as-is */ });
+    }
+  }
+
+  loadHomepagePortfolio();
 }
 
 /* ---------- NAV: shrink + blur on scroll ---------- */
