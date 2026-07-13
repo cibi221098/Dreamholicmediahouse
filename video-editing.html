@@ -1746,6 +1746,21 @@ button {
 .ve3-hero .byline strong { color: var(--paper); font-weight: 600; }
 .ve3-hero .cta-row { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 30px; }
 
+/* ---- glow orb (still used by quote.html's hero) ---- */
+.ve3-orb-wrap { display: flex; justify-content: center; margin-bottom: 30px; }
+.ve3-orb {
+  width: 128px; height: 128px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,90,31,0.4), rgba(255,90,31,0) 70%);
+  display: flex; align-items: center; justify-content: center;
+}
+.ve3-orb-inner {
+  width: 62px; height: 62px; border-radius: 50%; background: var(--orange);
+  display: flex; align-items: center; justify-content: center;
+  animation: orbPulse 3.2s ease-in-out infinite;
+}
+@keyframes orbPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.07); } }
+.ve3-orb-inner svg { width: 22px; height: 22px; }
+
 .ve3-fan-wrap {
   position: relative;
   height: 300px;
@@ -3053,7 +3068,7 @@ if (reelsSlider) {
           .select('*')
           .order('sort_order', { ascending: true });
         if (!error && data && data.length) {
-          return data.map((d) => ({ id: d.youtube_id || '', views: d.views || '', category: d.category || 'business' }));
+          return data.map((d) => ({ id: d.youtube_id || '', views: d.views || '', category: d.category || 'business', thumbnail_url: d.thumbnail_url || '' }));
         }
       } catch (e) { /* Supabase unreachable — fall through to placeholders */ }
     }
@@ -3064,13 +3079,18 @@ if (reelsSlider) {
     const track = document.getElementById('ve3TrackInner');
     track.innerHTML = items.map((item, i) => {
       const grad = FALLBACK_GRADS[i % FALLBACK_GRADS.length];
-      const bg = item.id
-        ? `background-image:url(https://img.youtube.com/vi/${item.id}/hqdefault.jpg);background-size:cover;background-position:center;`
-        : `background:${grad};`;
+      let inner;
+      if (item.id) {
+        const embedSrc = `https://www.youtube.com/embed/${item.id}?autoplay=1&mute=1&loop=1&playlist=${item.id}&controls=0&modestbranding=1&playsinline=1&rel=0`;
+        inner = `<iframe src="${embedSrc}" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;" frameborder="0" allow="autoplay; encrypted-media" loading="lazy"></iframe>`;
+      } else if (item.thumbnail_url) {
+        inner = `<div style="position:absolute;inset:0;background-image:url(${item.thumbnail_url});background-size:cover;background-position:center;"></div>`;
+      } else {
+        inner = `<div style="position:absolute;inset:0;background:${grad};"></div>`;
+      }
       return `
         <div class="ve3-card" data-category="${item.category}" data-yt="${item.id}">
-          <div class="swatch" style="${bg}"></div>
-          <div class="play"><svg viewBox="0 0 20 20" fill="var(--navy-deep)"><path d="M5 3l12 7-12 7V3z"/></svg></div>
+          <div class="swatch">${inner}</div>
           <div class="label">${categoryLabel(item.category)}</div>
         </div>
       `;
@@ -3091,11 +3111,14 @@ if (reelsSlider) {
       const el = document.getElementById(`fanCard${i}`);
       if (!el || !item) continue;
       if (item.id) {
-        el.style.backgroundImage = `url(https://img.youtube.com/vi/${item.id}/hqdefault.jpg)`;
-        el.style.backgroundSize = 'cover';
-        el.style.backgroundPosition = 'center';
+        const embedSrc = `https://www.youtube.com/embed/${item.id}?autoplay=1&mute=1&loop=1&playlist=${item.id}&controls=0&modestbranding=1&playsinline=1&rel=0`;
+        el.innerHTML = `<iframe src="${embedSrc}" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;" frameborder="0" allow="autoplay; encrypted-media" loading="lazy"></iframe>`;
         el.parentElement.style.cursor = 'pointer';
         el.parentElement.addEventListener('click', () => window.open(`https://www.youtube.com/watch?v=${item.id}`, '_blank'));
+      } else if (item.thumbnail_url) {
+        el.style.backgroundImage = `url(${item.thumbnail_url})`;
+        el.style.backgroundSize = 'cover';
+        el.style.backgroundPosition = 'center';
       }
     }
   }
