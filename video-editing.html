@@ -2279,11 +2279,6 @@ button {
 
   <div class="ve3-filters" id="ve3Filters">
     <button class="ve3-filter-pill is-active" data-filter="all">All</button>
-    <button class="ve3-filter-pill" data-filter="personal">Personal Branding</button>
-    <button class="ve3-filter-pill" data-filter="business">Business</button>
-    <button class="ve3-filter-pill" data-filter="speedramp">Speed Ramp</button>
-    <button class="ve3-filter-pill" data-filter="longform">Long-form</button>
-    <button class="ve3-filter-pill" data-filter="ai">AI Videos</button>
   </div>
 
   <div class="ve3-track-wrap" id="ve3Track">
@@ -3005,7 +3000,42 @@ if (reelsSlider) {
     { id: '', views: '', category: 'ai' },
     { id: '', views: '', category: 'business' }
   ];
-  const CATEGORY_LABELS = { personal: 'Personal Branding', business: 'Business Video', speedramp: 'Speed Ramp Edit', longform: 'Long-form Cut', ai: 'AI-Assisted Edit' };
+  let CATEGORY_LIST = [
+    { key: 'personal', label: 'Personal Branding' },
+    { key: 'business', label: 'Business Video' },
+    { key: 'speedramp', label: '3D / Speed Ramp' },
+    { key: 'longform', label: 'Long Video' },
+    { key: 'ai', label: 'AI Videos' }
+  ];
+  function categoryLabel(key) {
+    const found = CATEGORY_LIST.find((c) => c.key === key);
+    return found ? found.label : 'Edit';
+  }
+  async function loadCategoryList() {
+    if (!supabaseClient) return;
+    try {
+      const { data, error } = await supabaseClient.from('categories').select('*').order('sort_order', { ascending: true });
+      if (!error && data && data.length) {
+        CATEGORY_LIST = data.map((r) => ({ key: r.key, label: r.label }));
+      }
+    } catch (e) { /* keep fallback */ }
+  }
+  function renderFilterPills() {
+    const wrap = document.getElementById('ve3Filters');
+    wrap.innerHTML = `<button class="ve3-filter-pill is-active" data-filter="all">All</button>` +
+      CATEGORY_LIST.map((c) => `<button class="ve3-filter-pill" data-filter="${c.key}">${c.label}</button>`).join('');
+    const pills = wrap.querySelectorAll('.ve3-filter-pill');
+    pills.forEach((pill) => {
+      pill.addEventListener('click', () => {
+        pills.forEach((p) => p.classList.remove('is-active'));
+        pill.classList.add('is-active');
+        const filter = pill.dataset.filter;
+        document.querySelectorAll('.ve3-card').forEach((card) => {
+          card.classList.toggle('is-hidden', filter !== 'all' && card.dataset.category !== filter);
+        });
+      });
+    });
+  }
   const FALLBACK_GRADS = [
     'linear-gradient(160deg, #1D2544, #FF5A1F)',
     'linear-gradient(160deg, #0A0D1E, #A79F9B)',
@@ -3041,7 +3071,7 @@ if (reelsSlider) {
         <div class="ve3-card" data-category="${item.category}" data-yt="${item.id}">
           <div class="swatch" style="${bg}"></div>
           <div class="play"><svg viewBox="0 0 20 20" fill="var(--navy-deep)"><path d="M5 3l12 7-12 7V3z"/></svg></div>
-          <div class="label">${CATEGORY_LABELS[item.category] || 'Edit'}</div>
+          <div class="label">${categoryLabel(item.category)}</div>
         </div>
       `;
     }).join('');
@@ -3075,7 +3105,10 @@ if (reelsSlider) {
       setTimeout(() => el.classList.add('is-in'), 150 + i * 160);
     });
     runScrubHero();
-    loadEditsPortfolio().then(renderPortfolio);
+    loadCategoryList().then(() => {
+      renderFilterPills();
+      loadEditsPortfolio().then(renderPortfolio);
+    });
   });
 
   function runScrubHero() {
@@ -3139,19 +3172,7 @@ if (reelsSlider) {
     });
   })();
 
-  (function () {
-    const pills = document.querySelectorAll('.ve3-filter-pill');
-    pills.forEach((pill) => {
-      pill.addEventListener('click', () => {
-        pills.forEach((p) => p.classList.remove('is-active'));
-        pill.classList.add('is-active');
-        const filter = pill.dataset.filter;
-        document.querySelectorAll('.ve3-card').forEach((card) => {
-          card.classList.toggle('is-hidden', filter !== 'all' && card.dataset.category !== filter);
-        });
-      });
-    });
-  })();
+  /* (filter pill click handling now happens inside renderFilterPills, since pills are rendered dynamically) */
 
   (function () {
     const wrap = document.getElementById('compareWrap');
