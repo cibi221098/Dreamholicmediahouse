@@ -1746,6 +1746,21 @@ button {
 .ve3-hero .byline strong { color: var(--paper); font-weight: 600; }
 .ve3-hero .cta-row { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 30px; }
 
+/* ---- glow orb (still used by quote.html's hero) ---- */
+.ve3-orb-wrap { display: flex; justify-content: center; margin-bottom: 30px; }
+.ve3-orb {
+  width: 128px; height: 128px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,90,31,0.4), rgba(255,90,31,0) 70%);
+  display: flex; align-items: center; justify-content: center;
+}
+.ve3-orb-inner {
+  width: 62px; height: 62px; border-radius: 50%; background: var(--orange);
+  display: flex; align-items: center; justify-content: center;
+  animation: orbPulse 3.2s ease-in-out infinite;
+}
+@keyframes orbPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.07); } }
+.ve3-orb-inner svg { width: 22px; height: 22px; }
+
 .ve3-fan-wrap {
   position: relative;
   height: 300px;
