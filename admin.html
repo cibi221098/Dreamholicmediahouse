@@ -2388,17 +2388,6 @@ button {
     <div class="admin-panel is-active" data-panel="homepage">
 
       <div class="admin-section">
-        <h2>Showreel</h2>
-        <div class="sub">The main video behind "Watch the Reel" and the hero play button.</div>
-        <div class="admin-simple-field">
-          <label>YouTube ID or link</label>
-          <input id="showreelInput" placeholder="YouTube ID or link">
-        </div>
-        <button class="btn-outline admin-add" onclick="saveShowreel()">Save Showreel</button>
-        <div class="admin-status" id="showreelStatus"></div>
-      </div>
-
-      <div class="admin-section">
         <h2>What Sets Us Apart</h2>
         <div class="sub">The 4 stat cards on the homepage. Type the number exactly how it should display (e.g. "2+", "12M+").</div>
         <div class="admin-simple-grid">
@@ -2413,9 +2402,9 @@ button {
 
       <div class="admin-section">
         <h2>Real Accounts. Real Movement.</h2>
-        <div class="sub">The before/after results cards. Add as many as you want.</div>
-        <div id="resultsRows"><div class="loading-msg">Loading...</div></div>
-        <button class="btn-outline admin-add" onclick="addResultRow()">+ Add Result</button>
+        <div class="sub">The before/after results cards. Click any card to edit it.</div>
+        <div id="resultsRows" class="admin-thumb-grid" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr));"><div class="loading-msg">Loading...</div></div>
+        <button class="btn-outline admin-add" onclick="openResultModal(null)">+ Add Result</button>
         <div class="admin-status" id="resultsStatus"></div>
       </div>
 
@@ -2426,9 +2415,9 @@ button {
 
       <div class="admin-section">
         <h2>Style Categories</h2>
-        <div class="sub">Used everywhere on the site — the portfolio dropdown below, the filter pills on the video-editing page, and the categories in the quote builder. Add, rename, or remove as needed.</div>
-        <div id="categoryRows"><div class="loading-msg">Loading...</div></div>
-        <button class="btn-outline admin-add" onclick="addCategoryRow()">+ Add Category</button>
+        <div class="sub">Used everywhere on the site — the portfolio dropdown below, the filter pills on the video-editing page, and the categories in the quote builder. Click any to edit.</div>
+        <div id="categoryRows" class="admin-thumb-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));"><div class="loading-msg">Loading...</div></div>
+        <button class="btn-outline admin-add" onclick="openCategoryModal(null)">+ Add Category</button>
         <div class="admin-status" id="categoryStatus"></div>
       </div>
 
@@ -2470,10 +2459,18 @@ button {
 
       <div class="admin-section">
         <h2>Raw vs Edited (Before/After)</h2>
-        <div class="sub">The drag-to-compare slider on the video-editing page.</div>
+        <div class="sub">The drag-to-compare slider on the video-editing page. Upload a still frame for each side.</div>
         <div class="admin-simple-grid">
-          <div class="admin-simple-field"><label>Raw video — YouTube ID or link</label><input id="rawVideoInput" placeholder="YouTube ID or link"></div>
-          <div class="admin-simple-field"><label>Edited video — YouTube ID or link</label><input id="editedVideoInput" placeholder="YouTube ID or link"></div>
+          <div class="admin-simple-field">
+            <label>Raw footage — image</label>
+            <div class="thumb-preview" id="rawImagePreview" style="width:100px;"></div>
+            <input type="file" accept="image/*" id="rawImageFile">
+          </div>
+          <div class="admin-simple-field">
+            <label>Edited footage — image</label>
+            <div class="thumb-preview" id="editedImagePreview" style="width:100px;"></div>
+            <input type="file" accept="image/*" id="editedImageFile">
+          </div>
         </div>
         <button class="btn-outline admin-add" onclick="saveCompareVideos()">Save</button>
         <div class="admin-status" id="compareStatus"></div>
@@ -2500,9 +2497,9 @@ button {
 
       <div class="admin-section">
         <h2>Add-ons</h2>
-        <div class="sub">Optional extras clients can tick on the quote page (e.g. "Need fast delivery +₹500/video").</div>
-        <div id="addonRows"><div class="loading-msg">Loading...</div></div>
-        <button class="btn-outline admin-add" onclick="addAddonRow()">+ Add Add-on</button>
+        <div class="sub">Optional extras clients can tick on the quote page (e.g. "Need fast delivery +₹500/video"). Click any to edit.</div>
+        <div id="addonRows" class="admin-thumb-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));"><div class="loading-msg">Loading...</div></div>
+        <button class="btn-outline admin-add" onclick="openAddonModal(null)">+ Add Add-on</button>
         <div class="admin-status" id="addonStatus"></div>
       </div>
 
@@ -2564,6 +2561,67 @@ button {
       <button class="btn-primary" id="portfolioModalSave" style="flex:1;justify-content:center;">Save</button>
     </div>
     <div class="admin-status" id="portfolioModalStatus"></div>
+  </div>
+</div>
+
+<div class="admin-modal-overlay" id="resultModalOverlay">
+  <div class="admin-modal">
+    <button class="admin-modal-close" id="resultModalClose">✕</button>
+    <h3 id="resultModalTitle">Edit Result</h3>
+    <div class="field"><label>Client label</label><input id="resultModalClient" placeholder="e.g. FINANCIAL INFLUENCER"></div>
+    <div class="field"><label>Before label</label><input id="resultModalBeforeLabel" placeholder="Before"></div>
+    <div class="field"><label>Before value</label><input id="resultModalBeforeValue" placeholder="e.g. 2.1K"></div>
+    <div class="field"><label>After label</label><input id="resultModalAfterLabel" placeholder="After"></div>
+    <div class="field"><label>After value</label><input id="resultModalAfterValue" placeholder="e.g. 18.2K"></div>
+    <div class="field"><label>Badge text</label><input id="resultModalBadge" placeholder="e.g. 760% Growth"></div>
+    <div class="admin-modal-actions">
+      <button class="btn-outline" id="resultModalDelete" style="border-color:rgba(226,75,74,0.4);color:#E24B4A;">Delete</button>
+      <button class="btn-primary" id="resultModalSave" style="flex:1;justify-content:center;">Save</button>
+    </div>
+    <div class="admin-status" id="resultModalStatus"></div>
+  </div>
+</div>
+
+<div class="admin-modal-overlay" id="categoryModalOverlay">
+  <div class="admin-modal">
+    <button class="admin-modal-close" id="categoryModalClose">✕</button>
+    <h3 id="categoryModalTitle">Edit Category</h3>
+    <div class="field"><label>Category name</label><input id="categoryModalLabel" placeholder="e.g. Personal Branding"></div>
+    <div class="admin-modal-actions">
+      <button class="btn-outline" id="categoryModalDelete" style="border-color:rgba(226,75,74,0.4);color:#E24B4A;">Delete</button>
+      <button class="btn-primary" id="categoryModalSave" style="flex:1;justify-content:center;">Save</button>
+    </div>
+    <div class="admin-status" id="categoryModalStatus"></div>
+  </div>
+</div>
+
+<div class="admin-modal-overlay" id="tierModalOverlay">
+  <div class="admin-modal">
+    <button class="admin-modal-close" id="tierModalClose">✕</button>
+    <h3 id="tierModalTitle">Edit Pricing Tier</h3>
+    <div class="field"><label>Category</label><select id="tierModalCategory"></select></div>
+    <div class="field"><label>Tier name</label><input id="tierModalName" placeholder="e.g. Level 1"></div>
+    <div class="field"><label>Description</label><input id="tierModalDescription" placeholder="e.g. Broll + Simple text"></div>
+    <div class="field"><label>Price (₹)</label><input id="tierModalPrice" type="number" placeholder="e.g. 1800"></div>
+    <div class="admin-modal-actions">
+      <button class="btn-outline" id="tierModalDelete" style="border-color:rgba(226,75,74,0.4);color:#E24B4A;">Delete</button>
+      <button class="btn-primary" id="tierModalSave" style="flex:1;justify-content:center;">Save</button>
+    </div>
+    <div class="admin-status" id="tierModalStatus"></div>
+  </div>
+</div>
+
+<div class="admin-modal-overlay" id="addonModalOverlay">
+  <div class="admin-modal">
+    <button class="admin-modal-close" id="addonModalClose">✕</button>
+    <h3 id="addonModalTitle">Edit Add-on</h3>
+    <div class="field"><label>Add-on name</label><input id="addonModalName" placeholder="e.g. Need fast delivery"></div>
+    <div class="field"><label>Price (₹ per video)</label><input id="addonModalPrice" type="number" placeholder="e.g. 500"></div>
+    <div class="admin-modal-actions">
+      <button class="btn-outline" id="addonModalDelete" style="border-color:rgba(226,75,74,0.4);color:#E24B4A;">Delete</button>
+      <button class="btn-primary" id="addonModalSave" style="flex:1;justify-content:center;">Save</button>
+    </div>
+    <div class="admin-status" id="addonModalStatus"></div>
   </div>
 </div>
 
@@ -3142,14 +3200,14 @@ if (reelsSlider) {
       });
     }
 
-    if (compareBefore && content.raw_video_id) {
-      compareBefore.style.backgroundImage = `url(https://img.youtube.com/vi/${content.raw_video_id}/hqdefault.jpg)`;
+    if (compareBefore && content.raw_image_url) {
+      compareBefore.style.backgroundImage = `url(${content.raw_image_url})`;
       compareBefore.style.backgroundSize = 'cover';
       compareBefore.style.backgroundPosition = 'center';
       compareBefore.style.filter = 'grayscale(0.7) brightness(0.7) contrast(0.9)';
     }
-    if (compareAfter && content.edited_video_id) {
-      compareAfter.style.backgroundImage = `url(https://img.youtube.com/vi/${content.edited_video_id}/hqdefault.jpg)`;
+    if (compareAfter && content.edited_image_url) {
+      compareAfter.style.backgroundImage = `url(${content.edited_image_url})`;
       compareAfter.style.backgroundSize = 'cover';
       compareAfter.style.backgroundPosition = 'center';
     }
@@ -3257,36 +3315,55 @@ if (reelsSlider) {
     wrap.innerHTML = '';
     rows.forEach((row) => {
       const el = document.createElement('div');
-      el.className = 'admin-ref-row';
-      el.innerHTML = `<input value="${row.label || ''}" placeholder="Category name" data-field="label"><span class="del">✕</span>`;
-      el.querySelector('input').addEventListener('change', (e) => updateCategoryRow(row.id, e.target.value));
-      el.querySelector('.del').addEventListener('click', () => deleteCategoryRow(row.id, el));
+      el.className = 'admin-thumb-card';
+      el.style.cursor = 'pointer';
+      el.innerHTML = `<div style="padding:18px;text-align:center;color:var(--paper);font-weight:600;font-size:0.86rem;">${row.label}</div>`;
+      el.addEventListener('click', () => openCategoryModal(row));
       wrap.appendChild(el);
     });
   }
-  async function updateCategoryRow(id, label) {
-    const { error } = await supabaseClient.from('categories').update({ label }).eq('id', id);
-    flash('categoryStatus', error ? `Failed: ${error.message}` : 'Saved ✓ — refresh other sections to see the new name');
-    if (!error) loadCategories();
+
+  let currentCategoryId = null;
+  function openCategoryModal(row) {
+    currentCategoryId = row ? row.id : null;
+    document.getElementById('categoryModalTitle').textContent = row ? 'Edit Category' : 'Add Category';
+    document.getElementById('categoryModalLabel').value = row ? (row.label || '') : '';
+    document.getElementById('categoryModalDelete').style.display = row ? 'block' : 'none';
+    document.getElementById('categoryModalStatus').textContent = '';
+    document.getElementById('categoryModalOverlay').classList.add('is-open');
   }
-  async function addCategoryRow() {
-    const label = 'New Category';
-    const { error } = await supabaseClient.from('categories').insert([{ key: slugify(label + '_' + Date.now()), label, sort_order: Math.floor(Date.now() / 1000) }]);
-    if (error) { flash('categoryStatus', `Failed: ${error.message}`); return; }
+  function closeCategoryModal() { document.getElementById('categoryModalOverlay').classList.remove('is-open'); }
+  document.getElementById('categoryModalClose').addEventListener('click', closeCategoryModal);
+  document.getElementById('categoryModalOverlay').addEventListener('click', (e) => { if (e.target.id === 'categoryModalOverlay') closeCategoryModal(); });
+
+  document.getElementById('categoryModalSave').addEventListener('click', async () => {
+    const status = document.getElementById('categoryModalStatus');
+    const label = document.getElementById('categoryModalLabel').value.trim();
+    if (!label) { status.textContent = 'Category name is required'; return; }
+    status.textContent = 'Saving...';
+    let error;
+    if (currentCategoryId) {
+      ({ error } = await supabaseClient.from('categories').update({ label }).eq('id', currentCategoryId));
+    } else {
+      ({ error } = await supabaseClient.from('categories').insert([{ key: slugify(label + '_' + Date.now()), label, sort_order: Math.floor(Date.now() / 1000) }]));
+    }
+    if (error) { status.textContent = `Failed: ${error.message}`; return; }
+    closeCategoryModal();
     await loadCategories();
     await loadCategoryVideos();
     await loadTiers();
     await loadPortfolio();
-  }
-  async function deleteCategoryRow(id, el) {
-    const { error } = await supabaseClient.from('categories').delete().eq('id', id);
-    if (error) { flash('categoryStatus', `Failed: ${error.message} (videos/tiers using this category will need reassigning)`); return; }
-    el.remove();
+  });
+  document.getElementById('categoryModalDelete').addEventListener('click', async () => {
+    if (!currentCategoryId) return;
+    const { error } = await supabaseClient.from('categories').delete().eq('id', currentCategoryId);
+    if (error) { document.getElementById('categoryModalStatus').textContent = `Failed: ${error.message} (videos/tiers using this category will need reassigning)`; return; }
+    closeCategoryModal();
     await loadCategories();
     await loadCategoryVideos();
     await loadTiers();
     await loadPortfolio();
-  }
+  });
 
   /* ---------- SITE CONTENT (showreel, stats, compare videos) ---------- */
   let siteContentCache = {};
@@ -3295,13 +3372,12 @@ if (reelsSlider) {
     if (!error && data) {
       data.forEach((r) => { siteContentCache[r.key] = r.value; });
     }
-    document.getElementById('showreelInput').value = siteContentCache.hero_showreel || '';
     document.getElementById('statYears').value = siteContentCache.stat_years || '';
     document.getElementById('statReach').value = siteContentCache.stat_reach || '';
     document.getElementById('statVideos').value = siteContentCache.stat_videos || '';
     document.getElementById('statClients').value = siteContentCache.stat_clients || '';
-    document.getElementById('rawVideoInput').value = siteContentCache.raw_video_id || '';
-    document.getElementById('editedVideoInput').value = siteContentCache.edited_video_id || '';
+    if (siteContentCache.raw_image_url) document.getElementById('rawImagePreview').style.backgroundImage = `url(${siteContentCache.raw_image_url})`;
+    if (siteContentCache.edited_image_url) document.getElementById('editedImagePreview').style.backgroundImage = `url(${siteContentCache.edited_image_url})`;
     for (let i = 0; i < 4; i++) {
       const url = siteContentCache[`hero_fan_photo_${i}`];
       if (url) document.getElementById(`heroFanPreview${i}`).style.backgroundImage = `url(${url})`;
@@ -3331,12 +3407,6 @@ if (reelsSlider) {
     return error;
   }
 
-  async function saveShowreel() {
-    const val = ytId(document.getElementById('showreelInput').value);
-    const error = await upsertContent('hero_showreel', val);
-    flash('showreelStatus', error ? `Failed: ${error.message}` : 'Saved ✓');
-  }
-
   async function saveStats() {
     const fields = [
       ['stat_years', 'statYears'], ['stat_reach', 'statReach'],
@@ -3349,12 +3419,45 @@ if (reelsSlider) {
     flash('statsStatus', 'Saved ✓');
   }
 
+  document.getElementById('rawImageFile').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) document.getElementById('rawImagePreview').style.backgroundImage = `url(${URL.createObjectURL(file)})`;
+  });
+  document.getElementById('editedImageFile').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) document.getElementById('editedImagePreview').style.backgroundImage = `url(${URL.createObjectURL(file)})`;
+  });
+
   async function saveCompareVideos() {
-    const raw = ytId(document.getElementById('rawVideoInput').value);
-    const edited = ytId(document.getElementById('editedVideoInput').value);
-    let error = await upsertContent('raw_video_id', raw);
-    if (!error) error = await upsertContent('edited_video_id', edited);
-    flash('compareStatus', error ? `Failed: ${error.message}` : 'Saved ✓');
+    const status = document.getElementById('compareStatus');
+    const rawFile = document.getElementById('rawImageFile').files[0];
+    const editedFile = document.getElementById('editedImageFile').files[0];
+
+    async function uploadOne(file, prefix) {
+      const fileName = `${prefix}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+      const { error: uploadError } = await supabaseClient.storage.from('thumbnails').upload(fileName, file, { upsert: true });
+      if (uploadError) throw uploadError;
+      const { data: urlData } = supabaseClient.storage.from('thumbnails').getPublicUrl(fileName);
+      return urlData.publicUrl;
+    }
+
+    try {
+      if (rawFile) {
+        status.textContent = 'Uploading raw image...';
+        const url = await uploadOne(rawFile, 'compare');
+        const error = await upsertContent('raw_image_url', url);
+        if (error) throw error;
+      }
+      if (editedFile) {
+        status.textContent = 'Uploading edited image...';
+        const url = await uploadOne(editedFile, 'compare');
+        const error = await upsertContent('edited_image_url', url);
+        if (error) throw error;
+      }
+      status.textContent = 'Saved ✓';
+    } catch (err) {
+      status.textContent = `Failed: ${err.message || err}`;
+    }
   }
 
   /* ---------- CLIENT RESULTS ---------- */
@@ -3368,37 +3471,67 @@ if (reelsSlider) {
     wrap.innerHTML = '';
     rows.forEach((row) => {
       const el = document.createElement('div');
-      el.className = 'admin-result-row';
+      el.className = 'admin-thumb-card';
+      el.style.cursor = 'pointer';
       el.innerHTML = `
-        <input placeholder="Client label" value="${row.client_label || ''}" data-field="client_label">
-        <input placeholder="Before label" value="${row.before_label || 'Before'}" data-field="before_label">
-        <input placeholder="Before value" value="${row.before_value || ''}" data-field="before_value">
-        <input placeholder="After label" value="${row.after_label || 'After'}" data-field="after_label">
-        <input placeholder="After value" value="${row.after_value || ''}" data-field="after_value">
-        <input placeholder="Badge text" value="${row.badge_text || ''}" data-field="badge_text">
-        <span class="del">✕</span>
+        <div style="padding:16px;">
+          <div style="color:var(--paper);font-weight:700;font-size:0.86rem;margin-bottom:8px;">${row.client_label || 'Untitled'}</div>
+          <div style="color:var(--fog);font-size:0.78rem;">${row.before_value || '—'} → ${row.after_value || '—'}</div>
+          <div style="color:var(--orange);font-size:0.78rem;margin-top:6px;">${row.badge_text || ''}</div>
+        </div>
       `;
-      el.querySelectorAll('input').forEach((input) => {
-        input.addEventListener('change', () => updateResultRow(row.id, input.dataset.field, input.value));
-      });
-      el.querySelector('.del').addEventListener('click', () => deleteResultRow(row.id, el));
+      el.addEventListener('click', () => openResultModal(row));
       wrap.appendChild(el);
     });
   }
-  async function updateResultRow(id, field, value) {
-    const { error } = await supabaseClient.from('client_results').update({ [field]: value }).eq('id', id);
-    flash('resultsStatus', error ? `Failed: ${error.message}` : 'Saved ✓');
+
+  let currentResultId = null;
+  function openResultModal(row) {
+    currentResultId = row ? row.id : null;
+    document.getElementById('resultModalTitle').textContent = row ? 'Edit Result' : 'Add Result';
+    document.getElementById('resultModalClient').value = row ? (row.client_label || '') : '';
+    document.getElementById('resultModalBeforeLabel').value = row ? (row.before_label || 'Before') : 'Before';
+    document.getElementById('resultModalBeforeValue').value = row ? (row.before_value || '') : '';
+    document.getElementById('resultModalAfterLabel').value = row ? (row.after_label || 'After') : 'After';
+    document.getElementById('resultModalAfterValue').value = row ? (row.after_value || '') : '';
+    document.getElementById('resultModalBadge').value = row ? (row.badge_text || '') : '';
+    document.getElementById('resultModalDelete').style.display = row ? 'block' : 'none';
+    document.getElementById('resultModalStatus').textContent = '';
+    document.getElementById('resultModalOverlay').classList.add('is-open');
   }
-  async function addResultRow() {
-    const { error } = await supabaseClient.from('client_results').insert([{ client_label: 'New Client', before_label: 'Before', after_label: 'After', sort_order: Math.floor(Date.now() / 1000) }]);
-    if (error) { flash('resultsStatus', `Failed: ${error.message}`); return; }
+  function closeResultModal() { document.getElementById('resultModalOverlay').classList.remove('is-open'); }
+  document.getElementById('resultModalClose').addEventListener('click', closeResultModal);
+  document.getElementById('resultModalOverlay').addEventListener('click', (e) => { if (e.target.id === 'resultModalOverlay') closeResultModal(); });
+
+  document.getElementById('resultModalSave').addEventListener('click', async () => {
+    const status = document.getElementById('resultModalStatus');
+    status.textContent = 'Saving...';
+    const payload = {
+      client_label: document.getElementById('resultModalClient').value,
+      before_label: document.getElementById('resultModalBeforeLabel').value,
+      before_value: document.getElementById('resultModalBeforeValue').value,
+      after_label: document.getElementById('resultModalAfterLabel').value,
+      after_value: document.getElementById('resultModalAfterValue').value,
+      badge_text: document.getElementById('resultModalBadge').value
+    };
+    let error;
+    if (currentResultId) {
+      ({ error } = await supabaseClient.from('client_results').update(payload).eq('id', currentResultId));
+    } else {
+      payload.sort_order = Math.floor(Date.now() / 1000);
+      ({ error } = await supabaseClient.from('client_results').insert([payload]));
+    }
+    if (error) { status.textContent = `Failed: ${error.message}`; return; }
+    closeResultModal();
     loadResults();
-  }
-  async function deleteResultRow(id, el) {
-    const { error } = await supabaseClient.from('client_results').delete().eq('id', id);
-    if (error) { flash('resultsStatus', `Failed: ${error.message}`); return; }
-    el.remove();
-  }
+  });
+  document.getElementById('resultModalDelete').addEventListener('click', async () => {
+    if (!currentResultId) return;
+    const { error } = await supabaseClient.from('client_results').delete().eq('id', currentResultId);
+    if (error) { document.getElementById('resultModalStatus').textContent = `Failed: ${error.message}`; return; }
+    closeResultModal();
+    loadResults();
+  });
 
   /* ---------- PORTFOLIO ---------- */
   async function loadPortfolio() {
@@ -3588,6 +3721,8 @@ if (reelsSlider) {
       wrap.appendChild(sub);
 
       const list = document.createElement('div');
+      list.className = 'admin-thumb-grid';
+      list.style.gridTemplateColumns = 'repeat(auto-fill,minmax(160px,1fr))';
       list.id = `tierList_${c.key}`;
       wrap.appendChild(list);
       renderTierList(c.key, rows.filter((r) => r.category === c.key));
@@ -3596,7 +3731,7 @@ if (reelsSlider) {
       addBtn.className = 'btn-outline admin-add';
       addBtn.textContent = `+ Add tier to ${c.label}`;
       addBtn.style.marginBottom = '10px';
-      addBtn.onclick = () => addTierRow(c.key);
+      addBtn.onclick = () => openTierModal(null, c.key);
       wrap.appendChild(addBtn);
     });
   }
@@ -3605,35 +3740,58 @@ if (reelsSlider) {
     list.innerHTML = '';
     rows.forEach((row) => {
       const el = document.createElement('div');
-      el.className = 'admin-tier-row';
-      el.innerHTML = `
-        <input placeholder="Tier name" value="${row.tier_name || ''}" data-field="tier_name">
-        <input placeholder="Description" value="${row.description || ''}" data-field="description">
-        <input placeholder="Price" type="number" value="${row.price || ''}" data-field="price">
-        <span class="del">✕</span>
-      `;
-      el.querySelectorAll('input').forEach((input) => {
-        input.addEventListener('change', () => updateTierRow(row.id, input.dataset.field, input.value));
-      });
-      el.querySelector('.del').addEventListener('click', () => deleteTierRow(row.id, el));
+      el.className = 'admin-thumb-card';
+      el.style.cursor = 'pointer';
+      el.innerHTML = `<div style="padding:14px;"><div style="color:var(--paper);font-weight:600;font-size:0.84rem;">${row.tier_name}</div><div style="color:var(--orange);font-weight:700;font-size:0.9rem;margin-top:4px;">₹${Number(row.price).toLocaleString('en-IN')}</div></div>`;
+      el.addEventListener('click', () => openTierModal(row, categoryKey));
       list.appendChild(el);
     });
   }
-  async function updateTierRow(id, field, value) {
-    if (field === 'price') value = parseFloat(value) || 0;
-    const { error } = await supabaseClient.from('pricing_tiers').update({ [field]: value }).eq('id', id);
-    flash('tiersStatus', error ? `Failed: ${error.message}` : 'Saved ✓');
+
+  let currentTierId = null;
+  function openTierModal(row, categoryKey) {
+    currentTierId = row ? row.id : null;
+    document.getElementById('tierModalTitle').textContent = row ? 'Edit Pricing Tier' : 'Add Pricing Tier';
+    const catSelect = document.getElementById('tierModalCategory');
+    catSelect.innerHTML = CATEGORY_LIST.map((c) => `<option value="${c.key}" ${c.key === (row ? row.category : categoryKey) ? 'selected' : ''}>${c.label}</option>`).join('');
+    document.getElementById('tierModalName').value = row ? (row.tier_name || '') : '';
+    document.getElementById('tierModalDescription').value = row ? (row.description || '') : '';
+    document.getElementById('tierModalPrice').value = row ? (row.price || '') : '';
+    document.getElementById('tierModalDelete').style.display = row ? 'block' : 'none';
+    document.getElementById('tierModalStatus').textContent = '';
+    document.getElementById('tierModalOverlay').classList.add('is-open');
   }
-  async function addTierRow(categoryKey) {
-    const { error } = await supabaseClient.from('pricing_tiers').insert([{ category: categoryKey, tier_name: 'New Tier', description: '', price: 0, sort_order: Math.floor(Date.now() / 1000) }]);
-    if (error) { flash('tiersStatus', `Failed: ${error.message}`); return; }
+  function closeTierModal() { document.getElementById('tierModalOverlay').classList.remove('is-open'); }
+  document.getElementById('tierModalClose').addEventListener('click', closeTierModal);
+  document.getElementById('tierModalOverlay').addEventListener('click', (e) => { if (e.target.id === 'tierModalOverlay') closeTierModal(); });
+
+  document.getElementById('tierModalSave').addEventListener('click', async () => {
+    const status = document.getElementById('tierModalStatus');
+    status.textContent = 'Saving...';
+    const payload = {
+      category: document.getElementById('tierModalCategory').value,
+      tier_name: document.getElementById('tierModalName').value,
+      description: document.getElementById('tierModalDescription').value,
+      price: parseFloat(document.getElementById('tierModalPrice').value) || 0
+    };
+    let error;
+    if (currentTierId) {
+      ({ error } = await supabaseClient.from('pricing_tiers').update(payload).eq('id', currentTierId));
+    } else {
+      payload.sort_order = Math.floor(Date.now() / 1000);
+      ({ error } = await supabaseClient.from('pricing_tiers').insert([payload]));
+    }
+    if (error) { status.textContent = `Failed: ${error.message}`; return; }
+    closeTierModal();
     loadTiers();
-  }
-  async function deleteTierRow(id, el) {
-    const { error } = await supabaseClient.from('pricing_tiers').delete().eq('id', id);
-    if (error) { flash('tiersStatus', `Failed: ${error.message}`); return; }
-    el.remove();
-  }
+  });
+  document.getElementById('tierModalDelete').addEventListener('click', async () => {
+    if (!currentTierId) return;
+    const { error } = await supabaseClient.from('pricing_tiers').delete().eq('id', currentTierId);
+    if (error) { document.getElementById('tierModalStatus').textContent = `Failed: ${error.message}`; return; }
+    closeTierModal();
+    loadTiers();
+  });
 
   /* ---------- ADD-ONS ---------- */
   async function loadAddons() {
@@ -3646,34 +3804,53 @@ if (reelsSlider) {
     wrap.innerHTML = '';
     rows.forEach((row) => {
       const el = document.createElement('div');
-      el.className = 'admin-addon-row';
-      el.innerHTML = `
-        <input placeholder="Add-on name" value="${row.name || ''}" data-field="name">
-        <input placeholder="Price" type="number" value="${row.price || ''}" data-field="price">
-        <span class="del">✕</span>
-      `;
-      el.querySelectorAll('input').forEach((input) => {
-        input.addEventListener('change', () => updateAddonRow(row.id, input.dataset.field, input.value));
-      });
-      el.querySelector('.del').addEventListener('click', () => deleteAddonRow(row.id, el));
+      el.className = 'admin-thumb-card';
+      el.style.cursor = 'pointer';
+      el.innerHTML = `<div style="padding:14px;"><div style="color:var(--paper);font-weight:600;font-size:0.84rem;">${row.name}</div><div style="color:var(--orange);font-weight:700;font-size:0.9rem;margin-top:4px;">+₹${Number(row.price).toLocaleString('en-IN')}</div></div>`;
+      el.addEventListener('click', () => openAddonModal(row));
       wrap.appendChild(el);
     });
   }
-  async function updateAddonRow(id, field, value) {
-    if (field === 'price') value = parseFloat(value) || 0;
-    const { error } = await supabaseClient.from('addons').update({ [field]: value }).eq('id', id);
-    flash('addonStatus', error ? `Failed: ${error.message}` : 'Saved ✓');
+
+  let currentAddonId = null;
+  function openAddonModal(row) {
+    currentAddonId = row ? row.id : null;
+    document.getElementById('addonModalTitle').textContent = row ? 'Edit Add-on' : 'Add Add-on';
+    document.getElementById('addonModalName').value = row ? (row.name || '') : '';
+    document.getElementById('addonModalPrice').value = row ? (row.price || '') : '';
+    document.getElementById('addonModalDelete').style.display = row ? 'block' : 'none';
+    document.getElementById('addonModalStatus').textContent = '';
+    document.getElementById('addonModalOverlay').classList.add('is-open');
   }
-  async function addAddonRow() {
-    const { error } = await supabaseClient.from('addons').insert([{ name: 'New Add-on', price: 0, sort_order: Math.floor(Date.now() / 1000) }]);
-    if (error) { flash('addonStatus', `Failed: ${error.message}`); return; }
+  function closeAddonModal() { document.getElementById('addonModalOverlay').classList.remove('is-open'); }
+  document.getElementById('addonModalClose').addEventListener('click', closeAddonModal);
+  document.getElementById('addonModalOverlay').addEventListener('click', (e) => { if (e.target.id === 'addonModalOverlay') closeAddonModal(); });
+
+  document.getElementById('addonModalSave').addEventListener('click', async () => {
+    const status = document.getElementById('addonModalStatus');
+    status.textContent = 'Saving...';
+    const payload = {
+      name: document.getElementById('addonModalName').value,
+      price: parseFloat(document.getElementById('addonModalPrice').value) || 0
+    };
+    let error;
+    if (currentAddonId) {
+      ({ error } = await supabaseClient.from('addons').update(payload).eq('id', currentAddonId));
+    } else {
+      payload.sort_order = Math.floor(Date.now() / 1000);
+      ({ error } = await supabaseClient.from('addons').insert([payload]));
+    }
+    if (error) { status.textContent = `Failed: ${error.message}`; return; }
+    closeAddonModal();
     loadAddons();
-  }
-  async function deleteAddonRow(id, el) {
-    const { error } = await supabaseClient.from('addons').delete().eq('id', id);
-    if (error) { flash('addonStatus', `Failed: ${error.message}`); return; }
-    el.remove();
-  }
+  });
+  document.getElementById('addonModalDelete').addEventListener('click', async () => {
+    if (!currentAddonId) return;
+    const { error } = await supabaseClient.from('addons').delete().eq('id', currentAddonId);
+    if (error) { document.getElementById('addonModalStatus').textContent = `Failed: ${error.message}`; return; }
+    closeAddonModal();
+    loadAddons();
+  });
 
   /* ---------- LEADS ---------- */
   let latestLeadTimes = [];
