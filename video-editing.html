@@ -2485,7 +2485,7 @@ const VIDEO_IDS = {
    the manual ones once they load.
    ===================================================== */
 const YOUTUBE_API_KEY = '';
-const PORTFOLIO_VIDEOS = [
+const PORTFOLIO_VIDEOS_FALLBACK = [
   { id: '', views: '' },
   { id: '', views: '' },
   { id: '', views: '' },
@@ -2493,6 +2493,8 @@ const PORTFOLIO_VIDEOS = [
   { id: '', views: '' },
   { id: '', views: '' }
 ];
+let PORTFOLIO_VIDEOS = PORTFOLIO_VIDEOS_FALLBACK;
+function isValidYtId(id) { return !!id && /^[a-zA-Z0-9_-]{9,15}$/.test(id); }
 
 function parseViewsNum(str) {
   if (!str) return 0;
@@ -2538,58 +2540,79 @@ if (videoModal) {
     }
   });
 
-  // Portfolio tiles -> thumbnail, click-to-play, and view-count badge
+  // Portfolio tiles -> live video (autoplay muted loop), thumbnail fallback, and view-count badge
   const tiles = document.querySelectorAll('.ig-tile');
-  const liveIds = [];
-  tiles.forEach((tile, i) => {
-    const entry = PORTFOLIO_VIDEOS[i];
-    if (!entry) return;
-    const badge = tile.querySelector('.stat-badge');
-    const countEl = tile.querySelector('.tile-count');
 
-    if (entry.id) {
-      liveIds.push(entry.id);
-      tile.style.cursor = 'pointer';
-      const swatch = tile.querySelector('.swatch');
-      swatch.style.backgroundImage = `url(https://img.youtube.com/vi/${entry.id}/hqdefault.jpg)`;
-      swatch.style.backgroundSize = 'cover';
-      swatch.style.backgroundPosition = 'center';
-      tile.addEventListener('click', () => openVideoModal(entry.id));
+  async function loadHomepagePortfolio() {
+    if (supabaseClient) {
+      try {
+        const { data, error } = await supabaseClient.from('portfolio_videos').select('*').order('sort_order', { ascending: true });
+        if (!error && data && data.length) {
+          PORTFOLIO_VIDEOS = data.map((d) => ({ id: d.youtube_id || '', views: d.views || '', thumbnail_url: d.thumbnail_url || '' }));
+        }
+      } catch (e) { /* keep fallback */ }
     }
-
-    if (entry.views) {
-      countEl.textContent = entry.views;
-      if (parseViewsNum(entry.views) >= 100000) badge.classList.add('is-milestone');
-    }
-  });
-
-  // Real view counts, one batched request for all tiles (overrides manual numbers once loaded)
-  if (YOUTUBE_API_KEY && liveIds.length) {
-    const fmtViews = (n) => {
-      if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
-      if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
-      return String(n);
-    };
-
-    fetch(`https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${liveIds.join(',')}&key=${YOUTUBE_API_KEY}`)
-      .then((r) => r.json())
-      .then((data) => {
-        const viewsById = {};
-        (data.items || []).forEach((item) => {
-          viewsById[item.id] = parseInt(item.statistics.viewCount, 10);
-        });
-        tiles.forEach((tile, i) => {
-          const entry = PORTFOLIO_VIDEOS[i];
-          if (!entry || !entry.id || !(entry.id in viewsById)) return;
-          const liveCount = viewsById[entry.id];
-          const countEl = tile.querySelector('.tile-count');
-          const badge = tile.querySelector('.stat-badge');
-          if (countEl) countEl.textContent = fmtViews(liveCount);
-          if (badge) badge.classList.toggle('is-milestone', liveCount >= 100000);
-        });
-      })
-      .catch(() => { /* API not reachable / key not restricted yet — manual numbers stay as-is */ });
+    renderHomepageTiles();
   }
+
+  function renderHomepageTiles() {
+    const liveIds = [];
+    tiles.forEach((tile, i) => {
+      const entry = PORTFOLIO_VIDEOS[i];
+      if (!entry) return;
+      const badge = tile.querySelector('.stat-badge');
+      const countEl = tile.querySelector('.tile-count');
+      const swatch = tile.querySelector('.swatch');
+
+      if (isValidYtId(entry.id)) {
+        liveIds.push(entry.id);
+        tile.style.cursor = 'pointer';
+        swatch.style.backgroundImage = `url(https://img.youtube.com/vi/${entry.id}/hqdefault.jpg)`;
+        swatch.style.backgroundSize = 'cover';
+        swatch.style.backgroundPosition = 'center';
+        tile.addEventListener('click', () => openVideoModal(entry.id));
+      } else if (entry.thumbnail_url) {
+        swatch.style.backgroundImage = `url(${entry.thumbnail_url})`;
+        swatch.style.backgroundSize = 'cover';
+        swatch.style.backgroundPosition = 'center';
+      }
+
+      if (entry.views) {
+        countEl.textContent = entry.views;
+        if (parseViewsNum(entry.views) >= 100000) badge.classList.add('is-milestone');
+      }
+    });
+
+    // Real view counts, one batched request for all tiles (overrides manual numbers once loaded)
+    if (YOUTUBE_API_KEY && liveIds.length) {
+      const fmtViews = (n) => {
+        if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+        if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+        return String(n);
+      };
+
+      fetch(`https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${liveIds.join(',')}&key=${YOUTUBE_API_KEY}`)
+        .then((r) => r.json())
+        .then((data) => {
+          const viewsById = {};
+          (data.items || []).forEach((item) => {
+            viewsById[item.id] = parseInt(item.statistics.viewCount, 10);
+          });
+          tiles.forEach((tile, i) => {
+            const entry = PORTFOLIO_VIDEOS[i];
+            if (!entry || !entry.id || !(entry.id in viewsById)) return;
+            const liveCount = viewsById[entry.id];
+            const countEl = tile.querySelector('.tile-count');
+            const badge = tile.querySelector('.stat-badge');
+            if (countEl) countEl.textContent = fmtViews(liveCount);
+            if (badge) badge.classList.toggle('is-milestone', liveCount >= 100000);
+          });
+        })
+        .catch(() => { /* API not reachable / key not restricted yet — manual numbers stay as-is */ });
+    }
+  }
+
+  loadHomepagePortfolio();
 }
 
 /* ---------- NAV: shrink + blur on scroll ---------- */
@@ -3079,25 +3102,21 @@ if (reelsSlider) {
     const track = document.getElementById('ve3TrackInner');
     track.innerHTML = items.map((item, i) => {
       const grad = FALLBACK_GRADS[i % FALLBACK_GRADS.length];
-      let inner;
-      if (item.id) {
-        const embedSrc = `https://www.youtube.com/embed/${item.id}?autoplay=1&mute=1&loop=1&playlist=${item.id}&controls=0&modestbranding=1&playsinline=1&rel=0`;
-        inner = `<iframe src="${embedSrc}" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;" frameborder="0" allow="autoplay; encrypted-media" loading="lazy"></iframe>`;
-      } else if (item.thumbnail_url) {
-        inner = `<div style="position:absolute;inset:0;background-image:url(${item.thumbnail_url});background-size:cover;background-position:center;"></div>`;
-      } else {
-        inner = `<div style="position:absolute;inset:0;background:${grad};"></div>`;
-      }
+      const looksValid = item.id && /^[a-zA-Z0-9_-]{9,15}$/.test(item.id);
+      const bg = looksValid
+        ? `background-image:url(https://img.youtube.com/vi/${item.id}/hqdefault.jpg);background-size:cover;background-position:center;`
+        : (item.thumbnail_url ? `background-image:url(${item.thumbnail_url});background-size:cover;background-position:center;` : `background:${grad};`);
       return `
-        <div class="ve3-card" data-category="${item.category}" data-yt="${item.id}">
-          <div class="swatch">${inner}</div>
+        <div class="ve3-card" data-category="${item.category}" data-yt="${looksValid ? item.id : ''}">
+          <div class="swatch" style="${bg}"></div>
+          <div class="play"><svg viewBox="0 0 20 20" fill="var(--navy-deep)"><path d="M5 3l12 7-12 7V3z"/></svg></div>
           <div class="label">${categoryLabel(item.category)}</div>
         </div>
       `;
     }).join('');
 
     track.querySelectorAll('.ve3-card').forEach((card) => {
-      if (card.dataset.yt) {
+      if (card.dataset.yt && /^[a-zA-Z0-9_-]{9,15}$/.test(card.dataset.yt)) {
         card.addEventListener('click', () => window.open(`https://www.youtube.com/watch?v=${card.dataset.yt}`, '_blank'));
       }
     });
@@ -3110,9 +3129,10 @@ if (reelsSlider) {
       const item = items[i];
       const el = document.getElementById(`fanCard${i}`);
       if (!el || !item) continue;
-      if (item.id) {
-        const embedSrc = `https://www.youtube.com/embed/${item.id}?autoplay=1&mute=1&loop=1&playlist=${item.id}&controls=0&modestbranding=1&playsinline=1&rel=0`;
-        el.innerHTML = `<iframe src="${embedSrc}" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;" frameborder="0" allow="autoplay; encrypted-media" loading="lazy"></iframe>`;
+      if (item.id && /^[a-zA-Z0-9_-]{9,15}$/.test(item.id)) {
+        el.style.backgroundImage = `url(https://img.youtube.com/vi/${item.id}/hqdefault.jpg)`;
+        el.style.backgroundSize = 'cover';
+        el.style.backgroundPosition = 'center';
         el.parentElement.style.cursor = 'pointer';
         el.parentElement.addEventListener('click', () => window.open(`https://www.youtube.com/watch?v=${item.id}`, '_blank'));
       } else if (item.thumbnail_url) {
