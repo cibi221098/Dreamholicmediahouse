@@ -2512,13 +2512,14 @@ button {
     <h3 id="portfolioModalTitle">Edit Video</h3>
 
     <div class="field">
-      <label>Thumbnail</label>
+      <label>Thumbnail (shown while video loads)</label>
       <div class="thumb-preview" id="portfolioThumbPreview"></div>
       <input type="file" accept="image/*" id="portfolioThumbFile">
     </div>
     <div class="field">
-      <label>YouTube ID or link</label>
-      <input id="portfolioModalYt" placeholder="YouTube ID or link">
+      <label>Video file (mp4, plays automatically on the site)</label>
+      <input type="file" accept="video/*" id="portfolioVideoFile">
+      <div class="admin-status" id="portfolioVideoFileName"></div>
     </div>
     <div class="field">
       <label>Views (e.g. 104K)</label>
@@ -2588,48 +2589,27 @@ const VIDEO_IDS = {
 const YOUTUBE_API_KEY = '';
 
 /* =====================================================
-   YOUTUBE PLAYER WALL — shared across every page.
-   Real YouTube videos, autoplay muted, with a working
-   mute/unmute button, and NO click-through to YouTube.
-   Two safeguards against YouTube's embed rate-limit:
-   1. Only videos actually visible on screen are played;
-      ones scrolled out of view are paused.
-   2. The same video ID never plays live in two spots at
-      once — repeats fall back to a static thumbnail.
+   VIDEO WALL — shared across every page.
+   Real uploaded video files (from Supabase Storage),
+   playing natively: autoplay muted, click anywhere (or
+   the small button) to unmute, pauses when scrolled out
+   of view. No third-party embed, no rate limits, no
+   sizing quirks — just a plain HTML5 <video> tag.
    ===================================================== */
-let ytApiReady = false;
-let ytApiCallbacks = [];
-window.onYouTubeIframeAPIReady = function () {
-  ytApiReady = true;
-  ytApiCallbacks.forEach((cb) => cb());
-  ytApiCallbacks = [];
-};
-(function loadYTApi() {
-  if (document.getElementById('yt-iframe-api')) return;
-  const tag = document.createElement('script');
-  tag.id = 'yt-iframe-api';
-  tag.src = 'https://www.youtube.com/iframe_api';
-  document.head.appendChild(tag);
-})();
-function whenYTReady(cb) {
-  if (ytApiReady && window.YT && window.YT.Player) cb();
-  else ytApiCallbacks.push(cb);
-}
-
 const MUTE_ICON = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 7v6h3l4 4V3L5 7H2z"/><path d="M13 6l4 8M17 6l-4 8" stroke-linecap="round"/></svg>';
 const UNMUTE_ICON = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 7v6h3l4 4V3L5 7H2z"/><path d="M13 7a3 3 0 010 6M15.5 5a6 6 0 010 10" stroke-linecap="round"/></svg>';
 
-const ytEmbeddedIds = new Set(); // dedupe: same video only ever plays live once at a time
-
-function createYtPlayerCard(containerEl, videoId) {
-  if (ytEmbeddedIds.has(videoId)) return false; // already playing live elsewhere — caller should show static thumbnail instead
-  ytEmbeddedIds.add(videoId);
-
-  const uniqueId = 'ytp_' + Math.random().toString(36).slice(2);
-  const playerDiv = document.createElement('div');
-  playerDiv.id = uniqueId;
-  playerDiv.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;';
-  containerEl.appendChild(playerDiv);
+function createNativeVideoCard(containerEl, videoUrl) {
+  const video = document.createElement('video');
+  video.src = videoUrl;
+  video.autoplay = true;
+  video.muted = true;
+  video.loop = true;
+  video.playsInline = true;
+  video.setAttribute('playsinline', ''); // some mobile browsers need the lowercase attribute too
+  video.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;';
+  containerEl.appendChild(video);
+  video.play().catch(() => { /* browser blocked autoplay — user interaction will resume it */ });
 
   const muteBtn = document.createElement('button');
   muteBtn.className = 'yt-mute-btn';
@@ -2638,49 +2618,25 @@ function createYtPlayerCard(containerEl, videoId) {
   muteBtn.innerHTML = MUTE_ICON;
   containerEl.appendChild(muteBtn);
 
-  whenYTReady(() => {
-    let player;
-    player = new YT.Player(uniqueId, {
-      width: '100%',
-      height: '100%',
-      videoId,
-      playerVars: {
-        autoplay: 1, mute: 1, controls: 0, loop: 1, playlist: videoId,
-        modestbranding: 1, playsinline: 1, rel: 0, disablekb: 1, fs: 0
-      },
-      events: {
-        onReady: (e) => {
-          // YT.Player creates its own iframe with fixed default dimensions,
-          // ignoring the wrapper div's CSS — force it to actually fill the card.
-          const iframe = e.target.getIframe();
-          if (iframe) {
-            iframe.style.position = 'absolute';
-            iframe.style.inset = '0';
-            iframe.style.width = '100%';
-            iframe.style.height = '100%';
-            iframe.style.pointerEvents = 'none';
-          }
-          e.target.mute();
-          e.target.playVideo();
-          const toggleMute = (evt) => {
-            if (evt) evt.stopPropagation();
-            if (e.target.isMuted()) { e.target.unMute(); muteBtn.innerHTML = UNMUTE_ICON; }
-            else { e.target.mute(); muteBtn.innerHTML = MUTE_ICON; }
-          };
-          muteBtn.addEventListener('click', toggleMute);
-          containerEl.style.cursor = 'pointer';
-          containerEl.addEventListener('click', toggleMute);
-          const io = new IntersectionObserver((entries) => {
-            entries.forEach((entry) => {
-              try { entry.isIntersecting ? e.target.playVideo() : e.target.pauseVideo(); } catch (err) { /* not ready yet */ }
-            });
-          }, { threshold: 0.4 });
-          io.observe(containerEl);
-        }
-      }
+  const toggleMute = (evt) => {
+    if (evt) evt.stopPropagation();
+    video.muted = !video.muted;
+    muteBtn.innerHTML = video.muted ? MUTE_ICON : UNMUTE_ICON;
+    video.play().catch(() => {});
+  };
+  muteBtn.addEventListener('click', toggleMute);
+  containerEl.style.cursor = 'pointer';
+  containerEl.addEventListener('click', toggleMute);
+
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) video.play().catch(() => {});
+      else video.pause();
     });
-  });
-  return true;
+  }, { threshold: 0.3 });
+  io.observe(containerEl);
+
+  return video;
 }
 
 const PORTFOLIO_VIDEOS_FALLBACK = [
@@ -2746,7 +2702,7 @@ if (videoModal) {
       try {
         const { data, error } = await supabaseClient.from('portfolio_videos').select('*').order('sort_order', { ascending: true });
         if (!error && data && data.length) {
-          PORTFOLIO_VIDEOS = data.map((d) => ({ id: d.youtube_id || '', views: d.views || '', thumbnail_url: d.thumbnail_url || '' }));
+          PORTFOLIO_VIDEOS = data.map((d) => ({ id: d.youtube_id || '', views: d.views || '', thumbnail_url: d.thumbnail_url || '', video_url: d.video_url || '' }));
         }
       } catch (e) { /* keep fallback */ }
     }
@@ -2754,7 +2710,6 @@ if (videoModal) {
   }
 
   function renderHomepageTiles() {
-    const liveIds = [];
     tiles.forEach((tile, i) => {
       const entry = PORTFOLIO_VIDEOS[i];
       if (!entry) return;
@@ -2762,18 +2717,18 @@ if (videoModal) {
       const countEl = tile.querySelector('.tile-count');
       const swatch = tile.querySelector('.swatch');
 
-      if (isValidYtId(entry.id)) {
-        liveIds.push(entry.id);
-        const played = createYtPlayerCard(swatch, entry.id);
-        if (!played) {
-          swatch.style.backgroundImage = `url(https://img.youtube.com/vi/${entry.id}/hqdefault.jpg)`;
-          swatch.style.backgroundSize = 'cover';
-          swatch.style.backgroundPosition = 'center';
-        }
+      if (entry.video_url) {
+        createNativeVideoCard(swatch, entry.video_url);
       } else if (entry.thumbnail_url) {
         swatch.style.backgroundImage = `url(${entry.thumbnail_url})`;
         swatch.style.backgroundSize = 'cover';
         swatch.style.backgroundPosition = 'center';
+      } else if (isValidYtId(entry.id)) {
+        swatch.style.backgroundImage = `url(https://img.youtube.com/vi/${entry.id}/hqdefault.jpg)`;
+        swatch.style.backgroundSize = 'cover';
+        swatch.style.backgroundPosition = 'center';
+        tile.style.cursor = 'pointer';
+        tile.addEventListener('click', () => openVideoModal(entry.id));
       }
 
       if (entry.views) {
@@ -2781,34 +2736,6 @@ if (videoModal) {
         if (parseViewsNum(entry.views) >= 100000) badge.classList.add('is-milestone');
       }
     });
-
-    // Real view counts, one batched request for all tiles (overrides manual numbers once loaded)
-    if (YOUTUBE_API_KEY && liveIds.length) {
-      const fmtViews = (n) => {
-        if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
-        if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
-        return String(n);
-      };
-
-      fetch(`https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${liveIds.join(',')}&key=${YOUTUBE_API_KEY}`)
-        .then((r) => r.json())
-        .then((data) => {
-          const viewsById = {};
-          (data.items || []).forEach((item) => {
-            viewsById[item.id] = parseInt(item.statistics.viewCount, 10);
-          });
-          tiles.forEach((tile, i) => {
-            const entry = PORTFOLIO_VIDEOS[i];
-            if (!entry || !entry.id || !(entry.id in viewsById)) return;
-            const liveCount = viewsById[entry.id];
-            const countEl = tile.querySelector('.tile-count');
-            const badge = tile.querySelector('.stat-badge');
-            if (countEl) countEl.textContent = fmtViews(liveCount);
-            if (badge) badge.classList.toggle('is-milestone', liveCount >= 100000);
-          });
-        })
-        .catch(() => { /* API not reachable / key not restricted yet — manual numbers stay as-is */ });
-    }
   }
 
   loadHomepagePortfolio();
@@ -3436,14 +3363,13 @@ if (reelsSlider) {
     rows.forEach((row) => {
       const el = document.createElement('div');
       el.className = 'admin-thumb-card';
-      const bg = row.thumbnail_url
-        ? `background-image:url(${row.thumbnail_url});`
-        : (row.youtube_id ? `background-image:url(https://img.youtube.com/vi/${row.youtube_id}/hqdefault.jpg);` : '');
+      const bg = row.thumbnail_url ? `background-image:url(${row.thumbnail_url});` : '';
       const catLabel = (CATEGORY_LIST.find((c) => c.key === row.category) || {}).label || row.category || '—';
       el.innerHTML = `
-        <div class="thumb" style="${bg}">${bg ? '' : 'No thumbnail'}</div>
+        <div class="thumb" style="${bg}">${bg ? '' : 'No thumbnail'}${row.video_url ? ' <span style="position:absolute;top:6px;right:6px;background:var(--orange);color:var(--navy-deep);font-size:0.6rem;font-weight:700;padding:2px 6px;border-radius:999px;">VIDEO</span>' : ''}</div>
         <div class="meta"><div class="cat">${catLabel}</div><div class="views">${row.views || ''}</div></div>
       `;
+      el.querySelector('.thumb').style.position = 'relative';
       el.addEventListener('click', () => openPortfolioModal(row));
       wrap.appendChild(el);
     });
@@ -3453,14 +3379,14 @@ if (reelsSlider) {
   function openPortfolioModal(row) {
     currentPortfolioId = row ? row.id : null;
     document.getElementById('portfolioModalTitle').textContent = row ? 'Edit Video' : 'Add Video';
-    document.getElementById('portfolioModalYt').value = row ? (row.youtube_id || '') : '';
     document.getElementById('portfolioModalViews').value = row ? (row.views || '') : '';
     const catSelect = document.getElementById('portfolioModalCategory');
     catSelect.innerHTML = CATEGORY_LIST.map((c) => `<option value="${c.key}" ${row && c.key === row.category ? 'selected' : ''}>${c.label}</option>`).join('');
     const preview = document.getElementById('portfolioThumbPreview');
-    const thumbUrl = row && (row.thumbnail_url || (row.youtube_id ? `https://img.youtube.com/vi/${row.youtube_id}/hqdefault.jpg` : ''));
-    preview.style.backgroundImage = thumbUrl ? `url(${thumbUrl})` : 'none';
+    preview.style.backgroundImage = row && row.thumbnail_url ? `url(${row.thumbnail_url})` : 'none';
     document.getElementById('portfolioThumbFile').value = '';
+    document.getElementById('portfolioVideoFile').value = '';
+    document.getElementById('portfolioVideoFileName').textContent = row && row.video_url ? '✓ Video already uploaded — choose a new file to replace it' : '';
     document.getElementById('portfolioModalDelete').style.display = row ? 'block' : 'none';
     document.getElementById('portfolioModalStatus').textContent = '';
     document.getElementById('portfolioModalOverlay').classList.add('is-open');
@@ -3477,26 +3403,42 @@ if (reelsSlider) {
     if (!file) return;
     document.getElementById('portfolioThumbPreview').style.backgroundImage = `url(${URL.createObjectURL(file)})`;
   });
+  document.getElementById('portfolioVideoFile').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    document.getElementById('portfolioVideoFileName').textContent = file ? `Selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(1)}MB)` : '';
+  });
 
   async function savePortfolioModal() {
     const status = document.getElementById('portfolioModalStatus');
     status.textContent = 'Saving...';
-    const youtube_id = ytId(document.getElementById('portfolioModalYt').value);
     const views = document.getElementById('portfolioModalViews').value;
     const category = document.getElementById('portfolioModalCategory').value;
-    const file = document.getElementById('portfolioThumbFile').files[0];
-    let thumbnail_url;
+    const thumbFile = document.getElementById('portfolioThumbFile').files[0];
+    const videoFile = document.getElementById('portfolioVideoFile').files[0];
+    let thumbnail_url, video_url;
 
-    if (file) {
-      const fileName = `portfolio/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
-      const { error: uploadError } = await supabaseClient.storage.from('thumbnails').upload(fileName, file, { upsert: true });
-      if (uploadError) { status.textContent = `Upload failed: ${uploadError.message}`; return; }
+    if (thumbFile) {
+      status.textContent = 'Uploading thumbnail...';
+      const fileName = `portfolio/${Date.now()}_${thumbFile.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+      const { error: uploadError } = await supabaseClient.storage.from('thumbnails').upload(fileName, thumbFile, { upsert: true });
+      if (uploadError) { status.textContent = `Thumbnail upload failed: ${uploadError.message}`; return; }
       const { data: urlData } = supabaseClient.storage.from('thumbnails').getPublicUrl(fileName);
       thumbnail_url = urlData.publicUrl;
     }
 
-    const payload = { youtube_id, views, category };
+    if (videoFile) {
+      status.textContent = 'Uploading video... this may take a moment';
+      const fileName = `portfolio/${Date.now()}_${videoFile.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+      const { error: uploadError } = await supabaseClient.storage.from('videos').upload(fileName, videoFile, { upsert: true });
+      if (uploadError) { status.textContent = `Video upload failed: ${uploadError.message}`; return; }
+      const { data: urlData } = supabaseClient.storage.from('videos').getPublicUrl(fileName);
+      video_url = urlData.publicUrl;
+    }
+
+    status.textContent = 'Saving...';
+    const payload = { views, category };
     if (thumbnail_url) payload.thumbnail_url = thumbnail_url;
+    if (video_url) payload.video_url = video_url;
 
     let error;
     if (currentPortfolioId) {
@@ -3539,14 +3481,25 @@ if (reelsSlider) {
       if (!row) return;
       const el = document.createElement('div');
       el.className = 'admin-ref-row';
-      el.innerHTML = `<span class="name">${c.label}</span><input placeholder="YouTube ID or link" value="${row.youtube_id || ''}">`;
-      el.querySelector('input').addEventListener('change', (e) => updateCategoryVideo(row.id, ytId(e.target.value)));
+      el.style.gridTemplateColumns = '1fr 1fr auto';
+      el.innerHTML = `
+        <span class="name">${c.label}</span>
+        <input type="file" accept="video/*" data-id="${row.id}">
+        <span class="admin-status" style="margin:0;min-width:70px;">${row.video_url ? '✓ Uploaded' : 'No video'}</span>
+      `;
+      el.querySelector('input').addEventListener('change', (e) => uploadCategoryVideo(row.id, e.target.files[0], el.querySelector('.admin-status')));
       wrap.appendChild(el);
     });
   }
-  async function updateCategoryVideo(id, youtube_id) {
-    const { error } = await supabaseClient.from('category_videos').update({ youtube_id }).eq('id', id);
-    flash('categoryVideoStatus', error ? `Failed: ${error.message}` : 'Saved ✓');
+  async function uploadCategoryVideo(id, file, statusEl) {
+    if (!file) return;
+    statusEl.textContent = 'Uploading...';
+    const fileName = `category/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+    const { error: uploadError } = await supabaseClient.storage.from('videos').upload(fileName, file, { upsert: true });
+    if (uploadError) { statusEl.textContent = `Failed: ${uploadError.message}`; return; }
+    const { data: urlData } = supabaseClient.storage.from('videos').getPublicUrl(fileName);
+    const { error } = await supabaseClient.from('category_videos').update({ video_url: urlData.publicUrl }).eq('id', id);
+    statusEl.textContent = error ? `Failed: ${error.message}` : '✓ Uploaded';
   }
 
   /* ---------- PRICING TIERS ---------- */
