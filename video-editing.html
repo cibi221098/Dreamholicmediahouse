@@ -986,6 +986,15 @@ button {
 .sticky-cta.is-visible { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
 .sticky-cta:hover { transform: translateY(-3px) scale(1.03); }
 .sticky-cta svg { width: 19px; height: 19px; }
+.yt-mute-btn {
+  position: absolute; bottom: 10px; right: 10px; z-index: 5;
+  width: 30px; height: 30px; border-radius: 50%; background: rgba(10,13,30,0.72);
+  border: 1px solid rgba(247,245,241,0.3); color: var(--paper);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; pointer-events: auto; transition: background 0.2s ease;
+}
+.yt-mute-btn:hover { background: var(--orange); border-color: var(--orange); color: var(--navy-deep); }
+.yt-mute-btn svg { width: 14px; height: 14px; }
 .sticky-cta-avatar { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
 
 /* ============================================
@@ -2485,6 +2494,88 @@ const VIDEO_IDS = {
    the manual ones once they load.
    ===================================================== */
 const YOUTUBE_API_KEY = '';
+
+/* =====================================================
+   YOUTUBE PLAYER WALL — shared across every page.
+   Real YouTube videos, autoplay muted, with a working
+   mute/unmute button, and NO click-through to YouTube.
+   Two safeguards against YouTube's embed rate-limit:
+   1. Only videos actually visible on screen are played;
+      ones scrolled out of view are paused.
+   2. The same video ID never plays live in two spots at
+      once — repeats fall back to a static thumbnail.
+   ===================================================== */
+let ytApiReady = false;
+let ytApiCallbacks = [];
+window.onYouTubeIframeAPIReady = function () {
+  ytApiReady = true;
+  ytApiCallbacks.forEach((cb) => cb());
+  ytApiCallbacks = [];
+};
+(function loadYTApi() {
+  if (document.getElementById('yt-iframe-api')) return;
+  const tag = document.createElement('script');
+  tag.id = 'yt-iframe-api';
+  tag.src = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(tag);
+})();
+function whenYTReady(cb) {
+  if (ytApiReady && window.YT && window.YT.Player) cb();
+  else ytApiCallbacks.push(cb);
+}
+
+const MUTE_ICON = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 7v6h3l4 4V3L5 7H2z"/><path d="M13 6l4 8M17 6l-4 8" stroke-linecap="round"/></svg>';
+const UNMUTE_ICON = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 7v6h3l4 4V3L5 7H2z"/><path d="M13 7a3 3 0 010 6M15.5 5a6 6 0 010 10" stroke-linecap="round"/></svg>';
+
+const ytEmbeddedIds = new Set(); // dedupe: same video only ever plays live once at a time
+
+function createYtPlayerCard(containerEl, videoId) {
+  if (ytEmbeddedIds.has(videoId)) return false; // already playing live elsewhere — caller should show static thumbnail instead
+  ytEmbeddedIds.add(videoId);
+
+  const uniqueId = 'ytp_' + Math.random().toString(36).slice(2);
+  const playerDiv = document.createElement('div');
+  playerDiv.id = uniqueId;
+  playerDiv.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;';
+  containerEl.appendChild(playerDiv);
+
+  const muteBtn = document.createElement('button');
+  muteBtn.className = 'yt-mute-btn';
+  muteBtn.type = 'button';
+  muteBtn.setAttribute('aria-label', 'Toggle sound');
+  muteBtn.innerHTML = MUTE_ICON;
+  containerEl.appendChild(muteBtn);
+
+  whenYTReady(() => {
+    let player;
+    player = new YT.Player(uniqueId, {
+      videoId,
+      playerVars: {
+        autoplay: 1, mute: 1, controls: 0, loop: 1, playlist: videoId,
+        modestbranding: 1, playsinline: 1, rel: 0, disablekb: 1, fs: 0
+      },
+      events: {
+        onReady: (e) => {
+          e.target.mute();
+          e.target.playVideo();
+          muteBtn.addEventListener('click', (evt) => {
+            evt.stopPropagation();
+            if (e.target.isMuted()) { e.target.unMute(); muteBtn.innerHTML = UNMUTE_ICON; }
+            else { e.target.mute(); muteBtn.innerHTML = MUTE_ICON; }
+          });
+          const io = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+              try { entry.isIntersecting ? e.target.playVideo() : e.target.pauseVideo(); } catch (err) { /* not ready yet */ }
+            });
+          }, { threshold: 0.4 });
+          io.observe(containerEl);
+        }
+      }
+    });
+  });
+  return true;
+}
+
 const PORTFOLIO_VIDEOS_FALLBACK = [
   { id: '', views: '' },
   { id: '', views: '' },
@@ -2566,11 +2657,12 @@ if (videoModal) {
 
       if (isValidYtId(entry.id)) {
         liveIds.push(entry.id);
-        tile.style.cursor = 'pointer';
-        swatch.style.backgroundImage = `url(https://img.youtube.com/vi/${entry.id}/hqdefault.jpg)`;
-        swatch.style.backgroundSize = 'cover';
-        swatch.style.backgroundPosition = 'center';
-        tile.addEventListener('click', () => openVideoModal(entry.id));
+        const played = createYtPlayerCard(swatch, entry.id);
+        if (!played) {
+          swatch.style.backgroundImage = `url(https://img.youtube.com/vi/${entry.id}/hqdefault.jpg)`;
+          swatch.style.backgroundSize = 'cover';
+          swatch.style.backgroundPosition = 'center';
+        }
       } else if (entry.thumbnail_url) {
         swatch.style.backgroundImage = `url(${entry.thumbnail_url})`;
         swatch.style.backgroundSize = 'cover';
@@ -3109,19 +3201,25 @@ if (reelsSlider) {
       return `
         <div class="ve3-card" data-category="${item.category}" data-yt="${looksValid ? item.id : ''}">
           <div class="swatch" style="${bg}"></div>
-          <div class="play"><svg viewBox="0 0 20 20" fill="var(--navy-deep)"><path d="M5 3l12 7-12 7V3z"/></svg></div>
+          <div class="play" style="${looksValid ? 'display:none;' : ''}"><svg viewBox="0 0 20 20" fill="var(--navy-deep)"><path d="M5 3l12 7-12 7V3z"/></svg></div>
           <div class="label">${categoryLabel(item.category)}</div>
         </div>
       `;
     }).join('');
 
+    renderHeroFan(items); // hero (above the fold) runs first, so it wins priority on shared video IDs
+    wireCarouselPlayers(track);
+  }
+
+  function wireCarouselPlayers(track) {
     track.querySelectorAll('.ve3-card').forEach((card) => {
-      if (card.dataset.yt && /^[a-zA-Z0-9_-]{9,15}$/.test(card.dataset.yt)) {
-        card.addEventListener('click', () => window.open(`https://www.youtube.com/watch?v=${card.dataset.yt}`, '_blank'));
+      const ytId = card.dataset.yt;
+      if (ytId && /^[a-zA-Z0-9_-]{9,15}$/.test(ytId)) {
+        const swatch = card.querySelector('.swatch');
+        const played = createYtPlayerCard(swatch, ytId);
+        if (!played) card.querySelector('.play').style.display = 'flex';
       }
     });
-
-    renderHeroFan(items);
   }
 
   function renderHeroFan(items) {
@@ -3130,11 +3228,12 @@ if (reelsSlider) {
       const el = document.getElementById(`fanCard${i}`);
       if (!el || !item) continue;
       if (item.id && /^[a-zA-Z0-9_-]{9,15}$/.test(item.id)) {
-        el.style.backgroundImage = `url(https://img.youtube.com/vi/${item.id}/hqdefault.jpg)`;
-        el.style.backgroundSize = 'cover';
-        el.style.backgroundPosition = 'center';
-        el.parentElement.style.cursor = 'pointer';
-        el.parentElement.addEventListener('click', () => window.open(`https://www.youtube.com/watch?v=${item.id}`, '_blank'));
+        const played = createYtPlayerCard(el, item.id);
+        if (!played) {
+          el.style.backgroundImage = `url(https://img.youtube.com/vi/${item.id}/hqdefault.jpg)`;
+          el.style.backgroundSize = 'cover';
+          el.style.backgroundPosition = 'center';
+        }
       } else if (item.thumbnail_url) {
         el.style.backgroundImage = `url(${item.thumbnail_url})`;
         el.style.backgroundSize = 'cover';
