@@ -2017,8 +2017,9 @@ button {
 
 .qb-panel {
   position: relative; border-radius: 20px; overflow: hidden;
-  aspect-ratio: 16/9; border: 1px solid rgba(167,159,155,0.16);
+  aspect-ratio: 3/4; border: 1px solid rgba(167,159,155,0.16);
   background: var(--navy-ink);
+  max-width: 460px; margin: 0 auto;
 }
 .qb-bg { position: absolute; inset: 0; background-size: cover; background-position: center; }
 
@@ -2102,7 +2103,7 @@ button {
 .qb-sticky .total-val span { font-size: 0.7rem; color: var(--fog); font-family: var(--font-body); font-weight: 400; }
 
 @media (max-width: 860px) {
-  .qb-panel { aspect-ratio: 4/5; }
+  .qb-panel { max-width: 100%; }
   .qb-pills-overlay { right: 60px; }
   .qb-scrim h3 { font-size: 1.3rem; }
   .qb-addons { flex-direction: column; align-items: stretch; }
@@ -2433,10 +2434,38 @@ button {
 
       <div class="admin-section">
         <h2>Recent Edits (portfolio)</h2>
-        <div class="sub">Powers the video-editing page carousel and hero. Click any card to edit it.</div>
+        <div class="sub">Powers the video-editing page carousel. Click any card to edit it.</div>
         <div id="portfolioRows" class="admin-thumb-grid"><div class="loading-msg">Loading...</div></div>
         <button class="btn-outline admin-add" onclick="openPortfolioModal(null)">+ Add Video</button>
         <div class="admin-status" id="portfolioStatus"></div>
+      </div>
+
+      <div class="admin-section">
+        <h2>Hero Fan Photos</h2>
+        <div class="sub">The 4 photos floating around Reyn in the video-editing hero. Static images only, no video.</div>
+        <div class="admin-simple-grid" id="heroFanPhotoRows">
+          <div class="admin-simple-field">
+            <label>Photo 1</label>
+            <div class="thumb-preview" id="heroFanPreview0" style="width:100px;"></div>
+            <input type="file" accept="image/*" data-fan-index="0">
+          </div>
+          <div class="admin-simple-field">
+            <label>Photo 2</label>
+            <div class="thumb-preview" id="heroFanPreview1" style="width:100px;"></div>
+            <input type="file" accept="image/*" data-fan-index="1">
+          </div>
+          <div class="admin-simple-field">
+            <label>Photo 3</label>
+            <div class="thumb-preview" id="heroFanPreview2" style="width:100px;"></div>
+            <input type="file" accept="image/*" data-fan-index="2">
+          </div>
+          <div class="admin-simple-field">
+            <label>Photo 4</label>
+            <div class="thumb-preview" id="heroFanPreview3" style="width:100px;"></div>
+            <input type="file" accept="image/*" data-fan-index="3">
+          </div>
+        </div>
+        <div class="admin-status" id="heroFanStatus"></div>
       </div>
 
       <div class="admin-section">
@@ -3273,7 +3302,29 @@ if (reelsSlider) {
     document.getElementById('statClients').value = siteContentCache.stat_clients || '';
     document.getElementById('rawVideoInput').value = siteContentCache.raw_video_id || '';
     document.getElementById('editedVideoInput').value = siteContentCache.edited_video_id || '';
+    for (let i = 0; i < 4; i++) {
+      const url = siteContentCache[`hero_fan_photo_${i}`];
+      if (url) document.getElementById(`heroFanPreview${i}`).style.backgroundImage = `url(${url})`;
+    }
   }
+
+  document.querySelectorAll('[data-fan-index]').forEach((input) => {
+    input.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const i = e.target.dataset.fanIndex;
+      const statusEl = document.getElementById('heroFanStatus');
+      statusEl.textContent = 'Uploading...';
+      const fileName = `hero-fan/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+      const { error: uploadError } = await supabaseClient.storage.from('thumbnails').upload(fileName, file, { upsert: true });
+      if (uploadError) { statusEl.textContent = `Failed: ${uploadError.message}`; return; }
+      const { data: urlData } = supabaseClient.storage.from('thumbnails').getPublicUrl(fileName);
+      const error = await upsertContent(`hero_fan_photo_${i}`, urlData.publicUrl);
+      if (error) { statusEl.textContent = `Failed: ${error.message}`; return; }
+      document.getElementById(`heroFanPreview${i}`).style.backgroundImage = `url(${urlData.publicUrl})`;
+      statusEl.textContent = 'Saved ✓';
+    });
+  });
 
   async function upsertContent(key, value) {
     const { error } = await supabaseClient.from('site_content').upsert([{ key, value }], { onConflict: 'key' });
@@ -3481,13 +3532,25 @@ if (reelsSlider) {
       if (!row) return;
       const el = document.createElement('div');
       el.className = 'admin-ref-row';
-      el.style.gridTemplateColumns = '1fr 1fr auto';
+      el.style.gridTemplateColumns = '1fr 1fr 1fr auto';
+      const reuseOptions = portfolioCache.filter((p) => p.video_url).map((p) =>
+        `<option value="${p.id}" ${row.video_url === p.video_url ? 'selected' : ''}>${p.views || 'Untitled'} — ${(CATEGORY_LIST.find((c2) => c2.key === p.category) || {}).label || p.category}</option>`
+      ).join('');
       el.innerHTML = `
         <span class="name">${c.label}</span>
+        <select data-reuse-id="${row.id}">
+          <option value="">— Use existing video —</option>
+          ${reuseOptions}
+        </select>
         <input type="file" accept="video/*" data-id="${row.id}">
-        <span class="admin-status" style="margin:0;min-width:70px;">${row.video_url ? '✓ Uploaded' : 'No video'}</span>
+        <span class="admin-status" style="margin:0;min-width:70px;">${row.video_url ? '✓ Set' : 'No video'}</span>
       `;
-      el.querySelector('input').addEventListener('change', (e) => uploadCategoryVideo(row.id, e.target.files[0], el.querySelector('.admin-status')));
+      el.querySelector('select').addEventListener('change', (e) => {
+        if (!e.target.value) return;
+        const source = portfolioCache.find((p) => p.id === e.target.value);
+        if (source) reuseExistingVideo(row.id, source, el.querySelector('.admin-status'));
+      });
+      el.querySelector('input[type="file"]').addEventListener('change', (e) => uploadCategoryVideo(row.id, e.target.files[0], el.querySelector('.admin-status')));
       wrap.appendChild(el);
     });
   }
@@ -3500,6 +3563,13 @@ if (reelsSlider) {
     const { data: urlData } = supabaseClient.storage.from('videos').getPublicUrl(fileName);
     const { error } = await supabaseClient.from('category_videos').update({ video_url: urlData.publicUrl }).eq('id', id);
     statusEl.textContent = error ? `Failed: ${error.message}` : '✓ Uploaded';
+  }
+  async function reuseExistingVideo(id, source, statusEl) {
+    statusEl.textContent = 'Saving...';
+    const { error } = await supabaseClient.from('category_videos').update({
+      video_url: source.video_url, thumbnail_url: source.thumbnail_url || ''
+    }).eq('id', id);
+    statusEl.textContent = error ? `Failed: ${error.message}` : '✓ Set';
   }
 
   /* ---------- PRICING TIERS ---------- */
