@@ -2448,48 +2448,27 @@ const VIDEO_IDS = {
 const YOUTUBE_API_KEY = '';
 
 /* =====================================================
-   YOUTUBE PLAYER WALL — shared across every page.
-   Real YouTube videos, autoplay muted, with a working
-   mute/unmute button, and NO click-through to YouTube.
-   Two safeguards against YouTube's embed rate-limit:
-   1. Only videos actually visible on screen are played;
-      ones scrolled out of view are paused.
-   2. The same video ID never plays live in two spots at
-      once — repeats fall back to a static thumbnail.
+   VIDEO WALL — shared across every page.
+   Real uploaded video files (from Supabase Storage),
+   playing natively: autoplay muted, click anywhere (or
+   the small button) to unmute, pauses when scrolled out
+   of view. No third-party embed, no rate limits, no
+   sizing quirks — just a plain HTML5 <video> tag.
    ===================================================== */
-let ytApiReady = false;
-let ytApiCallbacks = [];
-window.onYouTubeIframeAPIReady = function () {
-  ytApiReady = true;
-  ytApiCallbacks.forEach((cb) => cb());
-  ytApiCallbacks = [];
-};
-(function loadYTApi() {
-  if (document.getElementById('yt-iframe-api')) return;
-  const tag = document.createElement('script');
-  tag.id = 'yt-iframe-api';
-  tag.src = 'https://www.youtube.com/iframe_api';
-  document.head.appendChild(tag);
-})();
-function whenYTReady(cb) {
-  if (ytApiReady && window.YT && window.YT.Player) cb();
-  else ytApiCallbacks.push(cb);
-}
-
 const MUTE_ICON = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 7v6h3l4 4V3L5 7H2z"/><path d="M13 6l4 8M17 6l-4 8" stroke-linecap="round"/></svg>';
 const UNMUTE_ICON = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 7v6h3l4 4V3L5 7H2z"/><path d="M13 7a3 3 0 010 6M15.5 5a6 6 0 010 10" stroke-linecap="round"/></svg>';
 
-const ytEmbeddedIds = new Set(); // dedupe: same video only ever plays live once at a time
-
-function createYtPlayerCard(containerEl, videoId) {
-  if (ytEmbeddedIds.has(videoId)) return false; // already playing live elsewhere — caller should show static thumbnail instead
-  ytEmbeddedIds.add(videoId);
-
-  const uniqueId = 'ytp_' + Math.random().toString(36).slice(2);
-  const playerDiv = document.createElement('div');
-  playerDiv.id = uniqueId;
-  playerDiv.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;';
-  containerEl.appendChild(playerDiv);
+function createNativeVideoCard(containerEl, videoUrl) {
+  const video = document.createElement('video');
+  video.src = videoUrl;
+  video.autoplay = true;
+  video.muted = true;
+  video.loop = true;
+  video.playsInline = true;
+  video.setAttribute('playsinline', ''); // some mobile browsers need the lowercase attribute too
+  video.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;';
+  containerEl.appendChild(video);
+  video.play().catch(() => { /* browser blocked autoplay — user interaction will resume it */ });
 
   const muteBtn = document.createElement('button');
   muteBtn.className = 'yt-mute-btn';
@@ -2498,49 +2477,25 @@ function createYtPlayerCard(containerEl, videoId) {
   muteBtn.innerHTML = MUTE_ICON;
   containerEl.appendChild(muteBtn);
 
-  whenYTReady(() => {
-    let player;
-    player = new YT.Player(uniqueId, {
-      width: '100%',
-      height: '100%',
-      videoId,
-      playerVars: {
-        autoplay: 1, mute: 1, controls: 0, loop: 1, playlist: videoId,
-        modestbranding: 1, playsinline: 1, rel: 0, disablekb: 1, fs: 0
-      },
-      events: {
-        onReady: (e) => {
-          // YT.Player creates its own iframe with fixed default dimensions,
-          // ignoring the wrapper div's CSS — force it to actually fill the card.
-          const iframe = e.target.getIframe();
-          if (iframe) {
-            iframe.style.position = 'absolute';
-            iframe.style.inset = '0';
-            iframe.style.width = '100%';
-            iframe.style.height = '100%';
-            iframe.style.pointerEvents = 'none';
-          }
-          e.target.mute();
-          e.target.playVideo();
-          const toggleMute = (evt) => {
-            if (evt) evt.stopPropagation();
-            if (e.target.isMuted()) { e.target.unMute(); muteBtn.innerHTML = UNMUTE_ICON; }
-            else { e.target.mute(); muteBtn.innerHTML = MUTE_ICON; }
-          };
-          muteBtn.addEventListener('click', toggleMute);
-          containerEl.style.cursor = 'pointer';
-          containerEl.addEventListener('click', toggleMute);
-          const io = new IntersectionObserver((entries) => {
-            entries.forEach((entry) => {
-              try { entry.isIntersecting ? e.target.playVideo() : e.target.pauseVideo(); } catch (err) { /* not ready yet */ }
-            });
-          }, { threshold: 0.4 });
-          io.observe(containerEl);
-        }
-      }
+  const toggleMute = (evt) => {
+    if (evt) evt.stopPropagation();
+    video.muted = !video.muted;
+    muteBtn.innerHTML = video.muted ? MUTE_ICON : UNMUTE_ICON;
+    video.play().catch(() => {});
+  };
+  muteBtn.addEventListener('click', toggleMute);
+  containerEl.style.cursor = 'pointer';
+  containerEl.addEventListener('click', toggleMute);
+
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) video.play().catch(() => {});
+      else video.pause();
     });
-  });
-  return true;
+  }, { threshold: 0.3 });
+  io.observe(containerEl);
+
+  return video;
 }
 
 const PORTFOLIO_VIDEOS_FALLBACK = [
@@ -2606,7 +2561,7 @@ if (videoModal) {
       try {
         const { data, error } = await supabaseClient.from('portfolio_videos').select('*').order('sort_order', { ascending: true });
         if (!error && data && data.length) {
-          PORTFOLIO_VIDEOS = data.map((d) => ({ id: d.youtube_id || '', views: d.views || '', thumbnail_url: d.thumbnail_url || '' }));
+          PORTFOLIO_VIDEOS = data.map((d) => ({ id: d.youtube_id || '', views: d.views || '', thumbnail_url: d.thumbnail_url || '', video_url: d.video_url || '' }));
         }
       } catch (e) { /* keep fallback */ }
     }
@@ -2614,7 +2569,6 @@ if (videoModal) {
   }
 
   function renderHomepageTiles() {
-    const liveIds = [];
     tiles.forEach((tile, i) => {
       const entry = PORTFOLIO_VIDEOS[i];
       if (!entry) return;
@@ -2622,18 +2576,18 @@ if (videoModal) {
       const countEl = tile.querySelector('.tile-count');
       const swatch = tile.querySelector('.swatch');
 
-      if (isValidYtId(entry.id)) {
-        liveIds.push(entry.id);
-        const played = createYtPlayerCard(swatch, entry.id);
-        if (!played) {
-          swatch.style.backgroundImage = `url(https://img.youtube.com/vi/${entry.id}/hqdefault.jpg)`;
-          swatch.style.backgroundSize = 'cover';
-          swatch.style.backgroundPosition = 'center';
-        }
+      if (entry.video_url) {
+        createNativeVideoCard(swatch, entry.video_url);
       } else if (entry.thumbnail_url) {
         swatch.style.backgroundImage = `url(${entry.thumbnail_url})`;
         swatch.style.backgroundSize = 'cover';
         swatch.style.backgroundPosition = 'center';
+      } else if (isValidYtId(entry.id)) {
+        swatch.style.backgroundImage = `url(https://img.youtube.com/vi/${entry.id}/hqdefault.jpg)`;
+        swatch.style.backgroundSize = 'cover';
+        swatch.style.backgroundPosition = 'center';
+        tile.style.cursor = 'pointer';
+        tile.addEventListener('click', () => openVideoModal(entry.id));
       }
 
       if (entry.views) {
@@ -2641,34 +2595,6 @@ if (videoModal) {
         if (parseViewsNum(entry.views) >= 100000) badge.classList.add('is-milestone');
       }
     });
-
-    // Real view counts, one batched request for all tiles (overrides manual numbers once loaded)
-    if (YOUTUBE_API_KEY && liveIds.length) {
-      const fmtViews = (n) => {
-        if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
-        if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
-        return String(n);
-      };
-
-      fetch(`https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${liveIds.join(',')}&key=${YOUTUBE_API_KEY}`)
-        .then((r) => r.json())
-        .then((data) => {
-          const viewsById = {};
-          (data.items || []).forEach((item) => {
-            viewsById[item.id] = parseInt(item.statistics.viewCount, 10);
-          });
-          tiles.forEach((tile, i) => {
-            const entry = PORTFOLIO_VIDEOS[i];
-            if (!entry || !entry.id || !(entry.id in viewsById)) return;
-            const liveCount = viewsById[entry.id];
-            const countEl = tile.querySelector('.tile-count');
-            const badge = tile.querySelector('.stat-badge');
-            if (countEl) countEl.textContent = fmtViews(liveCount);
-            if (badge) badge.classList.toggle('is-milestone', liveCount >= 100000);
-          });
-        })
-        .catch(() => { /* API not reachable / key not restricted yet — manual numbers stay as-is */ });
-    }
   }
 
   loadHomepagePortfolio();
@@ -3119,7 +3045,13 @@ if (reelsSlider) {
     { id: 'ad1', name: 'Need fast delivery', price: 500 },
     { id: 'ad2', name: 'Provide Thumbnails', price: 400 }
   ];
-  const FALLBACK_CATEGORY_VIDEOS = { personal: '', business: '', longform: '', speedramp: '', ai: '' };
+  const FALLBACK_CATEGORY_VIDEOS = {
+    personal: { youtube_id: '', video_url: '' },
+    business: { youtube_id: '', video_url: '' },
+    longform: { youtube_id: '', video_url: '' },
+    speedramp: { youtube_id: '', video_url: '' },
+    ai: { youtube_id: '', video_url: '' }
+  };
 
   let TIERS_BY_CATEGORY = FALLBACK_TIERS;
   let ADDONS = FALLBACK_ADDONS;
@@ -3149,7 +3081,7 @@ if (reelsSlider) {
         }
         if (videosRes.data && videosRes.data.length) {
           const map = { ...FALLBACK_CATEGORY_VIDEOS };
-          videosRes.data.forEach((r) => { map[r.category] = r.youtube_id || ''; });
+          videosRes.data.forEach((r) => { map[r.category] = { youtube_id: r.youtube_id || '', video_url: r.video_url || '' }; });
           CATEGORY_VIDEOS = map;
         }
         if (addonsRes.data && addonsRes.data.length) {
@@ -3172,12 +3104,11 @@ if (reelsSlider) {
     });
   }
 
-  let qbCurrentVideoId = null;
   function selectCategory(key) {
     state.category = key;
     document.querySelectorAll('.qb-pill').forEach((p) => p.classList.toggle('is-active', p.dataset.key === key));
 
-    const ytId = CATEGORY_VIDEOS[key];
+    const catVideo = CATEGORY_VIDEOS[key] || {};
     const bg = document.getElementById('qbBg');
     const watchBtn = document.getElementById('qbWatchBtn');
     const grads = {
@@ -3188,19 +3119,14 @@ if (reelsSlider) {
       ai: 'linear-gradient(160deg, #C7431A, #1D2544)'
     };
 
-    // clear out whatever was playing before switching categories
-    if (qbCurrentVideoId) { ytEmbeddedIds.delete(qbCurrentVideoId); qbCurrentVideoId = null; }
+    // clear out whatever was showing before switching categories
     bg.innerHTML = '';
+    bg.style.backgroundImage = 'none';
     watchBtn.style.display = 'none';
 
-    if (ytId) {
-      bg.style.backgroundImage = `url(https://img.youtube.com/vi/${ytId}/hqdefault.jpg)`;
-      bg.style.backgroundSize = 'cover';
-      bg.style.backgroundPosition = 'center';
-      const played = createYtPlayerCard(bg, ytId);
-      if (played) qbCurrentVideoId = ytId;
+    if (catVideo.video_url) {
+      createNativeVideoCard(bg, catVideo.video_url);
     } else {
-      bg.style.backgroundImage = 'none';
       bg.style.background = grads[key] || grads.personal;
     }
 
