@@ -2182,6 +2182,65 @@ button {
 }
 .bc-send svg { width: 15px; height: 15px; }
 
+/* ============================================
+   QUOTE POPUP — side-by-side hybrid (chat + live panel)
+   ============================================ */
+.qp-overlay {
+  position: fixed; inset: 0; z-index: 310;
+  background: rgba(6,8,18,0.82); backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+  opacity: 0; pointer-events: none; transition: opacity 0.3s var(--ease-out);
+}
+.qp-overlay.is-open { opacity: 1; pointer-events: auto; }
+.qp-modal {
+  width: 100%; max-width: 700px; max-height: 90vh; overflow-y: auto;
+  background: var(--navy-ink); border-radius: 20px; border: 1px solid rgba(167,159,155,0.2);
+  padding: 26px; position: relative;
+  transform: scale(0.95); transition: transform 0.3s var(--ease-out);
+}
+.qp-overlay.is-open .qp-modal { transform: scale(1); }
+.qp-close {
+  position: absolute; top: 16px; right: 16px; z-index: 2;
+  width: 32px; height: 32px; border-radius: 50%; background: none;
+  border: 1px solid rgba(167,159,155,0.3); color: var(--paper); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.qp-close:hover { border-color: var(--orange); }
+.qp-title { font-family: var(--font-display); font-weight: 700; font-size: 1.3rem; color: var(--paper); margin-bottom: 18px; padding-right: 30px; }
+.qp-title em { font-style: italic; color: var(--orange); }
+.qp-grid { display: grid; grid-template-columns: 1fr 1.05fr; gap: 16px; }
+
+.qp-chat-col {
+  background: var(--navy-deep); border-radius: 16px; border: 1px solid rgba(167,159,155,0.16);
+  padding: 16px; display: flex; flex-direction: column; min-height: 340px;
+}
+.qp-log { flex: 1; display: flex; flex-direction: column; gap: 9px; overflow-y: auto; max-height: 280px; }
+
+.qp-panel-col {
+  background: var(--navy-deep); border-radius: 16px; border: 1px solid rgba(167,159,155,0.16);
+  overflow: hidden; display: flex; flex-direction: column;
+}
+.qp-panel-video { flex: 1; min-height: 180px; background: var(--navy-ink); position: relative; }
+.qp-panel-tag {
+  position: absolute; top: 12px; left: 12px; background: rgba(10,13,30,0.6);
+  padding: 5px 11px; border-radius: 999px; font-size: 0.62rem; font-weight: 700; color: var(--paper);
+}
+.qp-panel-footer { padding: 14px 16px; border-top: 1px solid rgba(167,159,155,0.16); display: flex; justify-content: space-between; align-items: center; }
+.qp-panel-total-label { color: var(--fog); font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.qp-panel-total-value { color: var(--paper); font-family: var(--font-display); font-weight: 700; font-size: 1.2rem; }
+.qp-panel-total-value span { font-size: 0.62rem; color: var(--fog); font-family: var(--font-body); font-weight: 400; }
+.qp-panel-go {
+  padding: 9px 16px; border-radius: 999px; background: rgba(167,159,155,0.15); color: var(--fog);
+  font-weight: 700; font-size: 0.72rem; cursor: default; transition: background 0.2s ease, color 0.2s ease;
+}
+.qp-panel-go.is-ready { background: var(--orange); color: var(--navy-deep); cursor: pointer; }
+
+@media (max-width: 640px) {
+  .qp-grid { grid-template-columns: 1fr; }
+  .qp-chat-col { min-height: 260px; }
+}
+
+
 @media (max-width: 480px) {
   .bc-modal { max-height: 92vh; }
   .bc-log { max-height: none; }
@@ -2284,7 +2343,7 @@ button {
   </div>
 
   <div class="cta-row load-in">
-    <a href="quote.html" class="btn-primary">
+    <a href="#" class="btn-primary" data-quote-popup>
       <span class="play-chip"><svg viewBox="0 0 20 20" width="12" height="12" fill="currentColor"><path d="M5 3l12 7-12 7V3z"/></svg></span>
       Get a Custom Quote
     </a>
@@ -2383,7 +2442,7 @@ button {
     <div class="label">Build your own plan</div>
     <h3>Custom Quote</h3>
     <p>No fixed packages — tell us what you need and we'll quote it straight, usually within the hour.</p>
-    <a href="quote.html" class="btn-primary">Get a Custom Quote</a>
+    <a href="#" class="btn-primary" data-quote-popup>Get a Custom Quote</a>
   </div>
 </section>
 
@@ -2426,7 +2485,7 @@ button {
         <li><a href="index.html">Home</a></li>
         <li><a href="index.html#why-us">Why Us</a></li>
         <li><a href="index.html#services">Services</a></li>
-        <li><a href="quote.html">Get a Quote</a></li>
+        <li><a href="#" data-quote-popup>Get a Quote</a></li>
       </ul>
     </div>
 
@@ -3050,6 +3109,322 @@ if (reelsSlider) {
       `).join('');
     }).catch(() => {});
   }
+})();
+
+/* =====================================================
+   QUOTE POPUP — hybrid chat + live video/price panel.
+   Shared across every page. Any element with
+   [data-quote-popup] opens it. Replaces the old
+   standalone quote.html page entirely.
+   Submits to Supabase table "quote_requests" (if
+   connected) and opens WhatsApp with the same details
+   either way.
+   ===================================================== */
+(function () {
+  const triggers = document.querySelectorAll('[data-quote-popup]');
+  if (!triggers.length) return;
+
+  const FALLBACK_CATEGORIES = [
+    { key: 'business', label: 'Business Video' },
+    { key: 'personal', label: 'Personal Branding' },
+    { key: 'longform', label: 'Long Form' },
+    { key: 'speedramp', label: 'Speed Ramp' },
+    { key: 'ai', label: 'AI Videos' }
+  ];
+  const FALLBACK_TIERS = {
+    business: [{ tier_name: 'Simple', description: 'Clean cut, captions', price: 1800 }, { tier_name: 'Premium', description: 'Color grade, sound design', price: 3200 }],
+    personal: [{ tier_name: 'Simple', description: 'Clean cut, captions', price: 1500 }, { tier_name: 'Premium', description: 'Color grade, sound design', price: 2800 }],
+    longform: [{ tier_name: 'Simple', description: 'Basic edit', price: 2500 }, { tier_name: 'Premium', description: 'Full polish', price: 4500 }],
+    speedramp: [{ tier_name: 'Simple', description: 'Basic ramps', price: 2000 }, { tier_name: 'Premium', description: 'Advanced ramps + sound', price: 3800 }],
+    ai: [{ tier_name: 'Simple', description: 'AI-assisted edit', price: 2200 }, { tier_name: 'Premium', description: 'Full AI pipeline', price: 4000 }]
+  };
+  const FALLBACK_ADDONS = [{ name: 'Fast Delivery', price: 500 }, { name: 'Custom Thumbnails', price: 400 }];
+  const FALLBACK_GRADS = {
+    business: 'linear-gradient(160deg, #0A0D1E, #A79F9B)', personal: 'linear-gradient(160deg, #1D2544, #FF5A1F)',
+    longform: 'linear-gradient(160deg, #1D2544, #A79F9B)', speedramp: 'linear-gradient(160deg, #FF5A1F, #0A0D1E)',
+    ai: 'linear-gradient(160deg, #C7431A, #1D2544)'
+  };
+
+  let CATEGORIES = FALLBACK_CATEGORIES;
+  let TIERS_BY_CATEGORY = FALLBACK_TIERS;
+  let ADDONS = FALLBACK_ADDONS;
+  let CATEGORY_VIDEOS = {};
+  let dataLoaded = false;
+
+  async function loadQuoteData() {
+    if (dataLoaded || !supabaseClient) return;
+    try {
+      const [catsRes, tiersRes, addonsRes, videosRes] = await Promise.all([
+        supabaseClient.from('categories').select('*').order('sort_order', { ascending: true }),
+        supabaseClient.from('pricing_tiers').select('*').order('sort_order', { ascending: true }),
+        supabaseClient.from('addons').select('*').order('sort_order', { ascending: true }),
+        supabaseClient.from('category_videos').select('*')
+      ]);
+      if (catsRes.data && catsRes.data.length) CATEGORIES = catsRes.data.map((r) => ({ key: r.key, label: r.label }));
+      if (tiersRes.data && tiersRes.data.length) {
+        const grouped = {};
+        tiersRes.data.forEach((t) => { (grouped[t.category] = grouped[t.category] || []).push(t); });
+        TIERS_BY_CATEGORY = grouped;
+      }
+      if (addonsRes.data && addonsRes.data.length) ADDONS = addonsRes.data;
+      if (videosRes.data && videosRes.data.length) {
+        videosRes.data.forEach((r) => { CATEGORY_VIDEOS[r.category] = { video_url: r.video_url || '', thumbnail_url: r.thumbnail_url || '' }; });
+      }
+      dataLoaded = true;
+    } catch (e) { /* fall back to placeholders */ }
+  }
+
+  const overlay = document.createElement('div');
+  overlay.className = 'qp-overlay';
+  overlay.id = 'qpOverlay';
+  overlay.innerHTML = `
+    <div class="qp-modal">
+      <button class="qp-close" id="qpClose" aria-label="Close">
+        <svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 5l10 10M15 5L5 15"/></svg>
+      </button>
+      <div class="qp-title">Build your <em>quote.</em></div>
+      <div class="qp-grid">
+        <div class="qp-chat-col">
+          <div class="qp-log" id="qpLog"></div>
+          <div class="bc-chips" id="qpChips"></div>
+          <div class="bc-text-row" id="qpTextRow">
+            <input id="qpInput" placeholder="Type here...">
+            <button class="bc-send" id="qpSend" aria-label="Send">
+              <svg viewBox="0 0 20 20" fill="var(--navy-deep)"><path d="M5 3l12 7-12 7V3z"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="qp-panel-col">
+          <div class="qp-panel-video" id="qpPanelVideo"><span class="qp-panel-tag" id="qpPanelTag">Waiting for your answer...</span></div>
+          <div class="qp-panel-footer">
+            <div>
+              <div class="qp-panel-total-label">Estimated Total</div>
+              <div class="qp-panel-total-value" id="qpPanelTotal">₹0<span> /mo</span></div>
+            </div>
+            <div class="qp-panel-go" id="qpPanelGo">Get Quote</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  const log = overlay.querySelector('#qpLog');
+  const chipsWrap = overlay.querySelector('#qpChips');
+  const textRow = overlay.querySelector('#qpTextRow');
+  const input = overlay.querySelector('#qpInput');
+  const send = overlay.querySelector('#qpSend');
+  const closeBtn = overlay.querySelector('#qpClose');
+  const panelVideo = overlay.querySelector('#qpPanelVideo');
+  const panelTotal = overlay.querySelector('#qpPanelTotal');
+  const panelGo = overlay.querySelector('#qpPanelGo');
+
+  let state = 0;
+  let answers = { name: '', phone: '', categoryKey: '', categoryLabel: '', tier: null, qty: 0, addons: [] };
+
+  function bot(msg) {
+    const b = document.createElement('div');
+    b.className = 'bc-bubble-bot';
+    b.textContent = msg;
+    log.appendChild(b);
+    log.scrollTop = log.scrollHeight;
+  }
+  function user(msg) {
+    const b = document.createElement('div');
+    b.className = 'bc-bubble-user';
+    b.textContent = msg;
+    log.appendChild(b);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function updatePanelMedia(categoryKey) {
+    panelVideo.innerHTML = '<span class="qp-panel-tag" id="qpPanelTag"></span>';
+    const tagEl = panelVideo.querySelector('#qpPanelTag');
+    const catData = CATEGORY_VIDEOS[categoryKey];
+    if (catData && catData.video_url) {
+      createNativeVideoCard(panelVideo, catData.video_url);
+    } else if (catData && catData.thumbnail_url) {
+      panelVideo.style.background = `center / cover no-repeat url(${catData.thumbnail_url})`;
+    } else {
+      panelVideo.style.background = FALLBACK_GRADS[categoryKey] || FALLBACK_GRADS.business;
+    }
+    tagEl.textContent = answers.categoryLabel;
+  }
+
+  function updateTotal() {
+    const base = answers.tier ? answers.tier.price : 0;
+    const addonSum = answers.addons.reduce((s, a) => s + a.price, 0);
+    const total = (base + addonSum) * (answers.qty || 0);
+    panelTotal.innerHTML = `₹${total.toLocaleString('en-IN')}<span> /mo</span>`;
+    if (answers.categoryKey && answers.tier && answers.qty) {
+      panelGo.classList.add('is-ready');
+      panelGo.textContent = 'Get Quote & WhatsApp';
+    }
+  }
+
+  function showChips(options, onPick) {
+    textRow.classList.add('is-hidden');
+    chipsWrap.classList.add('is-visible');
+    chipsWrap.innerHTML = '';
+    options.forEach((opt) => {
+      const c = document.createElement('span');
+      c.className = 'bc-chip';
+      c.textContent = opt.label;
+      c.addEventListener('click', () => {
+        user(opt.label);
+        chipsWrap.classList.remove('is-visible');
+        textRow.classList.remove('is-hidden');
+        onPick(opt);
+      });
+      chipsWrap.appendChild(c);
+    });
+  }
+
+  function showCategoryStep() {
+    bot('What style are you thinking?');
+    showChips(CATEGORIES.map((c) => ({ label: c.label, key: c.key })), (choice) => {
+      answers.categoryKey = choice.key;
+      answers.categoryLabel = choice.label;
+      updatePanelMedia(choice.key);
+      setTimeout(() => { showTierStep(); }, 350);
+    });
+  }
+
+  function showTierStep() {
+    const tiers = TIERS_BY_CATEGORY[answers.categoryKey] || [];
+    bot('Nice pick. Which level of edit do you need?');
+    showChips(tiers.map((t) => ({ label: `${t.tier_name} — ₹${Number(t.price).toLocaleString('en-IN')}/video`, tier: t })), (choice) => {
+      answers.tier = choice.tier;
+      updateTotal();
+      setTimeout(() => {
+        bot('How many videos a month?');
+        state = 'qty';
+      }, 350);
+    });
+  }
+
+  function showAddonStep() {
+    textRow.classList.remove('is-hidden');
+    chipsWrap.classList.add('is-visible');
+    chipsWrap.innerHTML = '';
+    ADDONS.forEach((a) => {
+      const c = document.createElement('span');
+      c.className = 'bc-chip';
+      c.textContent = `${a.name} +₹${Number(a.price).toLocaleString('en-IN')}`;
+      c.addEventListener('click', () => {
+        const idx = answers.addons.findIndex((x) => x.name === a.name);
+        if (idx > -1) { answers.addons.splice(idx, 1); c.style.background = 'transparent'; c.style.color = 'var(--paper)'; }
+        else { answers.addons.push(a); c.style.background = 'var(--orange)'; c.style.color = 'var(--navy-deep)'; }
+        updateTotal();
+      });
+      chipsWrap.appendChild(c);
+    });
+    const doneBtn = document.createElement('span');
+    doneBtn.className = 'bc-chip';
+    doneBtn.style.background = 'var(--orange)';
+    doneBtn.style.color = 'var(--navy-deep)';
+    doneBtn.textContent = 'Done →';
+    doneBtn.addEventListener('click', () => {
+      chipsWrap.classList.remove('is-visible');
+      user(answers.addons.length ? answers.addons.map((a) => a.name).join(', ') : 'No add-ons');
+      finishQuote();
+    });
+    chipsWrap.appendChild(doneBtn);
+  }
+
+  function finishQuote() {
+    bot(`Thanks, ${answers.name}! Here's your estimate on the right. Sending this to our team now.`);
+    state = 'done';
+    const base = answers.tier ? answers.tier.price : 0;
+    const addonSum = answers.addons.reduce((s, a) => s + a.price, 0);
+    const total = (base + addonSum) * (answers.qty || 0);
+    if (supabaseClient) {
+      supabaseClient.from('quote_requests').insert([{
+        name: answers.name, phone: answers.phone, video_type: answers.categoryLabel,
+        editing_style: answers.tier ? answers.tier.tier_name : '', quantity: answers.qty,
+        budget: total, message: answers.addons.map((a) => a.name).join(', ')
+      }]).then(({ error }) => { if (error) console.error('Supabase save failed:', error); });
+    }
+    const lines = [
+      `Hi Dreamholic team, I'd like a quote — ${answers.name}`,
+      `Phone: ${answers.phone}`,
+      `Style: ${answers.categoryLabel}`,
+      `Tier: ${answers.tier ? answers.tier.tier_name : ''}`,
+      `Quantity: ${answers.qty} videos/month`,
+      answers.addons.length ? `Add-ons: ${answers.addons.map((a) => a.name).join(', ')}` : '',
+      `Estimated total: ₹${total.toLocaleString('en-IN')}/month`
+    ].filter(Boolean).join('\n');
+    setTimeout(() => {
+      window.open(`https://wa.me/918072702652?text=${encodeURIComponent(lines)}`, '_blank');
+    }, 1200);
+  }
+
+  function resetQuote() {
+    state = 0;
+    answers = { name: '', phone: '', categoryKey: '', categoryLabel: '', tier: null, qty: 0, addons: [] };
+    log.innerHTML = '';
+    chipsWrap.classList.remove('is-visible');
+    textRow.classList.remove('is-hidden');
+    input.value = '';
+    panelVideo.innerHTML = '<span class="qp-panel-tag" id="qpPanelTag">Waiting for your answer...</span>';
+    panelVideo.style.background = 'var(--navy-ink)';
+    panelTotal.innerHTML = '₹0<span> /mo</span>';
+    panelGo.classList.remove('is-ready');
+    panelGo.textContent = 'Get Quote';
+    bot("Hey! Who am I speaking with?");
+  }
+
+  function handleSend() {
+    const val = input.value.trim();
+    if (!val) return;
+
+    if (state === 0) {
+      if (val.length < 2 || /^\d+$/.test(val)) {
+        user(val); input.value = '';
+        setTimeout(() => bot('Could you share your actual name?'), 350);
+        return;
+      }
+      user(val); answers.name = val; input.value = '';
+      setTimeout(() => { bot(`Nice to meet you, ${val}. What's the best 10-digit number to reach you on?`); state = 1; }, 350);
+
+    } else if (state === 1) {
+      const digitsOnly = val.replace(/\D/g, '');
+      if (!/^\d{10}$/.test(digitsOnly)) {
+        user(val); input.value = '';
+        setTimeout(() => bot("That doesn't look like a 10-digit number — could you share it again?"), 350);
+        return;
+      }
+      user(digitsOnly); answers.phone = digitsOnly; input.value = '';
+      setTimeout(() => { showCategoryStep(); }, 350);
+      state = 'category';
+
+    } else if (state === 'qty') {
+      const n = parseInt(val, 10);
+      if (!n || n < 1) {
+        user(val); input.value = '';
+        setTimeout(() => bot('Just a number, like 8.'), 350);
+        return;
+      }
+      user(String(n)); answers.qty = n; input.value = '';
+      updateTotal();
+      setTimeout(() => { bot('Got it. Any add-ons?'); showAddonStep(); }, 350);
+      state = 'addons';
+    }
+  }
+
+  send.addEventListener('click', handleSend);
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleSend(); });
+  closeBtn.addEventListener('click', () => overlay.classList.remove('is-open'));
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('is-open'); });
+
+  triggers.forEach((trigger) => {
+    trigger.addEventListener('click', async (e) => {
+      e.preventDefault();
+      overlay.classList.add('is-open');
+      await loadQuoteData();
+      resetQuote();
+    });
+  });
 })();
 
 </script>
