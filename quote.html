@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+\<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -2973,14 +2973,14 @@ if (reelsSlider) {
       });
     }
 
-    if (compareBefore && content.raw_video_id) {
-      compareBefore.style.backgroundImage = `url(https://img.youtube.com/vi/${content.raw_video_id}/hqdefault.jpg)`;
+    if (compareBefore && content.raw_image_url) {
+      compareBefore.style.backgroundImage = `url(${content.raw_image_url})`;
       compareBefore.style.backgroundSize = 'cover';
       compareBefore.style.backgroundPosition = 'center';
       compareBefore.style.filter = 'grayscale(0.7) brightness(0.7) contrast(0.9)';
     }
-    if (compareAfter && content.edited_video_id) {
-      compareAfter.style.backgroundImage = `url(https://img.youtube.com/vi/${content.edited_video_id}/hqdefault.jpg)`;
+    if (compareAfter && content.edited_image_url) {
+      compareAfter.style.backgroundImage = `url(${content.edited_image_url})`;
       compareAfter.style.backgroundSize = 'cover';
       compareAfter.style.backgroundPosition = 'center';
     }
