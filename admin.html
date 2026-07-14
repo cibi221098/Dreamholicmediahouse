@@ -2518,17 +2518,17 @@ button {
 
       <div class="admin-section">
         <h2>Raw vs Edited (Before/After)</h2>
-        <div class="sub">The drag-to-compare slider on the video-editing page. Upload a still frame for each side.</div>
+        <div class="sub">The drag-to-compare slider on the video-editing page. Upload real footage for each side — both play in sync as visitors drag.</div>
         <div class="admin-simple-grid">
           <div class="admin-simple-field">
-            <label>Raw footage — image</label>
-            <div class="thumb-preview" id="rawImagePreview" style="width:100px;"></div>
-            <input type="file" accept="image/*" id="rawImageFile">
+            <label>Raw footage — video</label>
+            <input type="file" accept="video/*" id="rawVideoFile">
+            <div class="admin-status" id="rawVideoFileName"></div>
           </div>
           <div class="admin-simple-field">
-            <label>Edited footage — image</label>
-            <div class="thumb-preview" id="editedImagePreview" style="width:100px;"></div>
-            <input type="file" accept="image/*" id="editedImageFile">
+            <label>Edited footage — video</label>
+            <input type="file" accept="video/*" id="editedVideoFile">
+            <div class="admin-status" id="editedVideoFileName"></div>
           </div>
         </div>
         <button class="btn-outline admin-add" onclick="saveCompareVideos()">Save</button>
@@ -3259,16 +3259,39 @@ if (reelsSlider) {
       });
     }
 
-    if (compareBefore && content.raw_image_url) {
-      compareBefore.style.backgroundImage = `url(${content.raw_image_url})`;
-      compareBefore.style.backgroundSize = 'cover';
-      compareBefore.style.backgroundPosition = 'center';
-      compareBefore.style.filter = 'grayscale(0.7) brightness(0.7) contrast(0.9)';
-    }
-    if (compareAfter && content.edited_image_url) {
-      compareAfter.style.backgroundImage = `url(${content.edited_image_url})`;
-      compareAfter.style.backgroundSize = 'cover';
-      compareAfter.style.backgroundPosition = 'center';
+    if (compareBefore && compareAfter && content.raw_video_url && content.edited_video_url) {
+      const wrap = document.getElementById('compareWrap');
+      const hint = document.getElementById('compareHint');
+
+      const rawVideo = document.createElement('video');
+      rawVideo.src = content.raw_video_url;
+      rawVideo.muted = true; rawVideo.loop = true; rawVideo.playsInline = true; rawVideo.autoplay = true;
+      rawVideo.style.cssText = 'position:absolute;top:0;left:0;height:100%;object-fit:cover;filter:grayscale(0.7) brightness(0.7) contrast(0.9);';
+      compareBefore.style.filter = 'none'; // filter now lives on the video itself
+      compareBefore.appendChild(rawVideo);
+
+      const editedVideo = document.createElement('video');
+      editedVideo.src = content.edited_video_url;
+      editedVideo.muted = true; editedVideo.loop = true; editedVideo.playsInline = true; editedVideo.autoplay = true;
+      editedVideo.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;';
+      compareAfter.style.background = 'none';
+      compareAfter.appendChild(editedVideo);
+
+      function sizeRawVideo() {
+        rawVideo.style.width = `${wrap.offsetWidth}px`;
+      }
+      sizeRawVideo();
+      window.addEventListener('resize', sizeRawVideo);
+
+      // keep both clips time-aligned so the seam never visibly jumps
+      editedVideo.addEventListener('play', () => { rawVideo.currentTime = editedVideo.currentTime; rawVideo.play().catch(() => {}); });
+      setInterval(() => {
+        if (Math.abs(rawVideo.currentTime - editedVideo.currentTime) > 0.15) {
+          rawVideo.currentTime = editedVideo.currentTime;
+        }
+      }, 500);
+
+      if (hint) hint.style.display = 'none';
     }
   }).catch(() => {});
 
@@ -3460,13 +3483,40 @@ if (reelsSlider) {
   }
 
   function showCategoryStep() {
-    bot('What style are you thinking?');
-    showChips(CATEGORIES.map((c) => ({ label: c.label, key: c.key })), (choice) => {
-      answers.categoryKey = choice.key;
-      answers.categoryLabel = choice.label;
-      updatePanelMedia(choice.key);
-      setTimeout(() => { showTierStep(); }, 350);
+    bot('What style are you thinking? Tap to preview — the video on the right will update.');
+    textRow.classList.add('is-hidden');
+    chipsWrap.classList.add('is-visible');
+    chipsWrap.innerHTML = '';
+
+    CATEGORIES.forEach((c) => {
+      const chip = document.createElement('span');
+      chip.className = 'bc-chip';
+      chip.textContent = c.label;
+      chip.addEventListener('click', () => {
+        chipsWrap.querySelectorAll('.bc-chip').forEach((el) => { el.style.background = 'transparent'; el.style.color = 'var(--paper)'; });
+        chip.style.background = 'var(--orange)';
+        chip.style.color = 'var(--navy-deep)';
+        answers.categoryKey = c.key;
+        answers.categoryLabel = c.label;
+        updatePanelMedia(c.key);
+        confirmBtn.style.display = 'inline-block';
+      });
+      chipsWrap.appendChild(chip);
     });
+
+    const confirmBtn = document.createElement('span');
+    confirmBtn.className = 'bc-chip';
+    confirmBtn.style.background = 'var(--orange)';
+    confirmBtn.style.color = 'var(--navy-deep)';
+    confirmBtn.style.display = 'none';
+    confirmBtn.textContent = 'Confirm this style ▸';
+    confirmBtn.addEventListener('click', () => {
+      user(answers.categoryLabel);
+      chipsWrap.classList.remove('is-visible');
+      textRow.classList.remove('is-hidden');
+      setTimeout(() => { showTierStep(); }, 300);
+    });
+    chipsWrap.appendChild(confirmBtn);
   }
 
   function showTierStep() {
@@ -3751,8 +3801,8 @@ if (reelsSlider) {
     document.getElementById('statReach').value = siteContentCache.stat_reach || '';
     document.getElementById('statVideos').value = siteContentCache.stat_videos || '';
     document.getElementById('statClients').value = siteContentCache.stat_clients || '';
-    if (siteContentCache.raw_image_url) document.getElementById('rawImagePreview').style.backgroundImage = `url(${siteContentCache.raw_image_url})`;
-    if (siteContentCache.edited_image_url) document.getElementById('editedImagePreview').style.backgroundImage = `url(${siteContentCache.edited_image_url})`;
+    if (siteContentCache.raw_video_url) document.getElementById('rawVideoFileName').textContent = '✓ Video already uploaded — choose a new file to replace it';
+    if (siteContentCache.edited_video_url) document.getElementById('editedVideoFileName').textContent = '✓ Video already uploaded — choose a new file to replace it';
     for (let i = 0; i < 4; i++) {
       const url = siteContentCache[`hero_fan_photo_${i}`];
       if (url) document.getElementById(`heroFanPreview${i}`).style.backgroundImage = `url(${url})`;
@@ -3794,39 +3844,39 @@ if (reelsSlider) {
     flash('statsStatus', 'Saved ✓');
   }
 
-  document.getElementById('rawImageFile').addEventListener('change', (e) => {
+  document.getElementById('rawVideoFile').addEventListener('change', (e) => {
     const file = e.target.files[0];
-    if (file) document.getElementById('rawImagePreview').style.backgroundImage = `url(${URL.createObjectURL(file)})`;
+    if (file) document.getElementById('rawVideoFileName').textContent = `Selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(1)}MB)`;
   });
-  document.getElementById('editedImageFile').addEventListener('change', (e) => {
+  document.getElementById('editedVideoFile').addEventListener('change', (e) => {
     const file = e.target.files[0];
-    if (file) document.getElementById('editedImagePreview').style.backgroundImage = `url(${URL.createObjectURL(file)})`;
+    if (file) document.getElementById('editedVideoFileName').textContent = `Selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(1)}MB)`;
   });
 
   async function saveCompareVideos() {
     const status = document.getElementById('compareStatus');
-    const rawFile = document.getElementById('rawImageFile').files[0];
-    const editedFile = document.getElementById('editedImageFile').files[0];
+    const rawFile = document.getElementById('rawVideoFile').files[0];
+    const editedFile = document.getElementById('editedVideoFile').files[0];
 
     async function uploadOne(file, prefix) {
       const fileName = `${prefix}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
-      const { error: uploadError } = await supabaseClient.storage.from('thumbnails').upload(fileName, file, { upsert: true });
+      const { error: uploadError } = await supabaseClient.storage.from('videos').upload(fileName, file, { upsert: true });
       if (uploadError) throw uploadError;
-      const { data: urlData } = supabaseClient.storage.from('thumbnails').getPublicUrl(fileName);
+      const { data: urlData } = supabaseClient.storage.from('videos').getPublicUrl(fileName);
       return urlData.publicUrl;
     }
 
     try {
       if (rawFile) {
-        status.textContent = 'Uploading raw image...';
+        status.textContent = 'Uploading raw video...';
         const url = await uploadOne(rawFile, 'compare');
-        const error = await upsertContent('raw_image_url', url);
+        const error = await upsertContent('raw_video_url', url);
         if (error) throw error;
       }
       if (editedFile) {
-        status.textContent = 'Uploading edited image...';
+        status.textContent = 'Uploading edited video...';
         const url = await uploadOne(editedFile, 'compare');
-        const error = await upsertContent('edited_image_url', url);
+        const error = await upsertContent('edited_video_url', url);
         if (error) throw error;
       }
       status.textContent = 'Saved ✓';
