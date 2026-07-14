@@ -1773,13 +1773,13 @@ button {
 .ve3-fan-wrap {
   position: relative;
   height: 300px;
-  max-width: 560px;
+  max-width: 640px;
   margin: 30px auto 0;
 }
 .ve3-fan-card {
   position: absolute;
   top: 30px;
-  width: 92px;
+  width: 72px;
   aspect-ratio: 9/16;
   border-radius: 10px;
   overflow: hidden;
@@ -2196,9 +2196,29 @@ button {
   width: 100%; max-width: 700px; max-height: 90vh; overflow-y: auto;
   background: var(--navy-ink); border-radius: 20px; border: 1px solid rgba(167,159,155,0.2);
   padding: 26px; position: relative;
-  transform: scale(0.95); transition: transform 0.3s var(--ease-out);
+  transform: scale(0.95); transition: transform 0.3s var(--ease-out), max-width 0.3s var(--ease-out);
 }
+.qp-modal.is-wide { max-width: 920px; }
 .qp-overlay.is-open .qp-modal { transform: scale(1); }
+
+.qp-tier-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  grid-column: 1 / -1;
+}
+.qp-tier-card {
+  position: relative; border-radius: 14px; overflow: hidden; aspect-ratio: 4/3;
+  border: 2px solid rgba(167,159,155,0.2); cursor: pointer; background: var(--navy-deep);
+  transition: border-color 0.2s ease;
+}
+.qp-tier-card:hover { border-color: rgba(255,90,31,0.5); }
+.qp-tier-card.is-selected { border-color: var(--orange); }
+.qp-tier-card .qp-tier-info {
+  position: absolute; bottom: 0; left: 0; right: 0; z-index: 4;
+  background: linear-gradient(0deg, rgba(10,13,30,0.9), transparent);
+  padding: 10px 12px 8px; pointer-events: none;
+}
+.qp-tier-card .qp-tier-name { color: var(--paper); font-weight: 700; font-size: 0.8rem; }
+.qp-tier-card .qp-tier-price { color: var(--orange); font-weight: 700; font-size: 0.78rem; }
 .qp-close {
   position: absolute; top: 16px; right: 16px; z-index: 2;
   width: 32px; height: 32px; border-radius: 50%; background: none;
@@ -2662,6 +2682,10 @@ button {
     <div class="field"><label>Tier name</label><input id="tierModalName" placeholder="e.g. Level 1"></div>
     <div class="field"><label>Description</label><input id="tierModalDescription" placeholder="e.g. Broll + Simple text"></div>
     <div class="field"><label>Price (₹)</label><input id="tierModalPrice" type="number" placeholder="e.g. 1800"></div>
+    <div class="field">
+      <label>Example video for this tier</label>
+      <select id="tierModalVideo"><option value="">— None —</option></select>
+    </div>
     <div class="admin-modal-actions">
       <button class="btn-outline" id="tierModalDelete" style="border-color:rgba(226,75,74,0.4);color:#E24B4A;">Delete</button>
       <button class="btn-primary" id="tierModalSave" style="flex:1;justify-content:center;">Save</button>
@@ -3427,6 +3451,10 @@ if (reelsSlider) {
   const textRow = overlay.querySelector('#qpTextRow');
   const input = overlay.querySelector('#qpInput');
   const send = overlay.querySelector('#qpSend');
+  const modalEl = overlay.querySelector('.qp-modal');
+  const gridEl = overlay.querySelector('.qp-grid');
+  const chatCol = overlay.querySelector('.qp-chat-col');
+  const panelCol = overlay.querySelector('.qp-panel-col');
   const closeBtn = overlay.querySelector('#qpClose');
   const panelVideo = overlay.querySelector('#qpPanelVideo');
   const panelTotal = overlay.querySelector('#qpPanelTotal');
@@ -3531,16 +3559,45 @@ if (reelsSlider) {
   }
 
   function showTierStep() {
-    const tiers = TIERS_BY_CATEGORY[answers.categoryKey] || [];
-    bot('Nice pick. Which level of edit do you need?');
-    showChips(tiers.map((t) => ({ label: `${t.tier_name} — ₹${Number(t.price).toLocaleString('en-IN')}/video`, tier: t })), (choice) => {
-      answers.tier = choice.tier;
-      updateTotal();
-      setTimeout(() => {
-        bot('How many videos a month?');
-        state = 'qty';
-      }, 350);
+    const tiers = (TIERS_BY_CATEGORY[answers.categoryKey] || []).slice(0, 4);
+    bot('Nice pick. Here are our packages for this style — tap one to see it in action.');
+
+    modalEl.classList.add('is-wide');
+    chatCol.style.display = 'none';
+    panelCol.style.display = 'none';
+
+    const grid = document.createElement('div');
+    grid.className = 'qp-tier-grid';
+    tiers.forEach((t) => {
+      const card = document.createElement('div');
+      card.className = 'qp-tier-card';
+      card.innerHTML = `<div class="qp-tier-info"><div class="qp-tier-name">${t.tier_name}</div><div class="qp-tier-price">₹${Number(t.price).toLocaleString('en-IN')}/video</div></div>`;
+      if (t.video_url) {
+        createNativeVideoCard(card, t.video_url);
+      } else if (t.thumbnail_url) {
+        card.style.background = `center / cover no-repeat url(${t.thumbnail_url})`;
+      } else {
+        card.style.background = FALLBACK_GRADS[answers.categoryKey] || FALLBACK_GRADS.business;
+      }
+      card.addEventListener('click', () => {
+        grid.querySelectorAll('.qp-tier-card').forEach((c) => c.classList.remove('is-selected'));
+        card.classList.add('is-selected');
+        answers.tier = t;
+        updateTotal();
+        setTimeout(() => {
+          grid.remove();
+          modalEl.classList.remove('is-wide');
+          chatCol.style.display = '';
+          panelCol.style.display = '';
+          user(`${t.tier_name} — ₹${Number(t.price).toLocaleString('en-IN')}/video`);
+          updatePanelMedia(answers.categoryKey);
+          bot('How many videos a month?');
+          state = 'qty';
+        }, 500);
+      });
+      grid.appendChild(card);
     });
+    gridEl.appendChild(grid);
   }
 
   function showAddonStep() {
@@ -3611,6 +3668,11 @@ if (reelsSlider) {
     panelTotal.innerHTML = '₹0<span> /mo</span>';
     panelGo.classList.remove('is-ready');
     panelGo.textContent = 'Get Quote';
+    const leftoverGrid = gridEl.querySelector('.qp-tier-grid');
+    if (leftoverGrid) leftoverGrid.remove();
+    modalEl.classList.remove('is-wide');
+    chatCol.style.display = '';
+    panelCol.style.display = '';
     bot("Hey! Who am I speaking with?");
   }
 
@@ -4142,9 +4204,11 @@ if (reelsSlider) {
   }
 
   /* ---------- PRICING TIERS ---------- */
+  let tiersCache = [];
   async function loadTiers() {
     const { data, error } = await supabaseClient.from('pricing_tiers').select('*').order('sort_order', { ascending: true });
     if (error) { document.getElementById('tiersByCategory').innerHTML = `<div class="loading-msg">Couldn't load: ${error.message}</div>`; return; }
+    tiersCache = data || [];
     renderTiers(data || []);
   }
   function renderTiers(rows) {
@@ -4161,13 +4225,21 @@ if (reelsSlider) {
       list.style.gridTemplateColumns = 'repeat(auto-fill,minmax(160px,1fr))';
       list.id = `tierList_${c.key}`;
       wrap.appendChild(list);
-      renderTierList(c.key, rows.filter((r) => r.category === c.key));
+      const categoryTiers = rows.filter((r) => r.category === c.key);
+      renderTierList(c.key, categoryTiers);
 
       const addBtn = document.createElement('button');
       addBtn.className = 'btn-outline admin-add';
-      addBtn.textContent = `+ Add tier to ${c.label}`;
+      if (categoryTiers.length >= 4) {
+        addBtn.textContent = `${c.label} has the max of 4 tiers`;
+        addBtn.disabled = true;
+        addBtn.style.opacity = '0.4';
+        addBtn.style.cursor = 'not-allowed';
+      } else {
+        addBtn.textContent = `+ Add tier to ${c.label}`;
+        addBtn.onclick = () => openTierModal(null, c.key);
+      }
       addBtn.style.marginBottom = '10px';
-      addBtn.onclick = () => openTierModal(null, c.key);
       wrap.appendChild(addBtn);
     });
   }
@@ -4193,6 +4265,11 @@ if (reelsSlider) {
     document.getElementById('tierModalName').value = row ? (row.tier_name || '') : '';
     document.getElementById('tierModalDescription').value = row ? (row.description || '') : '';
     document.getElementById('tierModalPrice').value = row ? (row.price || '') : '';
+    const videoSelect = document.getElementById('tierModalVideo');
+    videoSelect.innerHTML = '<option value="">— None —</option>' +
+      portfolioCache.filter((p) => p.video_url).map((p) =>
+        `<option value="${p.id}" ${row && row.video_url === p.video_url ? 'selected' : ''}>${p.views || 'Untitled'} — ${(CATEGORY_LIST.find((c2) => c2.key === p.category) || {}).label || p.category}</option>`
+      ).join('');
     document.getElementById('tierModalDelete').style.display = row ? 'block' : 'none';
     document.getElementById('tierModalStatus').textContent = '';
     document.getElementById('tierModalOverlay').classList.add('is-open');
@@ -4203,12 +4280,21 @@ if (reelsSlider) {
 
   document.getElementById('tierModalSave').addEventListener('click', async () => {
     const status = document.getElementById('tierModalStatus');
+    const category = document.getElementById('tierModalCategory').value;
+    if (!currentTierId) {
+      const existingCount = tiersCache.filter((t) => t.category === category).length;
+      if (existingCount >= 4) { status.textContent = 'This category already has the maximum of 4 tiers.'; return; }
+    }
     status.textContent = 'Saving...';
+    const videoId = document.getElementById('tierModalVideo').value;
+    const videoSource = videoId ? portfolioCache.find((p) => p.id === videoId) : null;
     const payload = {
-      category: document.getElementById('tierModalCategory').value,
+      category,
       tier_name: document.getElementById('tierModalName').value,
       description: document.getElementById('tierModalDescription').value,
-      price: parseFloat(document.getElementById('tierModalPrice').value) || 0
+      price: parseFloat(document.getElementById('tierModalPrice').value) || 0,
+      video_url: videoSource ? videoSource.video_url : '',
+      thumbnail_url: videoSource ? (videoSource.thumbnail_url || '') : ''
     };
     let error;
     if (currentTierId) {
