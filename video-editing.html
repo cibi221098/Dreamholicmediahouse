@@ -2574,9 +2574,20 @@ function createNativeVideoCard(containerEl, videoUrl) {
   video.loop = true;
   video.playsInline = true;
   video.setAttribute('playsinline', ''); // some mobile browsers need the lowercase attribute too
-  video.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;';
+  video.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;background:#000;';
   containerEl.appendChild(video);
   video.play().catch(() => { /* browser blocked autoplay — user interaction will resume it */ });
+
+  // Landscape footage placed in a taller (e.g. portrait) card shouldn't get cropped —
+  // letterbox it instead (black bars top/bottom) once we know the clip's real shape.
+  video.addEventListener('loadedmetadata', () => {
+    if (!video.videoWidth || !video.videoHeight) return;
+    const clipRatio = video.videoWidth / video.videoHeight;
+    const boxRatio = containerEl.clientWidth / containerEl.clientHeight;
+    if (clipRatio > boxRatio + 0.1) {
+      video.style.objectFit = 'contain';
+    }
+  });
 
   const muteBtn = document.createElement('button');
   muteBtn.className = 'yt-mute-btn';
