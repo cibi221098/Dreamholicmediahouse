@@ -986,6 +986,15 @@ button {
 .sticky-cta.is-visible { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
 .sticky-cta:hover { transform: translateY(-3px) scale(1.03); }
 .sticky-cta svg { width: 19px; height: 19px; }
+.yt-mute-btn {
+  position: absolute; bottom: 10px; right: 10px; z-index: 5;
+  width: 30px; height: 30px; border-radius: 50%; background: rgba(10,13,30,0.72);
+  border: 1px solid rgba(247,245,241,0.3); color: var(--paper);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; pointer-events: auto; transition: background 0.2s ease;
+}
+.yt-mute-btn:hover { background: var(--orange); border-color: var(--orange); color: var(--navy-deep); }
+.yt-mute-btn svg { width: 14px; height: 14px; }
 .sticky-cta-avatar { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
 
 /* ============================================
@@ -2577,7 +2586,89 @@ const VIDEO_IDS = {
    the manual ones once they load.
    ===================================================== */
 const YOUTUBE_API_KEY = '';
-const PORTFOLIO_VIDEOS = [
+
+/* =====================================================
+   YOUTUBE PLAYER WALL — shared across every page.
+   Real YouTube videos, autoplay muted, with a working
+   mute/unmute button, and NO click-through to YouTube.
+   Two safeguards against YouTube's embed rate-limit:
+   1. Only videos actually visible on screen are played;
+      ones scrolled out of view are paused.
+   2. The same video ID never plays live in two spots at
+      once — repeats fall back to a static thumbnail.
+   ===================================================== */
+let ytApiReady = false;
+let ytApiCallbacks = [];
+window.onYouTubeIframeAPIReady = function () {
+  ytApiReady = true;
+  ytApiCallbacks.forEach((cb) => cb());
+  ytApiCallbacks = [];
+};
+(function loadYTApi() {
+  if (document.getElementById('yt-iframe-api')) return;
+  const tag = document.createElement('script');
+  tag.id = 'yt-iframe-api';
+  tag.src = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(tag);
+})();
+function whenYTReady(cb) {
+  if (ytApiReady && window.YT && window.YT.Player) cb();
+  else ytApiCallbacks.push(cb);
+}
+
+const MUTE_ICON = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 7v6h3l4 4V3L5 7H2z"/><path d="M13 6l4 8M17 6l-4 8" stroke-linecap="round"/></svg>';
+const UNMUTE_ICON = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 7v6h3l4 4V3L5 7H2z"/><path d="M13 7a3 3 0 010 6M15.5 5a6 6 0 010 10" stroke-linecap="round"/></svg>';
+
+const ytEmbeddedIds = new Set(); // dedupe: same video only ever plays live once at a time
+
+function createYtPlayerCard(containerEl, videoId) {
+  if (ytEmbeddedIds.has(videoId)) return false; // already playing live elsewhere — caller should show static thumbnail instead
+  ytEmbeddedIds.add(videoId);
+
+  const uniqueId = 'ytp_' + Math.random().toString(36).slice(2);
+  const playerDiv = document.createElement('div');
+  playerDiv.id = uniqueId;
+  playerDiv.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;';
+  containerEl.appendChild(playerDiv);
+
+  const muteBtn = document.createElement('button');
+  muteBtn.className = 'yt-mute-btn';
+  muteBtn.type = 'button';
+  muteBtn.setAttribute('aria-label', 'Toggle sound');
+  muteBtn.innerHTML = MUTE_ICON;
+  containerEl.appendChild(muteBtn);
+
+  whenYTReady(() => {
+    let player;
+    player = new YT.Player(uniqueId, {
+      videoId,
+      playerVars: {
+        autoplay: 1, mute: 1, controls: 0, loop: 1, playlist: videoId,
+        modestbranding: 1, playsinline: 1, rel: 0, disablekb: 1, fs: 0
+      },
+      events: {
+        onReady: (e) => {
+          e.target.mute();
+          e.target.playVideo();
+          muteBtn.addEventListener('click', (evt) => {
+            evt.stopPropagation();
+            if (e.target.isMuted()) { e.target.unMute(); muteBtn.innerHTML = UNMUTE_ICON; }
+            else { e.target.mute(); muteBtn.innerHTML = MUTE_ICON; }
+          });
+          const io = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+              try { entry.isIntersecting ? e.target.playVideo() : e.target.pauseVideo(); } catch (err) { /* not ready yet */ }
+            });
+          }, { threshold: 0.4 });
+          io.observe(containerEl);
+        }
+      }
+    });
+  });
+  return true;
+}
+
+const PORTFOLIO_VIDEOS_FALLBACK = [
   { id: '', views: '' },
   { id: '', views: '' },
   { id: '', views: '' },
@@ -2585,6 +2676,8 @@ const PORTFOLIO_VIDEOS = [
   { id: '', views: '' },
   { id: '', views: '' }
 ];
+let PORTFOLIO_VIDEOS = PORTFOLIO_VIDEOS_FALLBACK;
+function isValidYtId(id) { return !!id && /^[a-zA-Z0-9_-]{9,15}$/.test(id); }
 
 function parseViewsNum(str) {
   if (!str) return 0;
@@ -2630,58 +2723,80 @@ if (videoModal) {
     }
   });
 
-  // Portfolio tiles -> thumbnail, click-to-play, and view-count badge
+  // Portfolio tiles -> live video (autoplay muted loop), thumbnail fallback, and view-count badge
   const tiles = document.querySelectorAll('.ig-tile');
-  const liveIds = [];
-  tiles.forEach((tile, i) => {
-    const entry = PORTFOLIO_VIDEOS[i];
-    if (!entry) return;
-    const badge = tile.querySelector('.stat-badge');
-    const countEl = tile.querySelector('.tile-count');
 
-    if (entry.id) {
-      liveIds.push(entry.id);
-      tile.style.cursor = 'pointer';
-      const swatch = tile.querySelector('.swatch');
-      swatch.style.backgroundImage = `url(https://img.youtube.com/vi/${entry.id}/hqdefault.jpg)`;
-      swatch.style.backgroundSize = 'cover';
-      swatch.style.backgroundPosition = 'center';
-      tile.addEventListener('click', () => openVideoModal(entry.id));
+  async function loadHomepagePortfolio() {
+    if (supabaseClient) {
+      try {
+        const { data, error } = await supabaseClient.from('portfolio_videos').select('*').order('sort_order', { ascending: true });
+        if (!error && data && data.length) {
+          PORTFOLIO_VIDEOS = data.map((d) => ({ id: d.youtube_id || '', views: d.views || '', thumbnail_url: d.thumbnail_url || '' }));
+        }
+      } catch (e) { /* keep fallback */ }
     }
-
-    if (entry.views) {
-      countEl.textContent = entry.views;
-      if (parseViewsNum(entry.views) >= 100000) badge.classList.add('is-milestone');
-    }
-  });
-
-  // Real view counts, one batched request for all tiles (overrides manual numbers once loaded)
-  if (YOUTUBE_API_KEY && liveIds.length) {
-    const fmtViews = (n) => {
-      if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
-      if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
-      return String(n);
-    };
-
-    fetch(`https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${liveIds.join(',')}&key=${YOUTUBE_API_KEY}`)
-      .then((r) => r.json())
-      .then((data) => {
-        const viewsById = {};
-        (data.items || []).forEach((item) => {
-          viewsById[item.id] = parseInt(item.statistics.viewCount, 10);
-        });
-        tiles.forEach((tile, i) => {
-          const entry = PORTFOLIO_VIDEOS[i];
-          if (!entry || !entry.id || !(entry.id in viewsById)) return;
-          const liveCount = viewsById[entry.id];
-          const countEl = tile.querySelector('.tile-count');
-          const badge = tile.querySelector('.stat-badge');
-          if (countEl) countEl.textContent = fmtViews(liveCount);
-          if (badge) badge.classList.toggle('is-milestone', liveCount >= 100000);
-        });
-      })
-      .catch(() => { /* API not reachable / key not restricted yet — manual numbers stay as-is */ });
+    renderHomepageTiles();
   }
+
+  function renderHomepageTiles() {
+    const liveIds = [];
+    tiles.forEach((tile, i) => {
+      const entry = PORTFOLIO_VIDEOS[i];
+      if (!entry) return;
+      const badge = tile.querySelector('.stat-badge');
+      const countEl = tile.querySelector('.tile-count');
+      const swatch = tile.querySelector('.swatch');
+
+      if (isValidYtId(entry.id)) {
+        liveIds.push(entry.id);
+        const played = createYtPlayerCard(swatch, entry.id);
+        if (!played) {
+          swatch.style.backgroundImage = `url(https://img.youtube.com/vi/${entry.id}/hqdefault.jpg)`;
+          swatch.style.backgroundSize = 'cover';
+          swatch.style.backgroundPosition = 'center';
+        }
+      } else if (entry.thumbnail_url) {
+        swatch.style.backgroundImage = `url(${entry.thumbnail_url})`;
+        swatch.style.backgroundSize = 'cover';
+        swatch.style.backgroundPosition = 'center';
+      }
+
+      if (entry.views) {
+        countEl.textContent = entry.views;
+        if (parseViewsNum(entry.views) >= 100000) badge.classList.add('is-milestone');
+      }
+    });
+
+    // Real view counts, one batched request for all tiles (overrides manual numbers once loaded)
+    if (YOUTUBE_API_KEY && liveIds.length) {
+      const fmtViews = (n) => {
+        if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+        if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+        return String(n);
+      };
+
+      fetch(`https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${liveIds.join(',')}&key=${YOUTUBE_API_KEY}`)
+        .then((r) => r.json())
+        .then((data) => {
+          const viewsById = {};
+          (data.items || []).forEach((item) => {
+            viewsById[item.id] = parseInt(item.statistics.viewCount, 10);
+          });
+          tiles.forEach((tile, i) => {
+            const entry = PORTFOLIO_VIDEOS[i];
+            if (!entry || !entry.id || !(entry.id in viewsById)) return;
+            const liveCount = viewsById[entry.id];
+            const countEl = tile.querySelector('.tile-count');
+            const badge = tile.querySelector('.stat-badge');
+            if (countEl) countEl.textContent = fmtViews(liveCount);
+            if (badge) badge.classList.toggle('is-milestone', liveCount >= 100000);
+          });
+        })
+        .catch(() => { /* API not reachable / key not restricted yet — manual numbers stay as-is */ });
+    }
+  }
+
+  loadHomepagePortfolio();
 }
 
 /* ---------- NAV: shrink + blur on scroll ---------- */
@@ -3123,7 +3238,17 @@ if (reelsSlider) {
     el.textContent = msg;
     setTimeout(() => { if (el.textContent === msg) el.textContent = ''; }, 2200);
   }
-  function ytId(val) { return val.trim().split('v=').pop().split('/').pop(); }
+  function ytId(val) {
+    val = (val || '').trim();
+    if (!val) return '';
+    const patterns = [/(?:v=|\/shorts\/|\/embed\/|youtu\.be\/)([a-zA-Z0-9_-]{6,})/];
+    let id = val;
+    for (const p of patterns) {
+      const m = val.match(p);
+      if (m) { id = m[1]; break; }
+    }
+    return id.split('?')[0].split('&')[0].split('#')[0].trim();
+  }
 
   async function init() {
     const note = document.getElementById('connectionNote');
