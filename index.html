@@ -9,8 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,400;1,700&display=swap" rel="stylesheet">
-<style>
-/* ============================================
+<style>/* ============================================
    DREAMHOLIC MEDIA HOUSE — DESIGN TOKENS
    ============================================ */
 :root {
@@ -1994,13 +1993,8 @@ button {
   background: linear-gradient(135deg, #3a3a3a, #1a1a1a);
   filter: grayscale(0.7) brightness(0.7) contrast(0.9);
 }
-.compare-caption {
-  position: absolute; bottom: 16px; left: 16px; right: 16px;
-  background: var(--orange); color: var(--navy-deep); font-weight: 700; font-size: 0.78rem;
-  padding: 7px 12px; border-radius: 6px; text-align: left;
-}
 .compare-tag {
-  position: absolute; top: 14px; font-size: 0.64rem; font-weight: 700; letter-spacing: 0.1em;
+  position: absolute; bottom: 14px; z-index: 3; font-size: 0.64rem; font-weight: 700; letter-spacing: 0.1em;
   padding: 5px 12px; border-radius: 999px; text-transform: uppercase;
 }
 .compare-tag.left { left: 14px; background: rgba(10,13,30,0.75); color: var(--fog); border: 1px solid rgba(167,159,155,0.3); }
@@ -2792,8 +2786,7 @@ button {
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+<script>const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /* =====================================================
    SUPABASE — fill these in once your project is ready
@@ -3597,7 +3590,7 @@ if (reelsSlider) {
     log.scrollTop = log.scrollHeight;
   }
 
-  function updatePanelMedia(categoryKey) {
+  function updateCategoryPanelGrid(categoryKey) {
     panelVideo.innerHTML = '';
     panelVideo.style.background = 'var(--navy-ink)';
     const tiers = (TIERS_BY_CATEGORY[categoryKey] || []).slice(0, 4);
@@ -3625,6 +3618,20 @@ if (reelsSlider) {
       grid.appendChild(cell);
     });
     panelVideo.appendChild(grid);
+    panelVideo.appendChild(tag);
+  }
+
+  function updateSelectedTierPanel(tier) {
+    panelVideo.innerHTML = '';
+    panelVideo.style.background = 'var(--navy-ink)';
+    const tag = document.createElement('span');
+    tag.className = 'qp-panel-tag';
+    tag.id = 'qpPanelTag';
+    tag.textContent = tier.tier_name ? `${answers.categoryLabel} — ${tier.tier_name}` : answers.categoryLabel;
+    const applyFallback = () => {
+      panelVideo.style.background = tier.thumbnail_url ? `center / cover no-repeat url(${tier.thumbnail_url})` : (FALLBACK_GRADS[answers.categoryKey] || FALLBACK_GRADS.business);
+    };
+    if (tier.video_url) { createNativeVideoCard(panelVideo, tier.video_url, applyFallback); } else { applyFallback(); }
     panelVideo.appendChild(tag);
   }
 
@@ -3673,7 +3680,7 @@ if (reelsSlider) {
         chip.style.color = 'var(--navy-deep)';
         answers.categoryKey = c.key;
         answers.categoryLabel = c.label;
-        updatePanelMedia(c.key);
+        updateCategoryPanelGrid(c.key);
         confirmBtn.style.display = 'inline-block';
       });
       chipsWrap.appendChild(chip);
@@ -3748,7 +3755,7 @@ if (reelsSlider) {
       modalEl.classList.remove('is-wide');
       panelCol.style.display = '';
       answers.tier = selectedTier;
-      updatePanelMedia(answers.categoryKey);
+      updateSelectedTierPanel(selectedTier);
       updateTotal();
       setTimeout(() => { bot('How many videos a month?'); state = 'qty'; }, 350);
     });
