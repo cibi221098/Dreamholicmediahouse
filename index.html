@@ -681,72 +681,61 @@ button {
 .portfolio-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(255,90,31,0.3); }
 .portfolio-cta svg { width: 15px; height: 15px; }
 
-.ig-grid {
-  column-count: 3;
-  column-gap: 10px;
-}
-
-.ig-tile {
+.fan-carousel {
   position: relative;
-  overflow: hidden;
-  border-radius: 14px;
-  cursor: pointer;
-  border: 1px solid rgba(167,159,155,0.14);
-  break-inside: avoid;
-  margin-bottom: 10px;
   width: 100%;
-  aspect-ratio: 3/4; /* default; varied below for the Pinterest masonry look */
+  max-width: 720px;
+  height: 460px;
+  margin: 48px auto 10px;
+  perspective: 1400px;
+  perspective-origin: 50% 45%;
+  transition: perspective-origin 0.9s cubic-bezier(.22,1,.36,1);
 }
-.ig-tile:nth-child(3n+1) { aspect-ratio: 4/5; }
-.ig-tile:nth-child(3n+2) { aspect-ratio: 9/16; }
-.ig-tile:nth-child(3n+3) { aspect-ratio: 1/1; }
-.ig-tile:nth-child(5n)   { aspect-ratio: 3/4; }
 
-.ig-tile .swatch {
-  position: absolute; inset: 0;
-  background:
-    repeating-linear-gradient(125deg, rgba(255,255,255,0.06) 0px, rgba(255,255,255,0.06) 2px, transparent 2px, transparent 40px),
-    var(--tile-grad);
-  transition: transform 0.5s var(--ease-out);
-}
-.ig-tile:hover .swatch { transform: scale(1.08); }
+.fan-cards { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; }
 
-.ig-tile:nth-child(1) { --tile-grad: linear-gradient(160deg, #1D2544, #FF5A1F); }
-.ig-tile:nth-child(2) { --tile-grad: linear-gradient(160deg, #0A0D1E, #A79F9B); }
-.ig-tile:nth-child(3) { --tile-grad: linear-gradient(160deg, #FF5A1F, #0A0D1E); }
-.ig-tile:nth-child(4) { --tile-grad: linear-gradient(160deg, #1D2544, #A79F9B); }
-.ig-tile:nth-child(5) { --tile-grad: linear-gradient(160deg, #C7431A, #1D2544); }
-.ig-tile:nth-child(6) { --tile-grad: linear-gradient(160deg, #0A0D1E, #FF5A1F); }
-
-.ig-tile .overlay {
-  position: absolute; inset: 0;
-  background: rgba(10,13,30,0.55);
-  display: flex; align-items: center; justify-content: center;
-  gap: 18px;
-  opacity: 0;
-  transition: opacity 0.3s var(--ease-out);
-}
-.ig-tile:hover .overlay { opacity: 1; }
-
-.ig-tile .overlay span {
-  display: flex; align-items: center; gap: 6px;
-  color: var(--paper);
-  font-size: 0.82rem;
-  font-weight: 600;
-}
-.ig-tile .overlay svg { width: 16px; height: 16px; }
-
-.ig-tile .play-mini {
+.fan-card {
   position: absolute;
-  top: 10px; right: 10px;
-  width: 22px; height: 22px;
-  opacity: 0.85;
+  top: 47%; left: 50%;
+  width: 210px;
+  aspect-ratio: 9/16;
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 1px solid rgba(167,159,155,0.2);
+  background: var(--navy-ink);
+  box-shadow: 0 22px 44px rgba(0,0,0,0.4);
+  transition: transform 0.9s cubic-bezier(.22,1,.36,1), filter 0.9s cubic-bezier(.22,1,.36,1), opacity 0.9s cubic-bezier(.22,1,.36,1), box-shadow 0.9s cubic-bezier(.22,1,.36,1), border-color 0.9s cubic-bezier(.22,1,.36,1);
 }
 
-.ig-tile .stat-badge {
+.fan-card .swatch {
+  position: absolute; inset: 0;
+  background-size: cover; background-position: center;
+  background-color: var(--navy-ink);
+}
+.fan-card .shade {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(10,13,30,0.05) 35%, rgba(10,13,30,0.9) 100%);
+}
+
+.fan-card[data-active="true"] {
+  transform: translate(-50%,-50%) translateX(0) translateZ(0) rotateY(0deg) scale(1.1);
+  z-index: 50; filter: none;
+  border-color: rgba(255,90,31,0.55);
+  box-shadow: 0 30px 65px rgba(255,90,31,0.25), 0 20px 45px rgba(0,0,0,0.5);
+}
+.fan-card[data-offset="-1"] { z-index: 40; transform: translate(-50%,-50%) translateX(-135px) translateZ(-110px) rotateY(24deg) scale(0.86); filter: grayscale(0.65) brightness(0.62) blur(0.4px); }
+.fan-card[data-offset="-2"] { z-index: 30; transform: translate(-50%,-50%) translateX(-225px) translateZ(-230px) rotateY(32deg) scale(0.72); filter: grayscale(0.85) brightness(0.45) blur(0.8px); opacity: 0.8; }
+.fan-card[data-offset="-3"] { z-index: 20; transform: translate(-50%,-50%) translateX(-295px) translateZ(-350px) rotateY(38deg) scale(0.6);  filter: grayscale(0.9) brightness(0.35) blur(1.2px); opacity: 0.5; }
+.fan-card[data-offset="1"]  { z-index: 40; transform: translate(-50%,-50%) translateX(135px)  translateZ(-110px) rotateY(-24deg) scale(0.86); filter: grayscale(0.65) brightness(0.62) blur(0.4px); }
+.fan-card[data-offset="2"]  { z-index: 30; transform: translate(-50%,-50%) translateX(225px)  translateZ(-230px) rotateY(-32deg) scale(0.72); filter: grayscale(0.85) brightness(0.45) blur(0.8px); opacity: 0.8; }
+.fan-card[data-offset="3"]  { z-index: 20; transform: translate(-50%,-50%) translateX(295px)  translateZ(-350px) rotateY(-38deg) scale(0.6);  filter: grayscale(0.9) brightness(0.35) blur(1.2px); opacity: 0.5; }
+.fan-card[data-offset="hidden"] { opacity: 0; pointer-events: none; transform: translate(-50%,-50%) translateZ(-450px) scale(0.5); }
+
+.fan-card .stat-badge {
   position: absolute;
-  top: 10px;
-  left: 10px;
+  top: 12px;
+  left: 12px;
   display: flex;
   align-items: center;
   gap: 5px;
@@ -755,20 +744,52 @@ button {
   background: rgba(10,13,30,0.72);
   backdrop-filter: blur(4px);
   border: 1px solid rgba(255,90,31,0.35);
+  opacity: 0;
+  transition: opacity 0.4s ease 0.3s;
 }
-.ig-tile .stat-badge svg { width: 13px; height: 13px; color: var(--orange); flex-shrink: 0; }
-.ig-tile .stat-badge .tile-count {
+.fan-card[data-active="true"] .stat-badge { opacity: 1; }
+.fan-card .stat-badge svg { width: 13px; height: 13px; color: var(--orange); flex-shrink: 0; }
+.fan-card .stat-badge .tile-count {
   font-size: 0.72rem;
   font-weight: 700;
   color: var(--paper);
   font-variant-numeric: tabular-nums;
 }
-.ig-tile .stat-badge.is-milestone {
-  background: var(--orange);
-  border-color: var(--orange);
+
+.fan-card .info {
+  position: absolute; left: 14px; right: 14px; bottom: 16px;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.4s ease 0.3s, transform 0.4s ease 0.3s;
 }
-.ig-tile .stat-badge.is-milestone svg,
-.ig-tile .stat-badge.is-milestone .tile-count { color: var(--navy-deep); }
+.fan-card[data-active="true"] .info { opacity: 1; transform: translateY(0); }
+.fan-card .info .cat {
+  font-family: var(--font-display); font-weight: 700; font-size: 1rem;
+  text-transform: uppercase; color: var(--paper); margin: 0 0 8px;
+}
+.fan-card .info .watch {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 7px 8px 7px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,90,31,0.4);
+  background: rgba(10,13,30,0.4);
+  font-size: 0.66rem; font-weight: 700; letter-spacing: 0.05em;
+  color: var(--paper);
+}
+.fan-card .info .watch .arrow {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--orange); color: var(--navy-deep);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.fan-card .info .watch .arrow svg { width: 10px; height: 10px; }
+
+@media (max-width: 720px) {
+  .fan-carousel { height: 340px; max-width: 380px; }
+  .fan-card { width: 150px; }
+  .fan-card[data-offset="-1"] { transform: translate(-50%,-50%) translateX(-95px) translateZ(-90px) rotateY(22deg) scale(0.84); }
+  .fan-card[data-offset="1"]  { transform: translate(-50%,-50%) translateX(95px)  translateZ(-90px) rotateY(-22deg) scale(0.84); }
+  .fan-card[data-offset="-2"], .fan-card[data-offset="2"], .fan-card[data-offset="-3"], .fan-card[data-offset="3"] { opacity: 0; }
+}
 
 /* ============================================
    BEFORE / AFTER RESULTS
@@ -2383,7 +2404,7 @@ button {
   .hero { padding-top: 140px; }
   .filmstrip { grid-template-columns: repeat(2, 1fr); }
   .footer-top { grid-template-columns: 1fr 1fr; }
-  .ig-grid { column-count: 3; }
+  .fan-carousel { max-width: 440px; }
   .portfolio-cta { margin-left: 0; }
 }
 
@@ -2397,7 +2418,6 @@ button {
   .footer-bottom { flex-direction: column; align-items: flex-start; }
   .sticky-cta span.txt { display: none; }
   .sticky-cta { padding: 15px; }
-  .ig-grid { column-count: 2; }
 }
 
 
@@ -2576,37 +2596,8 @@ button {
     </a>
   </div>
 
-  <div class="ig-grid">
-    <div class="ig-tile"><div class="swatch"></div>
-      <svg class="play-mini" viewBox="0 0 20 20" fill="var(--paper)" opacity="0.85"><path d="M5 3l12 7-12 7V3z"/></svg>
-      <div class="stat-badge"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z"/><circle cx="10" cy="10" r="2.4"/></svg><span class="tile-count" data-fallback="1.2k">1.2k</span></div>
-      
-    </div>
-    <div class="ig-tile"><div class="swatch"></div>
-      <svg class="play-mini" viewBox="0 0 20 20" fill="var(--paper)" opacity="0.85"><path d="M5 3l12 7-12 7V3z"/></svg>
-      <div class="stat-badge"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z"/><circle cx="10" cy="10" r="2.4"/></svg><span class="tile-count" data-fallback="3.4k">3.4k</span></div>
-      
-    </div>
-    <div class="ig-tile"><div class="swatch"></div>
-      <svg class="play-mini" viewBox="0 0 20 20" fill="var(--paper)" opacity="0.85"><path d="M5 3l12 7-12 7V3z"/></svg>
-      <div class="stat-badge"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z"/><circle cx="10" cy="10" r="2.4"/></svg><span class="tile-count" data-fallback="890">890</span></div>
-      
-    </div>
-    <div class="ig-tile"><div class="swatch"></div>
-      <svg class="play-mini" viewBox="0 0 20 20" fill="var(--paper)" opacity="0.85"><path d="M5 3l12 7-12 7V3z"/></svg>
-      <div class="stat-badge"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z"/><circle cx="10" cy="10" r="2.4"/></svg><span class="tile-count" data-fallback="2.1k">2.1k</span></div>
-      
-    </div>
-    <div class="ig-tile"><div class="swatch"></div>
-      <svg class="play-mini" viewBox="0 0 20 20" fill="var(--paper)" opacity="0.85"><path d="M5 3l12 7-12 7V3z"/></svg>
-      <div class="stat-badge"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z"/><circle cx="10" cy="10" r="2.4"/></svg><span class="tile-count" data-fallback="5.6k">5.6k</span></div>
-      
-    </div>
-    <div class="ig-tile"><div class="swatch"></div>
-      <svg class="play-mini" viewBox="0 0 20 20" fill="var(--paper)" opacity="0.85"><path d="M5 3l12 7-12 7V3z"/></svg>
-      <div class="stat-badge"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z"/><circle cx="10" cy="10" r="2.4"/></svg><span class="tile-count" data-fallback="1.8k">1.8k</span></div>
-      
-    </div>
+  <div class="fan-carousel" id="fanCarousel">
+    <div class="fan-cards" id="fanCards"></div>
   </div>
 </section>
 
@@ -3095,8 +3086,13 @@ if (videoModal) {
     }
   });
 
-  // Portfolio tiles -> live video (autoplay muted loop), thumbnail fallback, and view-count badge
-  const tiles = document.querySelectorAll('.ig-tile');
+  // Portfolio -> cinematic 3D showcase carousel. Cards come from whichever
+  // portfolio_videos rows the admin has marked "Show in homepage showcase";
+  // falls back to all portfolio videos if none are marked yet so it never
+  // renders empty. Loops continuously, ~5.5s per video, click the active
+  // card to watch fullscreen, click a side card to bring it to the front.
+  const fanCardsWrap = document.getElementById('fanCards');
+  const fanCarouselEl = document.getElementById('fanCarousel');
 
   async function loadHomepagePortfolio(attempt) {
     attempt = attempt || 1;
@@ -3104,7 +3100,10 @@ if (videoModal) {
       try {
         const { data, error } = await supabaseClient.from('portfolio_videos').select('*').order('sort_order', { ascending: true });
         if (!error && data && data.length) {
-          PORTFOLIO_VIDEOS = data.map((d) => ({ id: d.youtube_id || '', views: d.views || '', thumbnail_url: d.thumbnail_url || '', video_url: d.video_url || '' }));
+          PORTFOLIO_VIDEOS = data.map((d) => ({
+            id: d.youtube_id || '', views: d.views || '', thumbnail_url: d.thumbnail_url || '',
+            video_url: d.video_url || '', category: d.category || '', showOnHome: !!d.show_on_homepage
+          }));
         } else if (attempt < 6) {
           // Free-tier Supabase can take a few seconds to wake up on the first hit of the day —
           // that showed up as tiles staying blank until a manual refresh. Keep retrying with
@@ -3120,38 +3119,96 @@ if (videoModal) {
   }
 
   function renderHomepageTiles() {
-    tiles.forEach((tile, i) => {
-      const entry = PORTFOLIO_VIDEOS[i];
-      if (!entry) return;
-      const badge = tile.querySelector('.stat-badge');
-      const countEl = tile.querySelector('.tile-count');
-      const swatch = tile.querySelector('.swatch');
+    if (!fanCardsWrap) return;
+    const usable = (e) => e.thumbnail_url || e.video_url || isValidYtId(e.id);
+    const marked = PORTFOLIO_VIDEOS.filter((e) => e.showOnHome && usable(e));
+    const pool = (marked.length ? marked : PORTFOLIO_VIDEOS.filter(usable)).slice(0, 15);
+    if (!pool.length) return;
 
-      const applyThumbFallback = () => {
-        if (entry.thumbnail_url) {
-          swatch.style.backgroundImage = `url(${entry.thumbnail_url})`;
-          swatch.style.backgroundSize = 'cover';
-          swatch.style.backgroundPosition = 'center';
-        }
-      };
-
-      if (entry.video_url) {
-        createNativeVideoCard(swatch, entry.video_url, applyThumbFallback);
-      } else if (entry.thumbnail_url) {
-        applyThumbFallback();
-      } else if (isValidYtId(entry.id)) {
+    fanCardsWrap.innerHTML = '';
+    const cardEls = pool.map((entry, i) => {
+      const card = document.createElement('div');
+      card.className = 'fan-card';
+      card.dataset.videoUrl = entry.video_url || '';
+      card.dataset.ytId = isValidYtId(entry.id) ? entry.id : '';
+      const catLabel = entry.category
+        ? entry.category.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+        : 'Our Work';
+      card.innerHTML = `
+        <div class="swatch"></div>
+        <div class="shade"></div>
+        <div class="stat-badge"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z"/><circle cx="10" cy="10" r="2.4"/></svg><span class="tile-count">${entry.views || ''}</span></div>
+        <div class="info">
+          <div class="cat">${catLabel}</div>
+          <div class="watch">WATCH<span class="arrow"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span></div>
+        </div>
+      `;
+      const swatch = card.querySelector('.swatch');
+      if (entry.thumbnail_url) {
+        swatch.style.backgroundImage = `url(${entry.thumbnail_url})`;
+      } else if (entry.id && isValidYtId(entry.id)) {
         swatch.style.backgroundImage = `url(https://img.youtube.com/vi/${entry.id}/hqdefault.jpg)`;
-        swatch.style.backgroundSize = 'cover';
-        swatch.style.backgroundPosition = 'center';
-        tile.style.cursor = 'pointer';
-        tile.addEventListener('click', () => openVideoModal(entry.id));
       }
-
-      if (entry.views) {
-        countEl.textContent = entry.views;
-        if (parseViewsNum(entry.views) >= 100000) badge.classList.add('is-milestone');
-      }
+      fanCardsWrap.appendChild(card);
+      return card;
     });
+
+    let activeIndex = 0;
+    let autoplayTimer = null;
+
+    function applySlots(orbit) {
+      cardEls.forEach((card, i) => {
+        let diff = i - activeIndex;
+        const n = cardEls.length;
+        if (diff > n / 2) diff -= n;
+        if (diff < -n / 2) diff += n;
+
+        const swatch = card.querySelector('.swatch');
+        if (diff === 0) {
+          card.dataset.active = 'true';
+          delete card.dataset.offset;
+          if (!swatch.querySelector('video') && card.dataset.videoUrl) {
+            createNativeVideoCard(swatch, card.dataset.videoUrl, () => {});
+          }
+        } else {
+          delete card.dataset.active;
+          card.dataset.offset = Math.abs(diff) > 3 ? 'hidden' : String(diff);
+          const v = swatch.querySelector('video');
+          if (v) v.remove();
+          const btn = swatch.querySelector('.yt-mute-btn');
+          if (btn) btn.remove();
+        }
+      });
+      if (orbit && fanCarouselEl) {
+        fanCarouselEl.style.perspectiveOrigin = activeIndex % 2 === 0 ? '47% 45%' : '53% 45%';
+      }
+    }
+
+    function goTo(index, restart) {
+      activeIndex = ((index % cardEls.length) + cardEls.length) % cardEls.length;
+      applySlots(true);
+      if (restart) startAutoplay();
+    }
+
+    function startAutoplay() {
+      if (autoplayTimer) clearInterval(autoplayTimer);
+      autoplayTimer = setInterval(() => { goTo(activeIndex + 1); }, 5500);
+    }
+
+    cardEls.forEach((card, i) => {
+      card.addEventListener('click', () => {
+        if (card.dataset.active === 'true') {
+          const v = card.querySelector('video');
+          if (v && v.requestFullscreen) v.requestFullscreen().catch(() => {});
+          else if (card.dataset.ytId) openVideoModal(card.dataset.ytId);
+        } else {
+          goTo(i, true);
+        }
+      });
+    });
+
+    applySlots(false);
+    startAutoplay();
   }
 
   window.__loaderTrack(loadHomepagePortfolio());
@@ -3217,7 +3274,7 @@ window.addEventListener('load', () => {
 
 /* ---------- SCROLL REVEAL (everything below the fold) ---------- */
 const scrollTargets = document.querySelectorAll(
-  '.whyus-head, .stat-card, .pillar, .whyus-contact, .ig-tile, .result-card, .reel-card, .calc-box, .faq-item, .footer-brand, .footer-col, .ve2-row, .rate-row, .custom-plan-card'
+  '.whyus-head, .stat-card, .pillar, .whyus-contact, .fan-carousel, .result-card, .reel-card, .calc-box, .faq-item, .footer-brand, .footer-col, .ve2-row, .rate-row, .custom-plan-card'
 );
 scrollTargets.forEach((el) => el.classList.add('load-in'));
 
