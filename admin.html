@@ -2394,6 +2394,38 @@ button {
   .ig-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
+
+/* ============================================
+   SITE LOADER (animated logo splash, masks
+   initial Supabase cold-start / data fetch)
+   ============================================ */
+.site-loader {
+  position: fixed; inset: 0; z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--navy-deep);
+  transition: opacity 0.5s ease;
+}
+.site-loader.is-hidden { opacity: 0; pointer-events: none; }
+.site-loader-stage {
+  position: relative; width: 130px; height: 130px;
+  display: flex; align-items: center; justify-content: center;
+}
+.site-loader-ring {
+  position: absolute; inset: 0; border-radius: 50%;
+  border: 3px solid rgba(255,90,31,0.18); border-top-color: var(--orange);
+  animation: sl-ring-spin 1s linear infinite;
+}
+.site-loader-mark {
+  width: 68px; height: 68px;
+  animation: sl-mark-spin 1.8s ease-in-out infinite;
+  filter: drop-shadow(0 6px 18px rgba(255,90,31,0.35));
+}
+@keyframes sl-ring-spin { to { transform: rotate(360deg); } }
+@keyframes sl-mark-spin {
+  0%   { transform: perspective(320px) rotateY(0deg)   scale(1); }
+  50%  { transform: perspective(320px) rotateY(180deg) scale(1.12); }
+  100% { transform: perspective(320px) rotateY(360deg) scale(1); }
+}
 </style>
 <style>
   .admin-shell { max-width: 1240px; margin: 0 auto; padding: 130px var(--edge) 100px; display: flex; gap: 40px; align-items: flex-start; }
@@ -2824,6 +2856,40 @@ button {
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+/* ---------- SITE LOADER ----------
+   Animated logo splash that masks the initial page load / Supabase
+   cold-start delay. Pages that include the #siteLoader markup get it
+   automatically; pages without it (e.g. admin) just no-op below.
+   Call window.__loaderTrack(promise) around any top-level content
+   fetch so the loader waits for it before fading out. A safety-net
+   timeout guarantees it never gets stuck even if a fetch is missed. */
+(function () {
+  const loader = document.getElementById('siteLoader');
+  if (!loader) { window.__loaderTrack = (p) => p; return; }
+  const shownAt = Date.now();
+  const MIN_VISIBLE = 500;
+  let pending = 0;
+  let hidden = false;
+
+  function hide() {
+    if (hidden) return;
+    hidden = true;
+    loader.classList.add('is-hidden');
+    setTimeout(() => loader.remove(), 600);
+  }
+  function scheduleHide() {
+    if (pending > 0) return;
+    setTimeout(hide, Math.max(0, MIN_VISIBLE - (Date.now() - shownAt)));
+  }
+  window.__loaderTrack = function (p) {
+    pending++;
+    Promise.resolve(p).catch(() => {}).then(() => { pending--; scheduleHide(); });
+    return p;
+  };
+  setTimeout(hide, 6000); // safety net — never leave the splash stuck
+  setTimeout(scheduleHide, 50); // in case nothing gets tracked at all
+})();
+
 /* =====================================================
    SUPABASE — fill these in once your project is ready
    (Supabase dashboard -> Settings -> API -> Project URL
@@ -2896,22 +2962,31 @@ function createNativeVideoCard(containerEl, videoUrl, onError) {
   // If the video fails to load (broken/missing file), don't leave a dead black box —
   // remove it and let the caller's fallback (thumbnail/gradient) show instead.
   let settled = false;
-  video.addEventListener('error', () => {
+  function bail() {
     if (settled) return;
     settled = true;
+    clearTimeout(stallTimer);
     video.remove();
     if (onError) onError();
-  });
-  video.addEventListener('playing', () => { settled = true; });
+  }
+  video.addEventListener('error', bail);
+  video.addEventListener('playing', () => { settled = true; clearTimeout(stallTimer); });
+
   // Some failures (permission/CORS issues on the storage host) never fire a proper
-  // error event — they just hang. If nothing has played within a few seconds, bail out.
-  setTimeout(() => {
-    if (!settled && video.isConnected) {
-      settled = true;
-      video.remove();
-      if (onError) onError();
-    }
-  }, 4000);
+  // error event — they just hang. Rather than a single fixed deadline (which was
+  // wrongly killing videos that were simply slow to start — several autoplaying at
+  // once on a free-tier host can take a bit longer, and it'd work fine on refresh
+  // once the browser had it cached), keep pushing the deadline out as long as bytes
+  // are actually arriving. Only give up if nothing has happened for a stretch.
+  let stallTimer = setTimeout(bail, 8000);
+  const extendStallTimer = () => {
+    if (settled) return;
+    clearTimeout(stallTimer);
+    stallTimer = setTimeout(bail, 8000);
+  };
+  video.addEventListener('progress', extendStallTimer);
+  video.addEventListener('loadeddata', extendStallTimer);
+  video.addEventListener('canplay', extendStallTimer);
 
   // Landscape footage placed in a taller (e.g. portrait) card shouldn't get cropped —
   // letterbox it instead (black bars top/bottom) once we know the clip's real shape.
@@ -3010,14 +3085,23 @@ if (videoModal) {
   // Portfolio tiles -> live video (autoplay muted loop), thumbnail fallback, and view-count badge
   const tiles = document.querySelectorAll('.ig-tile');
 
-  async function loadHomepagePortfolio() {
+  async function loadHomepagePortfolio(attempt) {
+    attempt = attempt || 1;
     if (supabaseClient) {
       try {
         const { data, error } = await supabaseClient.from('portfolio_videos').select('*').order('sort_order', { ascending: true });
         if (!error && data && data.length) {
           PORTFOLIO_VIDEOS = data.map((d) => ({ id: d.youtube_id || '', views: d.views || '', thumbnail_url: d.thumbnail_url || '', video_url: d.video_url || '' }));
+        } else if (attempt < 6) {
+          // Free-tier Supabase can take a few seconds to wake up on the first hit of the day —
+          // that showed up as tiles staying blank until a manual refresh. Keep retrying with
+          // backoff (empty data counts as a miss too, not just a hard error) before giving up.
+          setTimeout(() => loadHomepagePortfolio(attempt + 1), 1200 * attempt);
+          return;
         }
-      } catch (e) { /* keep fallback */ }
+      } catch (e) {
+        if (attempt < 6) { setTimeout(() => loadHomepagePortfolio(attempt + 1), 1200 * attempt); return; }
+      }
     }
     renderHomepageTiles();
   }
@@ -3030,12 +3114,18 @@ if (videoModal) {
       const countEl = tile.querySelector('.tile-count');
       const swatch = tile.querySelector('.swatch');
 
+      const applyThumbFallback = () => {
+        if (entry.thumbnail_url) {
+          swatch.style.backgroundImage = `url(${entry.thumbnail_url})`;
+          swatch.style.backgroundSize = 'cover';
+          swatch.style.backgroundPosition = 'center';
+        }
+      };
+
       if (entry.video_url) {
-        createNativeVideoCard(swatch, entry.video_url);
+        createNativeVideoCard(swatch, entry.video_url, applyThumbFallback);
       } else if (entry.thumbnail_url) {
-        swatch.style.backgroundImage = `url(${entry.thumbnail_url})`;
-        swatch.style.backgroundSize = 'cover';
-        swatch.style.backgroundPosition = 'center';
+        applyThumbFallback();
       } else if (isValidYtId(entry.id)) {
         swatch.style.backgroundImage = `url(https://img.youtube.com/vi/${entry.id}/hqdefault.jpg)`;
         swatch.style.backgroundSize = 'cover';
