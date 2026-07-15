@@ -1142,6 +1142,67 @@ button {
 .video-modal-close:hover { background: var(--orange); }
 .video-modal-close svg { width: 16px; height: 16px; color: var(--paper); }
 
+.pv-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s var(--ease-out);
+}
+.pv-modal.is-open { opacity: 1; pointer-events: auto; }
+
+.pv-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(6,8,18,0.88);
+  backdrop-filter: blur(6px);
+}
+
+.pv-modal-inner {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  max-height: 88vh;
+  aspect-ratio: 9/16;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--navy-deep);
+  box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+  transform: scale(0.94);
+  transition: transform 0.35s var(--ease-out);
+}
+.pv-modal.is-open .pv-modal-inner { transform: scale(1); }
+
+.pv-modal-inner video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+}
+
+.pv-modal-cat {
+  position: absolute;
+  top: 14px; left: 14px;
+  z-index: 2;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(10,13,30,0.72);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255,90,31,0.4);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--paper);
+}
+
 /* ============================================
    SERVICES
    ============================================ */
@@ -2857,6 +2918,17 @@ button {
   </div>
 </div>
 
+<div class="pv-modal" id="pvModal">
+  <div class="pv-modal-backdrop" id="pvModalBackdrop"></div>
+  <div class="pv-modal-inner">
+    <button class="video-modal-close" id="pvModalClose" aria-label="Close video">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 5l10 10M15 5L5 15"/></svg>
+    </button>
+    <span class="pv-modal-cat" id="pvModalCat"></span>
+    <video id="pvModalVideo" playsinline controls></video>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -3075,6 +3147,34 @@ if (videoModal) {
   modalBackdrop.addEventListener('click', closeVideoModal);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeVideoModal(); });
 
+  // Popup for real uploaded portfolio clips (as opposed to the YouTube-embed modal above)
+  const pvModal = document.getElementById('pvModal');
+  const pvVideo = document.getElementById('pvModalVideo');
+  const pvCat = document.getElementById('pvModalCat');
+  const pvClose = document.getElementById('pvModalClose');
+  const pvBackdrop = document.getElementById('pvModalBackdrop');
+
+  function openPortfolioVideoModal(videoUrl, categoryLabel) {
+    if (!videoUrl) return;
+    pvVideo.src = videoUrl;
+    pvVideo.muted = false;
+    pvVideo.currentTime = 0;
+    pvVideo.play().catch(() => {});
+    pvCat.textContent = categoryLabel || '';
+    pvCat.style.display = categoryLabel ? '' : 'none';
+    pvModal.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closePortfolioVideoModal() {
+    pvModal.classList.remove('is-open');
+    pvVideo.pause();
+    pvVideo.src = '';
+    document.body.style.overflow = '';
+  }
+  pvClose.addEventListener('click', closePortfolioVideoModal);
+  pvBackdrop.addEventListener('click', closePortfolioVideoModal);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePortfolioVideoModal(); });
+
   // Hero CTA + play button
   document.querySelectorAll('[data-yt]').forEach((el) => {
     if (el.closest('.hero')) {
@@ -3134,6 +3234,7 @@ if (videoModal) {
       const catLabel = entry.category
         ? entry.category.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
         : 'Our Work';
+      card.dataset.catLabel = catLabel;
       card.innerHTML = `
         <div class="swatch"></div>
         <div class="shade"></div>
@@ -3198,9 +3299,11 @@ if (videoModal) {
     cardEls.forEach((card, i) => {
       card.addEventListener('click', () => {
         if (card.dataset.active === 'true') {
-          const v = card.querySelector('video');
-          if (v && v.requestFullscreen) v.requestFullscreen().catch(() => {});
-          else if (card.dataset.ytId) openVideoModal(card.dataset.ytId);
+          if (card.dataset.videoUrl) {
+            openPortfolioVideoModal(card.dataset.videoUrl, card.dataset.catLabel);
+          } else if (card.dataset.ytId) {
+            openVideoModal(card.dataset.ytId);
+          }
         } else {
           goTo(i, true);
         }
