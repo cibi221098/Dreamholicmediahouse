@@ -2220,6 +2220,14 @@ button {
   transition: background 0.25s var(--ease-out), color 0.25s var(--ease-out);
 }
 .bc-chip:hover { background: rgba(255,90,31,0.12); }
+.bc-chip-cta {
+  font-weight: 700; box-shadow: 0 0 0 3px rgba(255,90,31,0.25);
+  animation: bc-cta-pulse 1.8s ease-in-out infinite;
+}
+@keyframes bc-cta-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(255,90,31,0.25); }
+  50% { box-shadow: 0 0 0 6px rgba(255,90,31,0.12); }
+}
 
 .bc-text-row { display: flex; gap: 8px; }
 .bc-text-row.is-hidden { display: none; }
@@ -2276,7 +2284,7 @@ button {
   font-weight: 700; font-size: 0.82rem; text-align: center; cursor: default; display: inline-block;
   transition: background 0.2s ease, color 0.2s ease;
 }
-.qp-gallery-continue.is-ready { background: var(--orange); color: var(--navy-deep); cursor: pointer; }
+.qp-gallery-continue.is-ready { background: var(--orange); color: var(--navy-deep); cursor: pointer; font-weight: 700; box-shadow: 0 0 0 3px rgba(255,90,31,0.25); animation: bc-cta-pulse 1.8s ease-in-out infinite; }
 .qp-tier-caption {
   grid-column: 1 / -1; color: var(--fog); font-size: 0.86rem; margin-bottom: 6px;
 }
@@ -3509,7 +3517,7 @@ if (reelsSlider) {
     });
 
     const confirmBtn = document.createElement('span');
-    confirmBtn.className = 'bc-chip';
+    confirmBtn.className = 'bc-chip bc-chip-cta';
     confirmBtn.style.background = 'var(--orange)';
     confirmBtn.style.color = 'var(--navy-deep)';
     confirmBtn.style.display = 'none';
@@ -3625,7 +3633,7 @@ if (reelsSlider) {
     chipsWrap.appendChild(wrap);
 
     const confirmBtn = document.createElement('span');
-    confirmBtn.className = 'bc-chip';
+    confirmBtn.className = 'bc-chip bc-chip-cta';
     confirmBtn.style.background = 'var(--orange)';
     confirmBtn.style.color = 'var(--navy-deep)';
     confirmBtn.textContent = 'Confirm ▸';
@@ -3633,7 +3641,7 @@ if (reelsSlider) {
       user(`${answers.qty} video${answers.qty > 1 ? 's' : ''}/month`);
       chipsWrap.classList.remove('is-visible');
       textRow.classList.remove('is-hidden');
-      setTimeout(() => { bot('Got it. Any add-ons?'); showAddonStep(); }, 350);
+      setTimeout(() => { finishQuote(); }, 350);
     });
     chipsWrap.appendChild(confirmBtn);
   }
