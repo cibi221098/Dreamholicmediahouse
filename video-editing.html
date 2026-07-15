@@ -2326,6 +2326,10 @@ button {
 .qp-panel-grid.qp-single-col { grid-template-columns: 1fr; }
 .qp-panel-grid-cell { position: relative; overflow: hidden; background: var(--navy-deep); }
 .qp-panel-footer { padding: 14px 16px; border-top: 1px solid rgba(167,159,155,0.16); display: flex; justify-content: space-between; align-items: center; }
+.qp-panel-footer.is-solo {
+  flex: 1; border-top: none; flex-direction: column; justify-content: center; align-items: center; gap: 4px; text-align: center;
+}
+.qp-panel-footer.is-solo .qp-panel-total-value { font-size: 1.6rem; }
 .qp-panel-total-label { color: var(--fog); font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.05em; }
 .qp-panel-total-value { color: var(--paper); font-family: var(--font-display); font-weight: 700; font-size: 1.2rem; }
 .qp-panel-total-value span { font-size: 0.62rem; color: var(--fog); font-family: var(--font-body); font-weight: 400; }
@@ -3388,6 +3392,7 @@ if (reelsSlider) {
   const panelVideo = overlay.querySelector('#qpPanelVideo');
   const panelTotal = overlay.querySelector('#qpPanelTotal');
   const panelGo = overlay.querySelector('#qpPanelGo');
+  const panelFooter = overlay.querySelector('.qp-panel-footer');
 
   let state = 0;
   let answers = { name: '', phone: '', categoryKey: '', categoryLabel: '', tier: null, qty: 0, addons: [] };
@@ -3587,6 +3592,8 @@ if (reelsSlider) {
 
     panelVideo.innerHTML = '';
     panelVideo.style.display = 'none';
+    panelGo.style.display = 'none';
+    panelFooter.classList.add('is-solo');
 
     answers.qty = 1;
     updateTotal();
@@ -3697,6 +3704,8 @@ if (reelsSlider) {
     panelVideo.innerHTML = '<span class="qp-panel-tag" id="qpPanelTag">Waiting for your answer...</span>';
     panelVideo.style.background = 'var(--navy-ink)';
     panelVideo.style.display = '';
+    panelGo.style.display = '';
+    panelFooter.classList.remove('is-solo');
     panelTotal.innerHTML = '₹0<span> /mo</span>';
     panelGo.classList.remove('is-ready');
     panelGo.textContent = 'Get Quote';
