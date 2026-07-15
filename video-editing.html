@@ -2264,9 +2264,11 @@ button {
 .qp-tier-grid.qp-single-col { grid-template-columns: 1fr; max-width: 220px; margin: 0 auto; }
 .qp-gallery-card { position: relative; border-radius: 14px; overflow: hidden; aspect-ratio: 9/16; background: var(--navy-deep); border: 1px solid rgba(167,159,155,0.2); }
 .qp-gallery-continue {
-  margin-top: 14px; padding: 11px 22px; border-radius: 999px; background: var(--orange); color: var(--navy-deep);
-  font-weight: 700; font-size: 0.82rem; text-align: center; cursor: pointer; display: inline-block;
+  margin-top: 14px; padding: 11px 22px; border-radius: 999px; background: rgba(167,159,155,0.15); color: var(--fog);
+  font-weight: 700; font-size: 0.82rem; text-align: center; cursor: default; display: inline-block;
+  transition: background 0.2s ease, color 0.2s ease;
 }
+.qp-gallery-continue.is-ready { background: var(--orange); color: var(--navy-deep); cursor: pointer; }
 .qp-tier-caption {
   grid-column: 1 / -1; color: var(--fog); font-size: 0.86rem; margin-bottom: 6px;
 }
@@ -2308,8 +2310,13 @@ button {
 .qp-panel-video { flex: 1; min-height: 180px; background: var(--navy-ink); position: relative; }
 .qp-panel-tag {
   position: absolute; top: 12px; left: 12px; background: rgba(10,13,30,0.6);
-  padding: 5px 11px; border-radius: 999px; font-size: 0.62rem; font-weight: 700; color: var(--paper);
+  padding: 5px 11px; border-radius: 999px; font-size: 0.62rem; font-weight: 700; color: var(--paper); z-index: 3;
 }
+.qp-panel-grid {
+  position: absolute; inset: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px;
+}
+.qp-panel-grid.qp-single-col { grid-template-columns: 1fr; }
+.qp-panel-grid-cell { position: relative; overflow: hidden; background: var(--navy-deep); }
 .qp-panel-footer { padding: 14px 16px; border-top: 1px solid rgba(167,159,155,0.16); display: flex; justify-content: space-between; align-items: center; }
 .qp-panel-total-label { color: var(--fog); font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.05em; }
 .qp-panel-total-value { color: var(--paper); font-family: var(--font-display); font-weight: 700; font-size: 1.2rem; }
@@ -3306,20 +3313,15 @@ if (reelsSlider) {
   let CATEGORIES = FALLBACK_CATEGORIES;
   let TIERS_BY_CATEGORY = FALLBACK_TIERS;
   let ADDONS = FALLBACK_ADDONS;
-  let CATEGORY_VIDEOS = {};
   let dataLoaded = false;
-
-  let PORTFOLIO_BY_CATEGORY = {};
 
   async function loadQuoteData() {
     if (dataLoaded || !supabaseClient) return;
     try {
-      const [catsRes, tiersRes, addonsRes, videosRes, portfolioRes] = await Promise.all([
+      const [catsRes, tiersRes, addonsRes] = await Promise.all([
         supabaseClient.from('categories').select('*').order('sort_order', { ascending: true }),
         supabaseClient.from('pricing_tiers').select('*').order('sort_order', { ascending: true }),
-        supabaseClient.from('addons').select('*').order('sort_order', { ascending: true }),
-        supabaseClient.from('category_videos').select('*'),
-        supabaseClient.from('portfolio_videos').select('*').order('sort_order', { ascending: true })
+        supabaseClient.from('addons').select('*').order('sort_order', { ascending: true })
       ]);
       if (catsRes.data && catsRes.data.length) CATEGORIES = catsRes.data.map((r) => ({ key: r.key, label: r.label }));
       if (tiersRes.data && tiersRes.data.length) {
@@ -3328,14 +3330,6 @@ if (reelsSlider) {
         TIERS_BY_CATEGORY = grouped;
       }
       if (addonsRes.data && addonsRes.data.length) ADDONS = addonsRes.data;
-      if (videosRes.data && videosRes.data.length) {
-        videosRes.data.forEach((r) => { CATEGORY_VIDEOS[r.category] = { video_url: r.video_url || '', thumbnail_url: r.thumbnail_url || '' }; });
-      }
-      if (portfolioRes.data && portfolioRes.data.length) {
-        const grouped = {};
-        portfolioRes.data.forEach((p) => { (grouped[p.category] = grouped[p.category] || []).push(p); });
-        PORTFOLIO_BY_CATEGORY = grouped;
-      }
       dataLoaded = true;
     } catch (e) { /* fall back to placeholders */ }
   }
@@ -3408,22 +3402,34 @@ if (reelsSlider) {
   }
 
   function updatePanelMedia(categoryKey) {
-    panelVideo.innerHTML = '<span class="qp-panel-tag" id="qpPanelTag"></span>';
-    const tagEl = panelVideo.querySelector('#qpPanelTag');
-    const catData = CATEGORY_VIDEOS[categoryKey];
-    const applyFallback = () => {
-      if (catData && catData.thumbnail_url) {
-        panelVideo.style.background = `center / cover no-repeat url(${catData.thumbnail_url})`;
-      } else {
-        panelVideo.style.background = FALLBACK_GRADS[categoryKey] || FALLBACK_GRADS.business;
-      }
-    };
-    if (catData && catData.video_url) {
-      createNativeVideoCard(panelVideo, catData.video_url, applyFallback);
-    } else {
-      applyFallback();
+    panelVideo.innerHTML = '';
+    panelVideo.style.background = 'var(--navy-ink)';
+    const tiers = (TIERS_BY_CATEGORY[categoryKey] || []).slice(0, 4);
+    const withVideo = tiers.filter((t) => t.video_url);
+
+    const tag = document.createElement('span');
+    tag.className = 'qp-panel-tag';
+    tag.id = 'qpPanelTag';
+    tag.textContent = answers.categoryLabel;
+
+    if (!withVideo.length) {
+      panelVideo.style.background = FALLBACK_GRADS[categoryKey] || FALLBACK_GRADS.business;
+      panelVideo.appendChild(tag);
+      return;
     }
-    tagEl.textContent = answers.categoryLabel;
+
+    const grid = document.createElement('div');
+    grid.className = 'qp-panel-grid' + (withVideo.length <= 1 ? ' qp-single-col' : '');
+    withVideo.forEach((t) => {
+      const cell = document.createElement('div');
+      cell.className = 'qp-panel-grid-cell';
+      createNativeVideoCard(cell, t.video_url, () => {
+        cell.style.background = t.thumbnail_url ? `center / cover no-repeat url(${t.thumbnail_url})` : (FALLBACK_GRADS[categoryKey] || FALLBACK_GRADS.business);
+      });
+      grid.appendChild(cell);
+    });
+    panelVideo.appendChild(grid);
+    panelVideo.appendChild(tag);
   }
 
   function updateTotal() {
@@ -3456,7 +3462,7 @@ if (reelsSlider) {
   }
 
   function showCategoryStep() {
-    bot('What style are you thinking? Tap to preview — the video on the right will update.');
+    bot('What category are you thinking? Tap to preview — the videos on the right will update.');
     textRow.classList.add('is-hidden');
     chipsWrap.classList.add('is-visible');
     chipsWrap.innerHTML = '';
@@ -3487,36 +3493,49 @@ if (reelsSlider) {
       user(answers.categoryLabel);
       chipsWrap.classList.remove('is-visible');
       textRow.classList.remove('is-hidden');
-      setTimeout(() => { showCategoryGallery(); }, 300);
+      setTimeout(() => { showStyleStep(); }, 300);
     });
     chipsWrap.appendChild(confirmBtn);
   }
 
-  function showCategoryGallery() {
-    const clips = (PORTFOLIO_BY_CATEGORY[answers.categoryKey] || []).filter((p) => p.video_url).slice(0, 4);
-    bot(`Here's our recent ${answers.categoryLabel} work.`);
+  function showStyleStep() {
+    const tiers = (TIERS_BY_CATEGORY[answers.categoryKey] || []).slice(0, 4);
+    bot(`Which style of ${answers.categoryLabel} do you want?`);
+
+    if (!tiers.length) {
+      // nothing configured for this category yet — nothing to pick, skip straight to quantity
+      setTimeout(() => { bot('How many videos a month?'); state = 'qty'; }, 350);
+      return;
+    }
 
     modalEl.classList.add('is-wide');
     panelCol.style.display = 'none';
 
     const grid = document.createElement('div');
-    grid.className = 'qp-tier-grid' + (clips.length <= 1 ? ' qp-single-col' : '');
+    grid.className = 'qp-tier-grid' + (tiers.length <= 1 ? ' qp-single-col' : '');
 
-    if (!clips.length) {
-      // nothing uploaded for this category yet — skip straight to tiers
-      grid.remove();
-      modalEl.classList.remove('is-wide');
-      panelCol.style.display = '';
-      updatePanelMedia(answers.categoryKey);
-      showTierStep();
-      return;
-    }
+    let selectedTier = null;
+    let selectedCard = null;
 
-    clips.forEach((p) => {
+    tiers.forEach((t, i) => {
       const card = document.createElement('div');
-      card.className = 'qp-gallery-card';
-      createNativeVideoCard(card, p.video_url, () => {
-        card.style.background = p.thumbnail_url ? `center / cover no-repeat url(${p.thumbnail_url})` : (FALLBACK_GRADS[answers.categoryKey] || FALLBACK_GRADS.business);
+      card.className = 'qp-tier-card';
+      const applyFallback = () => {
+        card.style.background = t.thumbnail_url ? `center / cover no-repeat url(${t.thumbnail_url})` : (FALLBACK_GRADS[answers.categoryKey] || FALLBACK_GRADS.business);
+      };
+      if (t.video_url) { createNativeVideoCard(card, t.video_url, applyFallback); } else { applyFallback(); }
+
+      const info = document.createElement('div');
+      info.className = 'qp-tier-info';
+      info.innerHTML = `<div class="qp-tier-name">${t.tier_name || `Style ${i + 1}`}</div><div class="qp-tier-price">₹${Number(t.price).toLocaleString('en-IN')}/video</div>`;
+      card.appendChild(info);
+
+      card.addEventListener('click', () => {
+        if (selectedCard) selectedCard.classList.remove('is-selected');
+        card.classList.add('is-selected');
+        selectedCard = card;
+        selectedTier = t;
+        continueBtn.classList.add('is-ready');
       });
       grid.appendChild(card);
     });
@@ -3524,29 +3543,20 @@ if (reelsSlider) {
 
     const continueBtn = document.createElement('div');
     continueBtn.className = 'qp-gallery-continue';
-    continueBtn.textContent = 'Continue to pricing ▸';
+    continueBtn.textContent = 'Confirm this style ▸';
     continueBtn.addEventListener('click', () => {
+      if (!selectedTier) return;
+      user(selectedTier.tier_name || 'Selected style');
       grid.remove();
       continueBtn.remove();
       modalEl.classList.remove('is-wide');
       panelCol.style.display = '';
+      answers.tier = selectedTier;
       updatePanelMedia(answers.categoryKey);
-      showTierStep();
+      updateTotal();
+      setTimeout(() => { bot('How many videos a month?'); state = 'qty'; }, 350);
     });
     gridEl.appendChild(continueBtn);
-  }
-
-  function showTierStep() {
-    const tiers = (TIERS_BY_CATEGORY[answers.categoryKey] || []).slice(0, 4);
-    bot('Which package works for you?');
-    showChips(tiers.map((t) => ({ label: `${t.tier_name} — ₹${Number(t.price).toLocaleString('en-IN')}/video`, tier: t })), (choice) => {
-      answers.tier = choice.tier;
-      updateTotal();
-      setTimeout(() => {
-        bot('How many videos a month?');
-        state = 'qty';
-      }, 350);
-    });
   }
 
   function showAddonStep() {
