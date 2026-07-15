@@ -2227,6 +2227,20 @@ button {
   flex: 1; background: rgba(10,13,30,0.5); border: 1px solid rgba(167,159,155,0.25);
   border-radius: 999px; padding: 11px 16px; color: var(--paper); font-size: 0.86rem; font-family: var(--font-body);
 }
+.qp-qty-wrap { width: 100%; }
+.qp-qty-label { color: var(--paper); font-size: 0.86rem; font-weight: 600; margin-bottom: 10px; }
+.qp-qty-label span { color: var(--orange); font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; }
+.qp-qty-slider {
+  -webkit-appearance: none; appearance: none; width: 100%; height: 4px; border-radius: 999px;
+  background: rgba(167,159,155,0.25); outline: none; cursor: pointer;
+}
+.qp-qty-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--orange); border: 3px solid var(--navy-deep); cursor: pointer;
+}
+.qp-qty-slider::-moz-range-thumb {
+  width: 20px; height: 20px; border-radius: 50%; background: var(--orange); border: 3px solid var(--navy-deep); cursor: pointer;
+}
 .bc-send {
   width: 40px; height: 40px; border-radius: 50%; background: var(--orange); border: none;
   display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;
@@ -3510,7 +3524,7 @@ if (reelsSlider) {
 
     if (!tiers.length) {
       // nothing configured for this category yet — nothing to pick, skip straight to quantity
-      setTimeout(() => { bot('How many videos a month?'); state = 'qty'; }, 350);
+      setTimeout(() => { showQtyStep(); }, 350);
       return;
     }
 
@@ -3560,9 +3574,61 @@ if (reelsSlider) {
       answers.tier = selectedTier;
       updateSelectedTierPanel(selectedTier);
       updateTotal();
-      setTimeout(() => { bot('How many videos a month?'); state = 'qty'; }, 350);
+      setTimeout(() => { showQtyStep(); }, 350);
     });
     gridEl.appendChild(continueBtn);
+  }
+
+  function showQtyStep() {
+    bot('How many videos a month?');
+    textRow.classList.add('is-hidden');
+    chipsWrap.classList.add('is-visible');
+    chipsWrap.innerHTML = '';
+
+    panelVideo.innerHTML = '';
+    panelVideo.style.display = 'none';
+
+    answers.qty = 1;
+    updateTotal();
+
+    const wrap = document.createElement('div');
+    wrap.className = 'qp-qty-wrap';
+
+    const label = document.createElement('div');
+    label.className = 'qp-qty-label';
+    label.innerHTML = `<span id="qpQtyNum">1</span> video / month`;
+
+    const slider = document.createElement('input');
+    slider.type = 'range';
+    slider.className = 'qp-qty-slider';
+    slider.min = '1';
+    slider.max = '30';
+    slider.step = '1';
+    slider.value = '1';
+
+    slider.addEventListener('input', () => {
+      const n = parseInt(slider.value, 10);
+      answers.qty = n;
+      label.innerHTML = `<span id="qpQtyNum">${n}</span> video${n > 1 ? 's' : ''} / month`;
+      updateTotal();
+    });
+
+    wrap.appendChild(label);
+    wrap.appendChild(slider);
+    chipsWrap.appendChild(wrap);
+
+    const confirmBtn = document.createElement('span');
+    confirmBtn.className = 'bc-chip';
+    confirmBtn.style.background = 'var(--orange)';
+    confirmBtn.style.color = 'var(--navy-deep)';
+    confirmBtn.textContent = 'Confirm ▸';
+    confirmBtn.addEventListener('click', () => {
+      user(`${answers.qty} video${answers.qty > 1 ? 's' : ''}/month`);
+      chipsWrap.classList.remove('is-visible');
+      textRow.classList.remove('is-hidden');
+      setTimeout(() => { bot('Got it. Any add-ons?'); showAddonStep(); }, 350);
+    });
+    chipsWrap.appendChild(confirmBtn);
   }
 
   function showAddonStep() {
@@ -3630,6 +3696,7 @@ if (reelsSlider) {
     input.value = '';
     panelVideo.innerHTML = '<span class="qp-panel-tag" id="qpPanelTag">Waiting for your answer...</span>';
     panelVideo.style.background = 'var(--navy-ink)';
+    panelVideo.style.display = '';
     panelTotal.innerHTML = '₹0<span> /mo</span>';
     panelGo.classList.remove('is-ready');
     panelGo.textContent = 'Get Quote';
@@ -3668,18 +3735,6 @@ if (reelsSlider) {
       user(digitsOnly); answers.phone = digitsOnly; input.value = '';
       setTimeout(() => { showCategoryStep(); }, 350);
       state = 'category';
-
-    } else if (state === 'qty') {
-      const n = parseInt(val, 10);
-      if (!n || n < 1) {
-        user(val); input.value = '';
-        setTimeout(() => bot('Just a number, like 8.'), 350);
-        return;
-      }
-      user(String(n)); answers.qty = n; input.value = '';
-      updateTotal();
-      setTimeout(() => { bot('Got it. Any add-ons?'); showAddonStep(); }, 350);
-      state = 'addons';
     }
   }
 
