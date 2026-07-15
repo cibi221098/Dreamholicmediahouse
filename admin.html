@@ -2543,6 +2543,30 @@ button {
   .admin-modal-actions { display: flex; gap: 10px; margin-top: 20px; }
   .admin-modal-actions .btn-outline { flex: 1; text-align: center; justify-content: center; }
   .admin-modal-close { float: right; background: none; border: none; color: var(--fog); cursor: pointer; font-size: 1.1rem; }
+
+  /* ---------- LEADS TABLE ---------- */
+  .leads-table-wrap { overflow-x: auto; border: 1px solid rgba(167,159,155,0.16); border-radius: 10px; }
+  .leads-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; table-layout: fixed; }
+  .leads-table th, .leads-table td {
+    padding: 12px 14px; text-align: left; vertical-align: top;
+    border-bottom: 1px solid rgba(167,159,155,0.12);
+    overflow-wrap: break-word;
+  }
+  .leads-table th {
+    color: var(--fog); font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.05em;
+    font-weight: 700; background: rgba(10,13,30,0.45); white-space: nowrap;
+  }
+  .leads-table tbody tr:last-child td { border-bottom: none; }
+  .leads-table tbody tr:hover { background: rgba(255,90,31,0.05); }
+  .leads-table td.when { white-space: nowrap; color: var(--fog); font-size: 0.78rem; }
+  .leads-table td.actions { white-space: nowrap; width: 1%; }
+  .leads-row-btn {
+    display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px;
+    border-radius: 6px; border: 1px solid rgba(167,159,155,0.25); background: transparent;
+    color: var(--fog); cursor: pointer; margin-right: 6px; font-size: 0.8rem;
+  }
+  .leads-row-btn:hover { background: rgba(255,90,31,0.12); color: var(--orange); border-color: rgba(255,90,31,0.35); }
+  .leads-row-btn.is-delete:hover { background: rgba(226,75,74,0.12); color: #E24B4A; border-color: rgba(226,75,74,0.4); }
 </style>
 </head>
 <body>
@@ -2759,6 +2783,12 @@ button {
       <label>Category</label>
       <select id="portfolioModalCategory"></select>
     </div>
+    <div class="field">
+      <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:normal;font-size:0.86rem;color:var(--paper);">
+        <input type="checkbox" id="portfolioModalShowHome" style="width:16px;height:16px;">
+        Show in homepage showcase carousel
+      </label>
+    </div>
 
     <div class="admin-modal-actions">
       <button class="btn-outline" id="portfolioModalDelete" style="border-color:rgba(226,75,74,0.4);color:#E24B4A;">Delete</button>
@@ -2803,6 +2833,43 @@ button {
       <button class="btn-primary" id="testimonialModalSave" style="flex:1;justify-content:center;">Save</button>
     </div>
     <div class="admin-status" id="testimonialModalStatus"></div>
+  </div>
+</div>
+
+<div class="admin-modal-overlay" id="leadModalOverlay">
+  <div class="admin-modal">
+    <button class="admin-modal-close" id="leadModalClose">✕</button>
+    <h3>Edit Quote Request</h3>
+    <input type="hidden" id="leadModalId">
+    <div class="field"><label>Name</label><input id="leadModalName"></div>
+    <div class="field"><label>Phone</label><input id="leadModalPhone"></div>
+    <div class="field"><label>Style</label><input id="leadModalStyle"></div>
+    <div class="field"><label>Tier</label><input id="leadModalTier"></div>
+    <div class="field"><label>Qty</label><input id="leadModalQty"></div>
+    <div class="field"><label>Estimate</label><input id="leadModalBudget"></div>
+    <div class="field"><label>Comments</label><textarea id="leadModalMessage" rows="3" style="width:100%;box-sizing:border-box;background:rgba(10,13,30,0.5);border:1px solid rgba(167,159,155,0.2);border-radius:8px;padding:10px 12px;color:var(--paper);font-size:0.86rem;font-family:var(--font-body);resize:vertical;"></textarea></div>
+    <div class="admin-modal-actions">
+      <button class="btn-outline" id="leadModalDelete" style="border-color:rgba(226,75,74,0.4);color:#E24B4A;">Delete</button>
+      <button class="btn-primary" id="leadModalSave" style="flex:1;justify-content:center;">Save</button>
+    </div>
+    <div class="admin-status" id="leadModalStatus"></div>
+  </div>
+</div>
+
+<div class="admin-modal-overlay" id="bookingModalOverlay">
+  <div class="admin-modal">
+    <button class="admin-modal-close" id="bookingModalClose">✕</button>
+    <h3>Edit Call Booking</h3>
+    <input type="hidden" id="bookingModalId">
+    <div class="field"><label>Name</label><input id="bookingModalName"></div>
+    <div class="field"><label>Phone</label><input id="bookingModalPhone"></div>
+    <div class="field"><label>Need</label><input id="bookingModalNeed"></div>
+    <div class="field"><label>About their brand</label><textarea id="bookingModalBrand" rows="3" style="width:100%;box-sizing:border-box;background:rgba(10,13,30,0.5);border:1px solid rgba(167,159,155,0.2);border-radius:8px;padding:10px 12px;color:var(--paper);font-size:0.86rem;font-family:var(--font-body);resize:vertical;"></textarea></div>
+    <div class="admin-modal-actions">
+      <button class="btn-outline" id="bookingModalDelete" style="border-color:rgba(226,75,74,0.4);color:#E24B4A;">Delete</button>
+      <button class="btn-primary" id="bookingModalSave" style="flex:1;justify-content:center;">Save</button>
+    </div>
+    <div class="admin-status" id="bookingModalStatus"></div>
   </div>
 </div>
 
@@ -4476,7 +4543,7 @@ if (reelsSlider) {
       const bg = row.thumbnail_url ? `background-image:url(${row.thumbnail_url});` : '';
       const catLabel = (CATEGORY_LIST.find((c) => c.key === row.category) || {}).label || row.category || '—';
       el.innerHTML = `
-        <div class="thumb" style="${bg}">${bg ? '' : 'No thumbnail'}${row.video_url ? ' <span style="position:absolute;top:6px;right:6px;background:var(--orange);color:var(--navy-deep);font-size:0.6rem;font-weight:700;padding:2px 6px;border-radius:999px;">VIDEO</span>' : ''}</div>
+        <div class="thumb" style="${bg}">${bg ? '' : 'No thumbnail'}${row.video_url ? ' <span style="position:absolute;top:6px;right:6px;background:var(--orange);color:var(--navy-deep);font-size:0.6rem;font-weight:700;padding:2px 6px;border-radius:999px;">VIDEO</span>' : ''}${row.show_on_homepage ? ' <span style="position:absolute;top:6px;left:6px;background:rgba(10,13,30,0.75);color:var(--paper);border:1px solid rgba(255,90,31,0.5);font-size:0.6rem;font-weight:700;padding:2px 6px;border-radius:999px;">HOMEPAGE</span>' : ''}</div>
         <div class="meta"><div class="cat">${catLabel}</div><div class="views">${row.views || ''}</div></div>
       `;
       el.querySelector('.thumb').style.position = 'relative';
@@ -4498,6 +4565,7 @@ if (reelsSlider) {
     document.getElementById('portfolioVideoFile').value = '';
     document.getElementById('portfolioVideoFileName').textContent = row && row.video_url ? '✓ Video already uploaded — choose a new file to replace it' : '';
     document.getElementById('portfolioModalDelete').style.display = row ? 'block' : 'none';
+    document.getElementById('portfolioModalShowHome').checked = !!(row && row.show_on_homepage);
     document.getElementById('portfolioModalStatus').textContent = '';
     document.getElementById('portfolioModalOverlay').classList.add('is-open');
   }
@@ -4546,7 +4614,7 @@ if (reelsSlider) {
     }
 
     status.textContent = 'Saving...';
-    const payload = { views, category };
+    const payload = { views, category, show_on_homepage: document.getElementById('portfolioModalShowHome').checked };
     if (thumbnail_url) payload.thumbnail_url = thumbnail_url;
     if (video_url) payload.video_url = video_url;
 
@@ -4763,23 +4831,29 @@ if (reelsSlider) {
     updateLeadsBadge();
   });
 
+  let leadsCache = [];
   async function loadLeads() {
     const { data, error } = await supabaseClient.from('quote_requests').select('*').order('created_at', { ascending: false }).limit(30);
     const wrap = document.getElementById('leadsList');
     if (error) { wrap.innerHTML = `<div class="loading-msg">Couldn't load: ${error.message}</div>`; return; }
     if (data) latestLeadTimes.push(...data.map((r) => r.created_at));
     updateLeadsBadge();
-    if (!data || !data.length) { wrap.innerHTML = `<div class="loading-msg">No quote requests yet.</div>`; return; }
+    leadsCache = data || [];
+    if (!leadsCache.length) { wrap.innerHTML = `<div class="loading-msg">No quote requests yet.</div>`; return; }
     wrap.innerHTML = `
       <div class="leads-table-wrap">
       <table class="leads-table">
-        <thead><tr><th>Name</th><th>Phone</th><th>Style</th><th>Tier</th><th>Qty</th><th>Estimate</th><th>Comments</th><th>When</th></tr></thead>
+        <thead><tr><th>Name</th><th>Phone</th><th>Style</th><th>Tier</th><th>Qty</th><th>Estimate</th><th>Comments</th><th>When</th><th></th></tr></thead>
         <tbody>
-          ${data.map((r) => `
+          ${leadsCache.map((r) => `
             <tr>
               <td>${r.name || '—'}</td><td>${r.phone || '—'}</td><td>${r.video_type || '—'}</td>
               <td>${r.editing_style || '—'}</td><td>${r.quantity || '—'}</td><td>${r.budget || '—'}</td>
               <td>${r.message || '—'}</td><td class="when">${new Date(r.created_at).toLocaleString('en-IN')}</td>
+              <td class="actions">
+                <button class="leads-row-btn" title="Edit" onclick="openLeadModal('${r.id}')">✎</button>
+                <button class="leads-row-btn is-delete" title="Delete" onclick="deleteLead('${r.id}')">🗑</button>
+              </td>
             </tr>
           `).join('')}
         </tbody>
@@ -4788,29 +4862,125 @@ if (reelsSlider) {
     `;
   }
 
+  function openLeadModal(id) {
+    const row = leadsCache.find((r) => r.id === id);
+    if (!row) return;
+    document.getElementById('leadModalId').value = row.id;
+    document.getElementById('leadModalName').value = row.name || '';
+    document.getElementById('leadModalPhone').value = row.phone || '';
+    document.getElementById('leadModalStyle').value = row.video_type || '';
+    document.getElementById('leadModalTier').value = row.editing_style || '';
+    document.getElementById('leadModalQty').value = row.quantity || '';
+    document.getElementById('leadModalBudget').value = row.budget || '';
+    document.getElementById('leadModalMessage').value = row.message || '';
+    document.getElementById('leadModalStatus').textContent = '';
+    document.getElementById('leadModalOverlay').classList.add('is-open');
+  }
+  function closeLeadModal() { document.getElementById('leadModalOverlay').classList.remove('is-open'); }
+  document.getElementById('leadModalClose').addEventListener('click', closeLeadModal);
+
+  document.getElementById('leadModalSave').addEventListener('click', async () => {
+    const id = document.getElementById('leadModalId').value;
+    const statusEl = document.getElementById('leadModalStatus');
+    statusEl.textContent = 'Saving...';
+    const { error } = await supabaseClient.from('quote_requests').update({
+      name: document.getElementById('leadModalName').value,
+      phone: document.getElementById('leadModalPhone').value,
+      video_type: document.getElementById('leadModalStyle').value,
+      editing_style: document.getElementById('leadModalTier').value,
+      quantity: document.getElementById('leadModalQty').value,
+      budget: document.getElementById('leadModalBudget').value,
+      message: document.getElementById('leadModalMessage').value
+    }).eq('id', id);
+    if (error) { statusEl.textContent = `Failed: ${error.message}`; return; }
+    closeLeadModal();
+    await loadLeads();
+  });
+  document.getElementById('leadModalDelete').addEventListener('click', async () => {
+    const id = document.getElementById('leadModalId').value;
+    if (!confirm('Delete this quote request?')) return;
+    const { error } = await supabaseClient.from('quote_requests').delete().eq('id', id);
+    if (error) { document.getElementById('leadModalStatus').textContent = `Failed: ${error.message}`; return; }
+    closeLeadModal();
+    await loadLeads();
+  });
+  async function deleteLead(id) {
+    if (!confirm('Delete this quote request?')) return;
+    const { error } = await supabaseClient.from('quote_requests').delete().eq('id', id);
+    if (!error) await loadLeads();
+  }
+
   /* ---------- CALL BOOKINGS ---------- */
+  let bookingsCache = [];
   async function loadBookings() {
     const { data, error } = await supabaseClient.from('call_bookings').select('*').order('created_at', { ascending: false }).limit(30);
     const wrap = document.getElementById('bookingsList');
     if (error) { wrap.innerHTML = `<div class="loading-msg">Couldn't load: ${error.message}</div>`; return; }
     if (data) latestLeadTimes.push(...data.map((r) => r.created_at));
     updateLeadsBadge();
-    if (!data || !data.length) { wrap.innerHTML = `<div class="loading-msg">No call bookings yet.</div>`; return; }
+    bookingsCache = data || [];
+    if (!bookingsCache.length) { wrap.innerHTML = `<div class="loading-msg">No call bookings yet.</div>`; return; }
     wrap.innerHTML = `
       <div class="leads-table-wrap">
       <table class="leads-table">
-        <thead><tr><th>Name</th><th>Phone</th><th>Need</th><th>About their brand</th><th>When</th></tr></thead>
+        <thead><tr><th>Name</th><th>Phone</th><th>Need</th><th>About their brand</th><th>When</th><th></th></tr></thead>
         <tbody>
-          ${data.map((r) => `
+          ${bookingsCache.map((r) => `
             <tr>
               <td>${r.name || '—'}</td><td>${r.phone || '—'}</td><td>${r.need || '—'}</td>
               <td>${r.brand_message || '—'}</td><td class="when">${new Date(r.created_at).toLocaleString('en-IN')}</td>
+              <td class="actions">
+                <button class="leads-row-btn" title="Edit" onclick="openBookingModal('${r.id}')">✎</button>
+                <button class="leads-row-btn is-delete" title="Delete" onclick="deleteBooking('${r.id}')">🗑</button>
+              </td>
             </tr>
           `).join('')}
         </tbody>
       </table>
       </div>
     `;
+  }
+
+  function openBookingModal(id) {
+    const row = bookingsCache.find((r) => r.id === id);
+    if (!row) return;
+    document.getElementById('bookingModalId').value = row.id;
+    document.getElementById('bookingModalName').value = row.name || '';
+    document.getElementById('bookingModalPhone').value = row.phone || '';
+    document.getElementById('bookingModalNeed').value = row.need || '';
+    document.getElementById('bookingModalBrand').value = row.brand_message || '';
+    document.getElementById('bookingModalStatus').textContent = '';
+    document.getElementById('bookingModalOverlay').classList.add('is-open');
+  }
+  function closeBookingModal() { document.getElementById('bookingModalOverlay').classList.remove('is-open'); }
+  document.getElementById('bookingModalClose').addEventListener('click', closeBookingModal);
+
+  document.getElementById('bookingModalSave').addEventListener('click', async () => {
+    const id = document.getElementById('bookingModalId').value;
+    const statusEl = document.getElementById('bookingModalStatus');
+    statusEl.textContent = 'Saving...';
+    const { error } = await supabaseClient.from('call_bookings').update({
+      name: document.getElementById('bookingModalName').value,
+      phone: document.getElementById('bookingModalPhone').value,
+      need: document.getElementById('bookingModalNeed').value,
+      brand_message: document.getElementById('bookingModalBrand').value
+    }).eq('id', id);
+    if (error) { statusEl.textContent = `Failed: ${error.message}`; return; }
+    closeBookingModal();
+    await loadBookings();
+  });
+  document.getElementById('bookingModalDelete').addEventListener('click', async () => {
+    const id = document.getElementById('bookingModalId').value;
+    if (!confirm('Delete this call booking?')) return;
+    const { error } = await supabaseClient.from('call_bookings').delete().eq('id', id);
+    if (error) { document.getElementById('bookingModalStatus').textContent = `Failed: ${error.message}`; return; }
+    closeBookingModal();
+    await loadBookings();
+  });
+  async function deleteBooking(id) {
+    if (!confirm('Delete this call booking?')) return;
+    const { error } = await supabaseClient.from('call_bookings').delete().eq('id', id);
+    if (!error) await loadBookings();
   }
 </script>
 </body>
