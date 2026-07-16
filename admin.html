@@ -3898,6 +3898,7 @@ if (reelsSlider) {
   function showStyleStep() {
     const tiers = (TIERS_BY_CATEGORY[answers.categoryKey] || []).slice(0, 4);
     bot(`Which style of ${answers.categoryLabel} do you want?`);
+    textRow.classList.add('is-hidden');
 
     if (!tiers.length) {
       // nothing configured for this category yet — nothing to pick, skip straight to quantity
@@ -3910,6 +3911,7 @@ if (reelsSlider) {
 
     const grid = document.createElement('div');
     grid.className = 'qp-tier-grid' + (tiers.length <= 1 ? ' qp-single-col' : '');
+    grid.style.gridColumn = '1 / -1';
 
     let selectedTier = null;
     let selectedCard = null;
@@ -3940,6 +3942,7 @@ if (reelsSlider) {
 
     const continueBtn = document.createElement('div');
     continueBtn.className = 'qp-gallery-continue';
+    continueBtn.style.gridColumn = '1 / -1';
     continueBtn.textContent = 'Confirm this style ▸';
     continueBtn.addEventListener('click', () => {
       if (!selectedTier) return;
@@ -3948,6 +3951,7 @@ if (reelsSlider) {
       continueBtn.remove();
       modalEl.classList.remove('is-wide');
       panelCol.style.display = '';
+      textRow.classList.remove('is-hidden');
       answers.tier = selectedTier;
       updateSelectedTierPanel(selectedTier);
       updateTotal();
