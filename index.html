@@ -1236,6 +1236,21 @@ button {
   color: var(--paper);
 }
 
+.pv-modal-error {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+  color: var(--fog);
+  font-size: 0.86rem;
+  background: var(--navy-deep);
+}
+.pv-modal-error.is-visible { display: flex; }
+
 /* ============================================
    SERVICES
    ============================================ */
@@ -2960,6 +2975,7 @@ button {
     </button>
     <span class="pv-modal-cat" id="pvModalCat"></span>
     <video id="pvModalVideo" playsinline controls></video>
+    <div class="pv-modal-error" id="pvModalError">Couldn't load this clip — check your connection and try again.</div>
   </div>
 </div>
 
@@ -3185,11 +3201,15 @@ if (videoModal) {
   const pvModal = document.getElementById('pvModal');
   const pvVideo = document.getElementById('pvModalVideo');
   const pvCat = document.getElementById('pvModalCat');
+  const pvError = document.getElementById('pvModalError');
   const pvClose = document.getElementById('pvModalClose');
   const pvBackdrop = document.getElementById('pvModalBackdrop');
+  let pvStallTimer = null;
 
   function openPortfolioVideoModal(videoUrl, categoryLabel) {
     if (!videoUrl) return;
+    pvError.classList.remove('is-visible');
+    pvVideo.style.display = '';
     pvVideo.src = videoUrl;
     pvVideo.muted = false;
     pvVideo.currentTime = 0;
@@ -3198,13 +3218,29 @@ if (videoModal) {
     pvCat.style.display = categoryLabel ? '' : 'none';
     pvModal.classList.add('is-open');
     document.body.style.overflow = 'hidden';
+
+    clearTimeout(pvStallTimer);
+    pvStallTimer = setTimeout(() => {
+      if (pvVideo.readyState < 2) { // hasn't got usable data yet — likely stuck
+        pvVideo.style.display = 'none';
+        pvError.classList.add('is-visible');
+      }
+    }, 8000);
   }
   function closePortfolioVideoModal() {
     pvModal.classList.remove('is-open');
     pvVideo.pause();
     pvVideo.src = '';
+    clearTimeout(pvStallTimer);
+    pvError.classList.remove('is-visible');
     document.body.style.overflow = '';
   }
+  pvVideo.addEventListener('error', () => {
+    clearTimeout(pvStallTimer);
+    pvVideo.style.display = 'none';
+    pvError.classList.add('is-visible');
+  });
+  pvVideo.addEventListener('canplay', () => clearTimeout(pvStallTimer));
   pvClose.addEventListener('click', closePortfolioVideoModal);
   pvBackdrop.addEventListener('click', closePortfolioVideoModal);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePortfolioVideoModal(); });
@@ -3303,7 +3339,11 @@ if (videoModal) {
           card.dataset.active = 'true';
           delete card.dataset.offset;
           if (!swatch.querySelector('video') && card.dataset.videoUrl) {
-            createNativeVideoCard(swatch, card.dataset.videoUrl, () => {});
+            createNativeVideoCard(swatch, card.dataset.videoUrl, () => {
+              if (!swatch.style.backgroundImage) {
+                swatch.style.background = 'linear-gradient(160deg, var(--navy-raise), var(--navy-deep))';
+              }
+            });
           }
         } else {
           delete card.dataset.active;
@@ -4038,6 +4078,7 @@ if (reelsSlider) {
   function showStyleStep() {
     const tiers = (TIERS_BY_CATEGORY[answers.categoryKey] || []).slice(0, 4);
     bot(`Which style of ${answers.categoryLabel} do you want?`);
+    textRow.classList.add('is-hidden');
 
     if (!tiers.length) {
       // nothing configured for this category yet — nothing to pick, skip straight to quantity
@@ -4050,6 +4091,7 @@ if (reelsSlider) {
 
     const grid = document.createElement('div');
     grid.className = 'qp-tier-grid' + (tiers.length <= 1 ? ' qp-single-col' : '');
+    grid.style.gridColumn = '1 / -1';
 
     let selectedTier = null;
     let selectedCard = null;
@@ -4080,6 +4122,7 @@ if (reelsSlider) {
 
     const continueBtn = document.createElement('div');
     continueBtn.className = 'qp-gallery-continue';
+    continueBtn.style.gridColumn = '1 / -1';
     continueBtn.textContent = 'Confirm this style ▸';
     continueBtn.addEventListener('click', () => {
       if (!selectedTier) return;
@@ -4088,6 +4131,7 @@ if (reelsSlider) {
       continueBtn.remove();
       modalEl.classList.remove('is-wide');
       panelCol.style.display = '';
+      textRow.classList.remove('is-hidden');
       answers.tier = selectedTier;
       updateSelectedTierPanel(selectedTier);
       updateTotal();
