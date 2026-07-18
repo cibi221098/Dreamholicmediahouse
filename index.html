@@ -950,87 +950,6 @@ button {
 }
 
 /* ============================================
-   CONTENT CALCULATOR
-   ============================================ */
-.calc {
-  padding: 100px var(--edge) 120px;
-  max-width: var(--container);
-  margin: 0 auto;
-  border-top: 1px solid rgba(167,159,155,0.12);
-}
-
-.calc-box {
-  margin-top: 48px;
-  padding: 44px;
-  border-radius: 20px;
-  border: 1px solid rgba(167,159,155,0.16);
-  background: linear-gradient(165deg, var(--navy-raise), var(--navy-deep));
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 50px;
-  align-items: center;
-}
-
-.calc-control label {
-  font-size: 0.78rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--fog);
-}
-
-.calc-control .big-num {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 2.6rem;
-  color: var(--orange);
-  margin: 10px 0 22px;
-}
-
-.calc-control input[type="range"] {
-  width: 100%;
-  -webkit-appearance: none;
-  height: 4px;
-  border-radius: 2px;
-  background: rgba(167,159,155,0.25);
-  outline: none;
-}
-.calc-control input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 20px; height: 20px;
-  border-radius: 50%;
-  background: var(--orange);
-  cursor: pointer;
-  box-shadow: 0 0 0 6px rgba(255,90,31,0.18);
-}
-.calc-control input[type="range"]::-moz-range-thumb {
-  width: 20px; height: 20px;
-  border: none;
-  border-radius: 50%;
-  background: var(--orange);
-  cursor: pointer;
-  box-shadow: 0 0 0 6px rgba(255,90,31,0.18);
-}
-
-.calc-note {
-  margin-top: 16px; font-size: 0.78rem; color: var(--fog); line-height: 1.5;
-  padding: 10px 14px; border-radius: 8px; background: rgba(255,90,31,0.06); border: 1px solid rgba(255,90,31,0.2);
-}
-
-.calc-output { display: flex; flex-direction: column; gap: 18px; }
-
-.calc-out-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  padding-bottom: 14px;
-  border-bottom: 1px solid rgba(167,159,155,0.14);
-}
-.calc-out-row .lbl { font-size: 0.88rem; color: var(--fog); }
-.calc-out-row .num { font-family: var(--font-display); font-weight: 700; font-size: 1.6rem; }
-
-.calc-box .btn-primary { margin-top: 8px; }
-
-/* ============================================
    FAQ
    ============================================ */
 .faq {
@@ -2133,6 +2052,25 @@ button {
 .bc-bubble-bot { align-self: flex-start; background: var(--navy-raise); color: var(--paper); border-radius: 14px 14px 14px 4px; }
 .bc-bubble-user { align-self: flex-end; background: var(--orange); color: var(--navy-deep); font-weight: 600; border-radius: 14px 14px 4px 14px; }
 
+.bc-bubble-bot.is-typing {
+  display: flex; align-items: center; gap: 8px; padding: 9px 14px;
+}
+.bc-typing-avatar {
+  width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+  background: var(--orange); display: flex; align-items: center; justify-content: center;
+  animation: bc-typing-bob 1.1s ease-in-out infinite;
+}
+.bc-typing-avatar .mark { width: 11px; height: 11px; }
+@keyframes bc-typing-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+.bc-typing-dots { display: flex; align-items: center; gap: 4px; }
+.bc-typing-dots span {
+  width: 5px; height: 5px; border-radius: 50%; background: var(--fog);
+  animation: bc-typing-dot 1.1s ease-in-out infinite;
+}
+.bc-typing-dots span:nth-child(2) { animation-delay: 0.15s; }
+.bc-typing-dots span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes bc-typing-dot { 0%, 60%, 100% { opacity: 0.3; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-2px); } }
+
 .bc-input-wrap { padding: 14px 18px 18px; border-top: 1px solid rgba(167,159,155,0.14); }
 .bc-chips { display: none; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
 .bc-chips.is-visible { display: flex; }
@@ -2474,6 +2412,13 @@ button {
 .rd-detail-deliverables { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
 .rd-detail-deliverables li { display: flex; align-items: center; gap: 10px; font-size: 0.88rem; }
 .rd-detail-deliverables svg { width: 16px; height: 16px; color: var(--orange); flex-shrink: 0; }
+.rd-detail-cta {
+  display: inline-flex; align-items: center; gap: 10px; margin-top: 24px;
+  background: var(--orange); color: var(--navy-deep);
+  padding: 13px 24px; border-radius: 999px; font-weight: 700; font-size: 0.86rem;
+  text-decoration: none; border: none; cursor: pointer;
+}
+.rd-detail-cta svg { width: 16px; height: 16px; }
 @media (max-width: 980px) {
   .rd-grid { grid-template-columns: 1fr; }
   .rd-desk { height: 420px; }
@@ -2714,40 +2659,6 @@ button {
   <div class="rd-detail-backdrop" id="rdDetailBackdrop"></div>
   <div class="rd-detail-panel" id="rdDetailPanel"></div>
 </div>
-<section class="calc">
-  <div class="eyebrow"><span class="dot"></span> DIGITAL GROWTH PLANNER</div>
-  <h2 style="font-family:var(--font-display);font-weight:700;font-size:clamp(2rem,3.6vw,2.8rem);margin-top:18px;max-width:600px;">Plan your content. Visualize your growth.</h2>
-  <p style="color:var(--fog);max-width:600px;margin-top:14px;line-height:1.7;">Explore how a consistent content strategy can strengthen your brand presence, expand your audience, and create more opportunities for customer acquisition. Choose the number of reels you plan to publish each month.</p>
-
-  <div class="calc-box">
-    <div class="calc-control">
-      <label>Reels per month</label>
-      <div class="big-num" id="calcReels">12</div>
-      <input type="range" id="reelsSlider" min="4" max="30" value="12" step="1">
-      <p class="calc-note">⚠ These projections are provided for planning purposes only. Actual results vary based on your industry, audience, creative quality, campaign strategy, advertising budget, and market conditions.</p>
-    </div>
-
-    <div class="calc-output">
-      <div class="calc-out-row">
-        <span class="lbl">Projected brand visibility</span>
-        <span class="num" id="calcReach">18.4k</span>
-      </div>
-      <div class="calc-out-row">
-        <span class="lbl">Projected community growth</span>
-        <span class="num" id="calcFollowers">240</span>
-      </div>
-      <div class="calc-out-row">
-        <span class="lbl">Projected qualified enquiries</span>
-        <span class="num" id="calcLeads">9</span>
-      </div>
-      <a href="#" class="btn-primary" data-book-call>
-        <span class="play-chip"><svg viewBox="0 0 20 20" width="12" height="12" fill="currentColor"><path d="M5 3l12 7-12 7V3z"/></svg></span>
-        Create My Growth Strategy
-      </a>
-    </div>
-  </div>
-</section>
-
 <!-- ============ FAQ ============ -->
 <section class="faq">
   <div class="eyebrow"><span class="dot"></span> FAQ</div>
@@ -3514,11 +3425,17 @@ if (reelsSlider) {
   let answers = {};
 
   function bot(msg) {
-    const b = document.createElement('div');
-    b.className = 'bc-bubble-bot';
-    b.textContent = msg;
-    log.appendChild(b);
+    const typing = document.createElement('div');
+    typing.className = 'bc-bubble-bot is-typing';
+    typing.innerHTML = '<span class="bc-typing-avatar"><span class="mark"></span></span><span class="bc-typing-dots"><span></span><span></span><span></span></span>';
+    log.appendChild(typing);
     log.scrollTop = log.scrollHeight;
+    setTimeout(() => {
+      typing.classList.remove('is-typing');
+      typing.innerHTML = '';
+      typing.textContent = msg;
+      log.scrollTop = log.scrollHeight;
+    }, 550);
   }
   function user(msg) {
     const b = document.createElement('div');
@@ -3857,11 +3774,17 @@ if (reelsSlider) {
   let answers = { name: '', phone: '', categoryKey: '', categoryLabel: '', tier: null, qty: 0, addons: [] };
 
   function bot(msg) {
-    const b = document.createElement('div');
-    b.className = 'bc-bubble-bot';
-    b.textContent = msg;
-    log.appendChild(b);
+    const typing = document.createElement('div');
+    typing.className = 'bc-bubble-bot is-typing';
+    typing.innerHTML = '<span class="bc-typing-avatar"><span class="mark"></span></span><span class="bc-typing-dots"><span></span><span></span><span></span></span>';
+    log.appendChild(typing);
     log.scrollTop = log.scrollHeight;
+    setTimeout(() => {
+      typing.classList.remove('is-typing');
+      typing.innerHTML = '';
+      typing.textContent = msg;
+      log.scrollTop = log.scrollHeight;
+    }, 550);
   }
   function user(msg) {
     const b = document.createElement('div');
@@ -4237,7 +4160,8 @@ if (reelsSlider) {
     network: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="6" cy="6" r="2.3"/><circle cx="18" cy="6" r="2.3"/><circle cx="12" cy="18" r="2.3"/><path d="M7.8 7.5L10.5 16M16.2 7.5L13.5 16M8.3 6h7.4"/></svg>',
     star: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M12 3l2.7 5.9 6.3.6-4.7 4.4 1.3 6.2L12 17l-5.6 3.1 1.3-6.2L3 9.5l6.3-.6L12 3z"/></svg>',
     clapper: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M3 10h18v9a1 1 0 01-1 1H4a1 1 0 01-1-1v-9z"/><path d="M3 10l1.5-4.5L18 8 16.5 12M8 5.5L9.5 10M13 6.5L14.5 11"/></svg>',
-    check: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 10l4 4 8-8"/></svg>'
+    check: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 10l4 4 8-8"/></svg>',
+    arrow: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 10h12M11 5l5 5-5 5"/></svg>'
   };
 
   const RD_SERVICES = [
@@ -4249,7 +4173,8 @@ if (reelsSlider) {
       deliverables: ['Audience Research', 'Campaign Optimization', 'Lead Generation'] },
     { num: '03', icon: 'camera', title: 'Video Production & Editing', tagline: "Content engineered for attention.",
       desc: "Cinematic reels, promo videos, and branded content edited to match platform trends and keep audiences watching.",
-      deliverables: ['Reels & Short-form Content', 'Brand Films', 'Professional Editing'] },
+      deliverables: ['Reels & Short-form Content', 'Brand Films', 'Professional Editing'],
+      link: { href: 'video-editing.html', label: 'Need to edit your videos?' } },
     { num: '04', icon: 'network', title: 'Influencer Marketing', tagline: "Connect with creators who influence decisions.",
       desc: "Influencer discovery, collaboration management, and campaigns that reach targeted audiences through authentic storytelling.",
       deliverables: ['Influencer Discovery', 'Campaign Management', 'Performance Tracking'] },
@@ -4361,6 +4286,7 @@ if (reelsSlider) {
       <ul class="rd-detail-deliverables">
         ${s.deliverables.map((d) => `<li>${ICONS.check}${d}</li>`).join('')}
       </ul>
+      ${s.link ? `<a href="${s.link.href}" class="rd-detail-cta">${s.link.label} ${ICONS.arrow}</a>` : ''}
     `;
     rdOverlay.classList.add('is-open');
     document.body.style.overflow = 'hidden';
