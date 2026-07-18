@@ -4936,17 +4936,20 @@ if (reelsSlider) {
   document.getElementById('leadModalDelete').addEventListener('click', async () => {
     const id = document.getElementById('leadModalId').value;
     if (!confirm('Delete this quote request?')) return;
-    const { error, count } = await supabaseClient.from('quote_requests').delete({ count: 'exact' }).eq('id', id);
-    if (error) { document.getElementById('leadModalStatus').textContent = `Failed: ${error.message}`; return; }
-    if (!count) { document.getElementById('leadModalStatus').textContent = 'Nothing was deleted — likely a Supabase permissions (RLS) issue. See the note below the Leads tab.'; return; }
+    const statusEl = document.getElementById('leadModalStatus');
+    const { error } = await supabaseClient.from('quote_requests').delete().eq('id', id);
+    if (error) { statusEl.textContent = `Failed: ${error.message}`; return; }
+    const { data: stillThere } = await supabaseClient.from('quote_requests').select('id').eq('id', id).maybeSingle();
+    if (stillThere) { statusEl.textContent = 'Nothing was deleted — likely a Supabase permissions (RLS) issue. See the note below the Leads tab.'; return; }
     closeLeadModal();
     await loadLeads();
   });
   async function deleteLead(id) {
     if (!confirm('Delete this quote request?')) return;
-    const { error, count } = await supabaseClient.from('quote_requests').delete({ count: 'exact' }).eq('id', id);
+    const { error } = await supabaseClient.from('quote_requests').delete().eq('id', id);
     if (error) { alert(`Couldn't delete: ${error.message}`); return; }
-    if (!count) { alert("Nothing was deleted — this is usually a Supabase permissions (RLS) issue, not a bug in the page. Run the SQL note below the Leads tab in Supabase, then try again."); return; }
+    const { data: stillThere } = await supabaseClient.from('quote_requests').select('id').eq('id', id).maybeSingle();
+    if (stillThere) { alert("Nothing was deleted — this is usually a Supabase permissions (RLS) issue, not a bug in the page. Run the SQL note below the Leads tab in Supabase, then try again."); return; }
     await loadLeads();
   }
 
@@ -5012,17 +5015,20 @@ if (reelsSlider) {
   document.getElementById('bookingModalDelete').addEventListener('click', async () => {
     const id = document.getElementById('bookingModalId').value;
     if (!confirm('Delete this call booking?')) return;
-    const { error, count } = await supabaseClient.from('call_bookings').delete({ count: 'exact' }).eq('id', id);
-    if (error) { document.getElementById('bookingModalStatus').textContent = `Failed: ${error.message}`; return; }
-    if (!count) { document.getElementById('bookingModalStatus').textContent = 'Nothing was deleted — likely a Supabase permissions (RLS) issue. See the note below the Leads tab.'; return; }
+    const statusEl = document.getElementById('bookingModalStatus');
+    const { error } = await supabaseClient.from('call_bookings').delete().eq('id', id);
+    if (error) { statusEl.textContent = `Failed: ${error.message}`; return; }
+    const { data: stillThere } = await supabaseClient.from('call_bookings').select('id').eq('id', id).maybeSingle();
+    if (stillThere) { statusEl.textContent = 'Nothing was deleted — likely a Supabase permissions (RLS) issue. See the note below the Leads tab.'; return; }
     closeBookingModal();
     await loadBookings();
   });
   async function deleteBooking(id) {
     if (!confirm('Delete this call booking?')) return;
-    const { error, count } = await supabaseClient.from('call_bookings').delete({ count: 'exact' }).eq('id', id);
+    const { error } = await supabaseClient.from('call_bookings').delete().eq('id', id);
     if (error) { alert(`Couldn't delete: ${error.message}`); return; }
-    if (!count) { alert("Nothing was deleted — this is usually a Supabase permissions (RLS) issue, not a bug in the page. Run the SQL note below the Leads tab in Supabase, then try again."); return; }
+    const { data: stillThere } = await supabaseClient.from('call_bookings').select('id').eq('id', id).maybeSingle();
+    if (stillThere) { alert("Nothing was deleted — this is usually a Supabase permissions (RLS) issue, not a bug in the page. Run the SQL note below the Leads tab in Supabase, then try again."); return; }
     await loadBookings();
   }
 </script>
