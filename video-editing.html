@@ -3981,7 +3981,8 @@ if (reelsSlider) {
     'linear-gradient(160deg, #0A0D1E, #FF5A1F)'
   ];
 
-  async function loadEditsPortfolio() {
+  async function loadEditsPortfolio(attempt) {
+    attempt = attempt || 1;
     if (supabaseClient) {
       try {
         const { data, error } = await supabaseClient
@@ -3991,7 +3992,18 @@ if (reelsSlider) {
         if (!error && data && data.length) {
           return data.map((d) => ({ id: d.youtube_id || '', views: d.views || '', category: d.category || 'business', thumbnail_url: d.thumbnail_url || '', video_url: d.video_url || '' }));
         }
-      } catch (e) { /* Supabase unreachable — fall through to placeholders */ }
+        if (attempt < 6) {
+          // Free-tier Supabase can take a few seconds to wake up on the first hit of the
+          // day — retry with backoff before giving up and showing video-less placeholders.
+          await new Promise((r) => setTimeout(r, 1200 * attempt));
+          return loadEditsPortfolio(attempt + 1);
+        }
+      } catch (e) {
+        if (attempt < 6) {
+          await new Promise((r) => setTimeout(r, 1200 * attempt));
+          return loadEditsPortfolio(attempt + 1);
+        }
+      }
     }
     return EDITS_PORTFOLIO_FALLBACK;
   }
