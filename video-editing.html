@@ -1182,230 +1182,6 @@ button {
   line-height: 1.6;
 }
 
-.filmstrip {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 18px;
-}
-
-.reel-card {
-  position: relative;
-  padding: 30px 22px 26px;
-  border-radius: 14px;
-  background: linear-gradient(165deg, var(--navy-raise), var(--navy-deep));
-  border: 1px solid rgba(167,159,155,0.14);
-  min-height: 300px;
-  display: flex;
-  flex-direction: column;
-  transform-style: preserve-3d;
-  transition: border-color 0.35s var(--ease-out), box-shadow 0.35s var(--ease-out);
-  will-change: transform;
-}
-
-.reel-card:hover {
-  border-color: rgba(255,90,31,0.4);
-  box-shadow: 0 26px 50px -20px rgba(0,0,0,0.55);
-}
-
-.reel-card .sprockets {
-  position: absolute;
-  left: 12px; right: 12px; top: 10px;
-  display: flex;
-  justify-content: space-between;
-}
-.reel-card .sprockets span {
-  width: 5px; height: 5px;
-  border-radius: 1px;
-  background: rgba(167,159,155,0.3);
-}
-
-.reel-card .tc-label {
-  font-size: 0.65rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--orange);
-  font-weight: 600;
-  margin-top: 14px;
-}
-
-.reel-card .icon {
-  width: 40px;
-  height: 40px;
-  margin-top: 20px;
-  color: var(--paper);
-}
-
-.reel-card h3 {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 1.18rem;
-  margin-top: 18px;
-  line-height: 1.25;
-}
-
-.reel-card p {
-  margin-top: 10px;
-  font-size: 0.86rem;
-  color: var(--fog);
-  line-height: 1.55;
-  flex: 1;
-}
-
-.reel-card .corner {
-  position: absolute;
-  bottom: 20px;
-  right: 22px;
-  width: 26px;
-  height: 26px;
-  opacity: 0.35;
-  transition: opacity 0.3s var(--ease-out), transform 0.3s var(--ease-out);
-}
-.reel-card:hover .corner { opacity: 1; transform: translate(2px, -2px); }
-
-/* ============================================
-   CONTACT PAGE
-   ============================================ */
-.contact-hero {
-  padding: 168px var(--edge) 60px;
-  max-width: var(--container);
-  margin: 0 auto;
-}
-.contact-hero .eyebrow { margin-bottom: 24px; }
-.contact-hero h1 {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(2.4rem, 5vw, 4rem);
-  line-height: 1.08;
-  max-width: 760px;
-}
-.contact-hero h1 em { font-style: italic; color: var(--orange); }
-.contact-hero p {
-  margin-top: 22px;
-  max-width: 520px;
-  color: var(--fog);
-  font-size: 1.05rem;
-  line-height: 1.65;
-}
-
-.contact-grid {
-  max-width: var(--container);
-  margin: 0 auto;
-  padding: 20px var(--edge) 140px;
-  display: grid;
-  grid-template-columns: 1fr 1.15fr;
-  gap: 50px;
-}
-
-.contact-info {
-  display: flex;
-  flex-direction: column;
-  gap: 22px;
-}
-
-.info-card {
-  padding: 26px 26px;
-  border-radius: 14px;
-  border: 1px solid rgba(167,159,155,0.16);
-  background: linear-gradient(165deg, var(--navy-raise), var(--navy-deep));
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  transition: transform 0.3s var(--ease-out), border-color 0.3s var(--ease-out);
-}
-.info-card:hover { transform: translateY(-3px); border-color: rgba(255,90,31,0.4); }
-
-.info-card .ic {
-  width: 46px; height: 46px;
-  border-radius: 50%;
-  background: rgba(255,90,31,0.12);
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-.info-card .ic svg { width: 20px; height: 20px; color: var(--orange); }
-
-.info-card .label {
-  font-size: 0.72rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--fog);
-  margin-bottom: 4px;
-}
-.info-card .value {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--paper);
-}
-
-.contact-form {
-  padding: 40px;
-  border-radius: 18px;
-  border: 1px solid rgba(167,159,155,0.16);
-  background: linear-gradient(165deg, var(--navy-raise), var(--navy-deep));
-}
-
-.contact-form .tc-label {
-  font-size: 0.68rem;
-  letter-spacing: 0.16em;
-  color: var(--orange);
-  text-transform: uppercase;
-  font-weight: 600;
-}
-
-.contact-form h3 {
-  font-family: var(--font-display);
-  font-size: 1.6rem;
-  margin-top: 10px;
-  margin-bottom: 28px;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
-  margin-bottom: 18px;
-}
-
-.field { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
-.field label {
-  font-size: 0.76rem;
-  letter-spacing: 0.06em;
-  color: var(--fog);
-  text-transform: uppercase;
-}
-.field input, .field textarea, .field select {
-  font-family: var(--font-body);
-  background: rgba(10,13,30,0.5);
-  border: 1px solid rgba(167,159,155,0.2);
-  border-radius: 8px;
-  padding: 13px 15px;
-  color: var(--paper);
-  font-size: 0.94rem;
-  transition: border-color 0.3s var(--ease-out);
-}
-.field input:focus, .field textarea:focus, .field select:focus {
-  border-color: var(--orange);
-  outline: none;
-}
-.field textarea { resize: vertical; min-height: 110px; }
-
-.contact-form .btn-primary { margin-top: 6px; width: 100%; justify-content: center; }
-
-.style-ref-preview {
-  display: flex; align-items: center; gap: 12px; margin-top: 10px;
-  padding: 8px 12px; border: 1px solid rgba(255,90,31,0.3); border-radius: 10px;
-  background: rgba(255,90,31,0.06); transition: background 0.3s var(--ease-out);
-}
-.style-ref-preview:hover { background: rgba(255,90,31,0.12); }
-.style-ref-preview img { width: 64px; height: 40px; object-fit: cover; border-radius: 6px; background: var(--navy-raise); flex-shrink: 0; }
-.style-ref-play { width: 22px; height: 22px; border-radius: 50%; background: var(--paper); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.style-ref-play svg { width: 9px; height: 9px; }
-.style-ref-text { font-size: 0.8rem; color: var(--paper); font-weight: 600; }
-
-@media (max-width: 860px) {
-  .contact-grid { grid-template-columns: 1fr; }
-  .form-row { grid-template-columns: 1fr; gap: 0; }
-}
-
 /* ============================================
    TRUST STRIP (mini stats row)
    ============================================ */
@@ -2394,7 +2170,6 @@ button {
    RESPONSIVE
    ============================================ */
 @media (max-width: 1080px) {
-  .filmstrip { grid-template-columns: repeat(3, 1fr); }
   .whyus-grid { grid-template-columns: repeat(2, 1fr); }
   .pillars { grid-template-columns: 1fr; }
   .footer-top { grid-template-columns: 1.2fr 1fr 1fr; gap: 28px; }
@@ -2407,7 +2182,6 @@ button {
   .nav-right .nav-icon { display: none; }
   .nav-burger { display: block; }
   .hero { padding-top: 140px; }
-  .filmstrip { grid-template-columns: repeat(2, 1fr); }
   .footer-top { grid-template-columns: 1fr 1fr; }
   .ig-grid { grid-template-columns: repeat(3, 1fr); }
   .portfolio-cta { margin-left: 0; }
@@ -2415,7 +2189,6 @@ button {
 
 @media (max-width: 560px) {
   .hero-frame { border-radius: 16px 60px 60px 16px; aspect-ratio: 4/5; }
-  .filmstrip { grid-template-columns: 1fr; }
   .scrub .tc { display: none; }
   .whyus-grid { grid-template-columns: 1fr 1fr; }
   .whyus-head { flex-direction: column; align-items: flex-start; gap: 14px; }
@@ -2479,7 +2252,6 @@ button {
     <a href="index.html#work">Work</a>
     <a href="index.html#services">Services</a>
     <a href="index.html#why-us">Why Us</a>
-    <a href="contact.html">Contact</a>
   </nav>
 
   <a href="index.html" class="nav-logo nav-center">
@@ -3018,7 +2790,6 @@ function attachTilt(el, strength = 10) {
 }
 
 attachTilt(document.getElementById('heroFoxImg'), 5);
-document.querySelectorAll('.reel-card').forEach((card) => attachTilt(card, 8));
 document.querySelectorAll('.ve2-visual').forEach((card) => attachTilt(card, 7));
 
 /* ---------- VE2 SCROLL STORY ---------- */
@@ -3045,7 +2816,7 @@ window.addEventListener('load', () => {
 
 /* ---------- SCROLL REVEAL (everything below the fold) ---------- */
 const scrollTargets = document.querySelectorAll(
-  '.whyus-head, .stat-card, .pillar, .whyus-contact, .ig-tile, .result-card, .reel-card, .calc-box, .faq-item, .footer-brand, .footer-col, .ve2-row, .rate-row, .custom-plan-card'
+  '.whyus-head, .stat-card, .pillar, .whyus-contact, .ig-tile, .result-card, .calc-box, .faq-item, .footer-brand, .footer-col, .ve2-row, .rate-row, .custom-plan-card'
 );
 scrollTargets.forEach((el) => el.classList.add('load-in'));
 
@@ -3511,7 +3282,7 @@ if (reelsSlider) {
           </div>
         </div>
         <div class="qp-panel-col">
-          <div class="qp-panel-video" id="qpPanelVideo"><span class="qp-panel-tag" id="qpPanelTag">Waiting for your answer...</span></div>
+          <div class="qp-panel-video" id="qpPanelVideo"><span class="qp-panel-tag">Waiting for your answer...</span></div>
           <div class="qp-panel-footer">
             <div>
               <div class="qp-panel-total-label">Estimated Total</div>
@@ -3566,7 +3337,6 @@ if (reelsSlider) {
 
     const tag = document.createElement('span');
     tag.className = 'qp-panel-tag';
-    tag.id = 'qpPanelTag';
     tag.textContent = answers.categoryLabel;
 
     if (!withVideo.length) {
@@ -3594,7 +3364,6 @@ if (reelsSlider) {
     panelVideo.style.background = 'var(--navy-ink)';
     const tag = document.createElement('span');
     tag.className = 'qp-panel-tag';
-    tag.id = 'qpPanelTag';
     tag.textContent = tier.tier_name ? `${answers.categoryLabel} — ${tier.tier_name}` : answers.categoryLabel;
     const applyFallback = () => {
       panelVideo.style.background = tier.thumbnail_url ? `center / cover no-repeat url(${tier.thumbnail_url})` : (FALLBACK_GRADS[answers.categoryKey] || FALLBACK_GRADS.business);
@@ -3753,7 +3522,7 @@ if (reelsSlider) {
 
     const label = document.createElement('div');
     label.className = 'qp-qty-label';
-    label.innerHTML = `<span id="qpQtyNum">1</span> video / month`;
+    label.innerHTML = `<span class="qp-qty-num">1</span> video / month`;
 
     const slider = document.createElement('input');
     slider.type = 'range';
@@ -3766,7 +3535,7 @@ if (reelsSlider) {
     slider.addEventListener('input', () => {
       const n = parseInt(slider.value, 10);
       answers.qty = n;
-      label.innerHTML = `<span id="qpQtyNum">${n}</span> video${n > 1 ? 's' : ''} / month`;
+      label.innerHTML = `<span class="qp-qty-num">${n}</span> video${n > 1 ? 's' : ''} / month`;
       updateTotal();
     });
 
@@ -3851,7 +3620,7 @@ if (reelsSlider) {
     chipsWrap.classList.remove('is-visible');
     textRow.classList.remove('is-hidden');
     input.value = '';
-    panelVideo.innerHTML = '<span class="qp-panel-tag" id="qpPanelTag">Waiting for your answer...</span>';
+    panelVideo.innerHTML = '<span class="qp-panel-tag">Waiting for your answer...</span>';
     panelVideo.style.background = 'var(--navy-ink)';
     panelVideo.style.display = '';
     panelGo.style.display = '';
