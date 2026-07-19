@@ -1342,6 +1342,29 @@ button {
 }
 .pv-modal-error.is-visible { display: flex; }
 
+.pv-modal-unmute {
+  position: absolute;
+  left: 50%;
+  bottom: 60px;
+  transform: translateX(-50%);
+  z-index: 2;
+  display: none;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: rgba(10,13,30,0.82);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,90,31,0.5);
+  color: var(--paper);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.pv-modal-unmute.is-visible { display: flex; }
+.pv-modal-unmute:hover { border-color: var(--orange); background: rgba(255,90,31,0.15); }
+.pv-modal-unmute svg { width: 16px; height: 16px; color: var(--orange); }
+
 /* ============================================
    SERVICES
    ============================================ */
@@ -2978,6 +3001,10 @@ button {
     </button>
     <span class="pv-modal-cat" id="pvModalCat"></span>
     <video id="pvModalVideo" playsinline controls></video>
+    <button class="pv-modal-unmute" id="pvModalUnmute" aria-label="Unmute">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 8a5 5 0 010 8" stroke-linecap="round"/><path d="M20 5a9 9 0 010 14" stroke-linecap="round"/></svg>
+      Tap for sound
+    </button>
     <div class="pv-modal-error" id="pvModalError">Couldn't load this clip — check your connection and try again.</div>
   </div>
 </div>
@@ -3214,21 +3241,34 @@ if (videoModal) {
   const pvError = document.getElementById('pvModalError');
   const pvClose = document.getElementById('pvModalClose');
   const pvBackdrop = document.getElementById('pvModalBackdrop');
+  const pvUnmute = document.getElementById('pvModalUnmute');
   let pvStallTimer = null;
 
   function openPortfolioVideoModal(videoUrl, categoryLabel, posterUrl) {
     if (!videoUrl) return;
     pvError.classList.remove('is-visible');
+    pvUnmute.classList.remove('is-visible');
     pvVideo.style.display = '';
     pvVideo.poster = posterUrl || '';
     pvVideo.src = videoUrl;
-    pvVideo.muted = false;
     pvVideo.currentTime = 0;
-    pvVideo.play().catch(() => {});
     pvCat.textContent = categoryLabel || '';
     pvCat.style.display = categoryLabel ? '' : 'none';
     pvModal.classList.add('is-open');
     document.body.style.overflow = 'hidden';
+
+    // Try playing with sound first (this is a direct user click, so browsers
+    // usually allow it) — but if that gets blocked, don't just silently give
+    // up and leave the video paused on the poster. Fall back to a muted
+    // autoplay, which browsers virtually always allow, and let the person
+    // turn sound on with one tap.
+    pvVideo.muted = false;
+    pvVideo.play().catch(() => {
+      pvVideo.muted = true;
+      pvVideo.play().then(() => {
+        pvUnmute.classList.add('is-visible');
+      }).catch(() => {});
+    });
 
     clearTimeout(pvStallTimer);
     pvStallTimer = setTimeout(() => {
@@ -3242,10 +3282,15 @@ if (videoModal) {
     pvModal.classList.remove('is-open');
     pvVideo.pause();
     pvVideo.src = '';
+    pvUnmute.classList.remove('is-visible');
     clearTimeout(pvStallTimer);
     pvError.classList.remove('is-visible');
     document.body.style.overflow = '';
   }
+  pvUnmute.addEventListener('click', () => {
+    pvVideo.muted = false;
+    pvUnmute.classList.remove('is-visible');
+  });
   pvVideo.addEventListener('error', () => {
     clearTimeout(pvStallTimer);
     pvVideo.style.display = 'none';
