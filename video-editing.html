@@ -2768,20 +2768,29 @@ function createNativeVideoCard(containerEl, videoUrl, onError, posterUrl) {
   video.setAttribute('playsinline', ''); // some mobile browsers need the lowercase attribute too
   video.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;background:#000;';
   containerEl.appendChild(video);
-  video.play().catch(() => { /* browser blocked autoplay — user interaction will resume it */ });
+  video.play().catch((err) => {
+    console.warn('[video] muted autoplay rejected for', videoUrl, '—', err && err.name, err && err.message);
+  });
 
   // If the video fails to load (broken/missing file), don't leave a dead black box —
   // remove it and let the caller's fallback (thumbnail/gradient) show instead.
   let settled = false;
-  function bail() {
+  function bail(reason) {
     if (settled) return;
     settled = true;
     clearTimeout(stallTimer);
     clearTimeout(hardCapTimer);
+    console.error(
+      '[video] giving up on', videoUrl,
+      '— reason:', reason,
+      '| networkState:', video.networkState, '(3 = NETWORK_NO_SOURCE, often CORS or a broken/private URL)',
+      '| readyState:', video.readyState,
+      '| error:', video.error ? `code ${video.error.code}` : 'none (no error event fired — usually means CORS blocked the request or it just hung)'
+    );
     video.remove();
     if (onError) onError();
   }
-  video.addEventListener('error', bail);
+  video.addEventListener('error', () => bail('error event'));
   video.addEventListener('playing', () => { settled = true; clearTimeout(stallTimer); clearTimeout(hardCapTimer); });
 
   // Some failures (permission/CORS issues on the storage host) never fire a proper
@@ -2790,11 +2799,11 @@ function createNativeVideoCard(containerEl, videoUrl, onError, posterUrl) {
   // once on a free-tier host can take a bit longer, and it'd work fine on refresh
   // once the browser had it cached), keep pushing the deadline out as long as bytes
   // are actually arriving. Only give up if nothing has happened for a stretch.
-  let stallTimer = setTimeout(bail, 8000);
+  let stallTimer = setTimeout(() => bail('8s stall — no progress/data events at all'), 8000);
   const extendStallTimer = () => {
     if (settled) return;
     clearTimeout(stallTimer);
-    stallTimer = setTimeout(bail, 8000);
+    stallTimer = setTimeout(() => bail('8s stall after some progress — never reached "playing"'), 8000);
   };
   video.addEventListener('progress', extendStallTimer);
   video.addEventListener('loadeddata', extendStallTimer);
@@ -2803,7 +2812,7 @@ function createNativeVideoCard(containerEl, videoUrl, onError, posterUrl) {
   // (without ever actually firing "playing") could keep pushing the timer above
   // out indefinitely — this hard cap guarantees we give up and fall back within
   // 20s no matter what.
-  const hardCapTimer = setTimeout(bail, 20000);
+  const hardCapTimer = setTimeout(() => bail('20s hard cap — never reached "playing" despite ongoing progress events'), 20000);
 
   // Landscape footage placed in a taller (e.g. portrait) card shouldn't get cropped —
   // letterbox it instead (black bars top/bottom) once we know the clip's real shape.
