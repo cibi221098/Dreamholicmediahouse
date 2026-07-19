@@ -123,6 +123,21 @@ button {
 /* ============================================
    NAV
    ============================================ */
+.skip-link {
+  position: absolute;
+  top: -60px;
+  left: 12px;
+  z-index: 999;
+  background: var(--orange);
+  color: var(--navy-deep);
+  font-weight: 700;
+  font-size: 0.86rem;
+  padding: 12px 20px;
+  border-radius: 8px;
+  transition: top 0.2s ease;
+}
+.skip-link:focus { top: 12px; }
+
 .nav {
   position: fixed;
   top: 0;
@@ -2150,9 +2165,7 @@ button {
 }
 
 @media (max-width: 860px) {
-  .nav-left { display: none; }
   .nav-right .nav-icon { display: none; }
-  .nav-burger { display: block; }
   .hero { padding-top: 140px; }
   .footer-top { grid-template-columns: 1fr 1fr; }
   .ig-grid { grid-template-columns: repeat(3, 1fr); }
@@ -2347,6 +2360,7 @@ button {
 </style>
 </head>
 <body>
+  <a href="#adminApp" class="skip-link">Skip to content</a>
 
 <div id="gate">
   <div class="eyebrow" style="justify-content:center;"><span class="dot"></span> ADMIN</div>
@@ -2374,7 +2388,6 @@ button {
   <div class="nav-right">
     <a href="index.html" class="btn-book">Back to Site</a>
   </div>
-  <button class="nav-burger" aria-label="Open menu"><span></span><span></span><span></span></button>
 </header>
 
 <div class="admin-shell">
