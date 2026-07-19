@@ -9,9 +9,19 @@
 <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
 
 <!-- =====================================================
-     ANALYTICS — paste your real IDs below (see index.html
-     for the step-by-step on where to find them). Same two
-     IDs used on both pages — keep them in sync.
+     ANALYTICS — paste your real IDs below, in the ONE place
+     they're needed on this page. Until you do, these scripts
+     harmlessly do nothing (Google/Meta ignore placeholder IDs).
+
+     Google Analytics (GA4):
+       1. Go to analytics.google.com -> Admin -> Data Streams -> your site
+       2. Copy the "Measurement ID" (looks like G-XXXXXXXXXX)
+       3. Replace BOTH occurrences of G-XXXXXXXXXX below
+
+     Meta Pixel:
+       1. Go to business.facebook.com/events_manager
+       2. Open your Pixel -> Settings -> copy the Pixel ID (a number)
+       3. Replace BOTH occurrences of YOUR_PIXEL_ID below
      ===================================================== -->
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
@@ -39,42 +49,43 @@ fbq('track', 'PageView');
 src="https://www.facebook.com/tr?id=YOUR_PIXEL_ID&ev=PageView&noscript=1"
 /></noscript>
 
-<title>Professional Video Editing Services in Coimbatore | Dreamholic Media House</title>
-<meta name="description" content="Cinematic video editing for brands in Coimbatore and across Tamil Nadu. Dreamholic Media House turns raw footage into scroll-stopping, high-converting content that drives sales.">
+<title>Video Editing & Social Media Agency in Coimbatore | Dreamholic Media House</title>
+<meta name="description" content="Coimbatore-based video editing, Meta Ads, influencer marketing and celebrity management agency. Dreamholic Media House turns raw footage into scroll-stopping content for brands across Tamil Nadu.">
 <meta name="robots" content="index, follow">
-<link rel="canonical" href="https://dreamholicmediahouse.vercel.app/video-editing">
+<link rel="canonical" href="https://dreamholicmediahouse.vercel.app/">
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Dreamholic Media House">
-<meta property="og:title" content="Professional Video Editing Services in Coimbatore | Dreamholic Media House">
-<meta property="og:description" content="Cinematic video editing for brands in Coimbatore and across Tamil Nadu — raw footage turned into scroll-stopping content.">
-<meta property="og:url" content="https://dreamholicmediahouse.vercel.app/video-editing">
+<meta property="og:title" content="Video Editing & Social Media Agency in Coimbatore | Dreamholic Media House">
+<meta property="og:description" content="Coimbatore-based video editing, Meta Ads, influencer marketing and celebrity management agency. Real client work, real results.">
+<meta property="og:url" content="https://dreamholicmediahouse.vercel.app/">
 <meta property="og:image" content="https://dreamholicmediahouse.vercel.app/images/og-cover.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="en_IN">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Professional Video Editing Services in Coimbatore | Dreamholic Media House">
-<meta name="twitter:description" content="Cinematic video editing for brands in Coimbatore and across Tamil Nadu.">
+<meta name="twitter:title" content="Video Editing & Social Media Agency in Coimbatore | Dreamholic Media House">
+<meta name="twitter:description" content="Coimbatore-based video editing, Meta Ads, influencer marketing and celebrity management agency.">
 <meta name="twitter:image" content="https://dreamholicmediahouse.vercel.app/images/og-cover.jpg">
 
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "Service",
-  "serviceType": "Video Editing",
-  "provider": {
-    "@type": "ProfessionalService",
-    "name": "Dreamholic Media House",
-    "telephone": "+91-8072702652",
-    "address": {
-      "@type": "PostalAddress",
-      "addressLocality": "Coimbatore",
-      "addressRegion": "Tamil Nadu",
-      "addressCountry": "IN"
-    }
+  "@type": "ProfessionalService",
+  "name": "Dreamholic Media House",
+  "image": "https://dreamholicmediahouse.vercel.app/",
+  "url": "https://dreamholicmediahouse.vercel.app/",
+  "telephone": "+91-8072702652",
+  "email": "dreamholicmediahouse@gmail.com",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Coimbatore",
+    "addressRegion": "Tamil Nadu",
+    "addressCountry": "IN"
   },
-  "areaServed": ["Coimbatore", "Tamil Nadu", "India"]
+  "areaServed": ["Coimbatore", "Tamil Nadu", "India"],
+  "sameAs": ["https://www.instagram.com/dreamholic.media"],
+  "priceRange": "$$"
 }
 </script>
 
@@ -643,6 +654,16 @@ button {
 }
 .whyus-head h2 em { font-style: italic; color: var(--orange); }
 
+.whyus-sub {
+  max-width: 720px;
+  color: var(--fog);
+  font-size: 1rem;
+  line-height: 1.7;
+  margin: 0 0 18px;
+}
+.whyus-sub strong { color: var(--paper); }
+.whyus-sub:last-of-type { margin-bottom: 44px; }
+
 .whyus-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -797,66 +818,61 @@ button {
 .portfolio-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(255,90,31,0.3); }
 .portfolio-cta svg { width: 15px; height: 15px; }
 
-.ig-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-}
-
-.ig-tile {
+.fan-carousel {
   position: relative;
+  width: 100%;
+  max-width: 720px;
+  height: 460px;
+  margin: 48px auto 10px;
+  perspective: 1400px;
+  perspective-origin: 50% 45%;
+  transition: perspective-origin 0.9s cubic-bezier(.22,1,.36,1);
+}
+
+.fan-cards { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; }
+
+.fan-card {
+  position: absolute;
+  top: 47%; left: 50%;
+  width: 210px;
   aspect-ratio: 9/16;
+  border-radius: 16px;
   overflow: hidden;
-  border-radius: 14px;
   cursor: pointer;
-  border: 1px solid rgba(167,159,155,0.14);
+  border: 1px solid rgba(167,159,155,0.2);
+  background: var(--navy-ink);
+  box-shadow: 0 22px 44px rgba(0,0,0,0.4);
+  transition: transform 0.9s cubic-bezier(.22,1,.36,1), filter 0.9s cubic-bezier(.22,1,.36,1), opacity 0.9s cubic-bezier(.22,1,.36,1), box-shadow 0.9s cubic-bezier(.22,1,.36,1), border-color 0.9s cubic-bezier(.22,1,.36,1);
 }
 
-.ig-tile .swatch {
+.fan-card .swatch {
   position: absolute; inset: 0;
-  background:
-    repeating-linear-gradient(125deg, rgba(255,255,255,0.06) 0px, rgba(255,255,255,0.06) 2px, transparent 2px, transparent 40px),
-    var(--tile-grad);
-  transition: transform 0.5s var(--ease-out);
+  background-size: cover; background-position: center;
+  background-color: var(--navy-ink);
 }
-.ig-tile:hover .swatch { transform: scale(1.08); }
-
-.ig-tile:nth-child(1) { --tile-grad: linear-gradient(160deg, #1D2544, #FF5A1F); }
-.ig-tile:nth-child(2) { --tile-grad: linear-gradient(160deg, #0A0D1E, #A79F9B); }
-.ig-tile:nth-child(3) { --tile-grad: linear-gradient(160deg, #FF5A1F, #0A0D1E); }
-.ig-tile:nth-child(4) { --tile-grad: linear-gradient(160deg, #1D2544, #A79F9B); }
-.ig-tile:nth-child(5) { --tile-grad: linear-gradient(160deg, #C7431A, #1D2544); }
-.ig-tile:nth-child(6) { --tile-grad: linear-gradient(160deg, #0A0D1E, #FF5A1F); }
-
-.ig-tile .overlay {
+.fan-card .shade {
   position: absolute; inset: 0;
-  background: rgba(10,13,30,0.55);
-  display: flex; align-items: center; justify-content: center;
-  gap: 18px;
-  opacity: 0;
-  transition: opacity 0.3s var(--ease-out);
+  background: linear-gradient(180deg, rgba(10,13,30,0.05) 35%, rgba(10,13,30,0.9) 100%);
 }
-.ig-tile:hover .overlay { opacity: 1; }
 
-.ig-tile .overlay span {
-  display: flex; align-items: center; gap: 6px;
-  color: var(--paper);
-  font-size: 0.82rem;
-  font-weight: 600;
+.fan-card[data-active="true"] {
+  transform: translate(-50%,-50%) translateX(0) translateZ(0) rotateY(0deg) scale(1.1);
+  z-index: 50; filter: none;
+  border-color: rgba(255,90,31,0.55);
+  box-shadow: 0 30px 65px rgba(255,90,31,0.25), 0 20px 45px rgba(0,0,0,0.5);
 }
-.ig-tile .overlay svg { width: 16px; height: 16px; }
+.fan-card[data-offset="-1"] { z-index: 40; transform: translate(-50%,-50%) translateX(-135px) translateZ(-110px) rotateY(24deg) scale(0.86); filter: grayscale(0.65) brightness(0.62) blur(0.4px); }
+.fan-card[data-offset="-2"] { z-index: 30; transform: translate(-50%,-50%) translateX(-225px) translateZ(-230px) rotateY(32deg) scale(0.72); filter: grayscale(0.85) brightness(0.45) blur(0.8px); opacity: 0.8; }
+.fan-card[data-offset="-3"] { z-index: 20; transform: translate(-50%,-50%) translateX(-295px) translateZ(-350px) rotateY(38deg) scale(0.6);  filter: grayscale(0.9) brightness(0.35) blur(1.2px); opacity: 0.5; }
+.fan-card[data-offset="1"]  { z-index: 40; transform: translate(-50%,-50%) translateX(135px)  translateZ(-110px) rotateY(-24deg) scale(0.86); filter: grayscale(0.65) brightness(0.62) blur(0.4px); }
+.fan-card[data-offset="2"]  { z-index: 30; transform: translate(-50%,-50%) translateX(225px)  translateZ(-230px) rotateY(-32deg) scale(0.72); filter: grayscale(0.85) brightness(0.45) blur(0.8px); opacity: 0.8; }
+.fan-card[data-offset="3"]  { z-index: 20; transform: translate(-50%,-50%) translateX(295px)  translateZ(-350px) rotateY(-38deg) scale(0.6);  filter: grayscale(0.9) brightness(0.35) blur(1.2px); opacity: 0.5; }
+.fan-card[data-offset="hidden"] { opacity: 0; pointer-events: none; transform: translate(-50%,-50%) translateZ(-450px) scale(0.5); }
 
-.ig-tile .play-mini {
+.fan-card .stat-badge {
   position: absolute;
-  top: 10px; right: 10px;
-  width: 22px; height: 22px;
-  opacity: 0.85;
-}
-
-.ig-tile .stat-badge {
-  position: absolute;
-  top: 10px;
-  left: 10px;
+  top: 12px;
+  left: 12px;
   display: flex;
   align-items: center;
   gap: 5px;
@@ -865,20 +881,52 @@ button {
   background: rgba(10,13,30,0.72);
   backdrop-filter: blur(4px);
   border: 1px solid rgba(255,90,31,0.35);
+  opacity: 0;
+  transition: opacity 0.4s ease 0.3s;
 }
-.ig-tile .stat-badge svg { width: 13px; height: 13px; color: var(--orange); flex-shrink: 0; }
-.ig-tile .stat-badge .tile-count {
+.fan-card[data-active="true"] .stat-badge { opacity: 1; }
+.fan-card .stat-badge svg { width: 13px; height: 13px; color: var(--orange); flex-shrink: 0; }
+.fan-card .stat-badge .tile-count {
   font-size: 0.72rem;
   font-weight: 700;
   color: var(--paper);
   font-variant-numeric: tabular-nums;
 }
-.ig-tile .stat-badge.is-milestone {
-  background: var(--orange);
-  border-color: var(--orange);
+
+.fan-card .info {
+  position: absolute; left: 14px; right: 14px; bottom: 16px;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.4s ease 0.3s, transform 0.4s ease 0.3s;
 }
-.ig-tile .stat-badge.is-milestone svg,
-.ig-tile .stat-badge.is-milestone .tile-count { color: var(--navy-deep); }
+.fan-card[data-active="true"] .info { opacity: 1; transform: translateY(0); }
+.fan-card .info .cat {
+  font-family: var(--font-display); font-weight: 700; font-size: 1rem;
+  text-transform: uppercase; color: var(--paper); margin: 0 0 8px;
+}
+.fan-card .info .watch {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 7px 8px 7px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,90,31,0.4);
+  background: rgba(10,13,30,0.4);
+  font-size: 0.66rem; font-weight: 700; letter-spacing: 0.05em;
+  color: var(--paper);
+}
+.fan-card .info .watch .arrow {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--orange); color: var(--navy-deep);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.fan-card .info .watch .arrow svg { width: 10px; height: 10px; }
+
+@media (max-width: 720px) {
+  .fan-carousel { height: 340px; max-width: 380px; }
+  .fan-card { width: 150px; }
+  .fan-card[data-offset="-1"] { transform: translate(-50%,-50%) translateX(-95px) translateZ(-90px) rotateY(22deg) scale(0.84); }
+  .fan-card[data-offset="1"]  { transform: translate(-50%,-50%) translateX(95px)  translateZ(-90px) rotateY(-22deg) scale(0.84); }
+  .fan-card[data-offset="-2"], .fan-card[data-offset="2"], .fan-card[data-offset="-3"], .fan-card[data-offset="3"] { opacity: 0; }
+}
 
 /* ============================================
    BEFORE / AFTER RESULTS
@@ -994,87 +1042,6 @@ button {
 @media (max-width: 900px) {
   .testimonials-grid { grid-template-columns: 1fr; }
 }
-
-/* ============================================
-   CONTENT CALCULATOR
-   ============================================ */
-.calc {
-  padding: 100px var(--edge) 120px;
-  max-width: var(--container);
-  margin: 0 auto;
-  border-top: 1px solid rgba(167,159,155,0.12);
-}
-
-.calc-box {
-  margin-top: 48px;
-  padding: 44px;
-  border-radius: 20px;
-  border: 1px solid rgba(167,159,155,0.16);
-  background: linear-gradient(165deg, var(--navy-raise), var(--navy-deep));
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 50px;
-  align-items: center;
-}
-
-.calc-control label {
-  font-size: 0.78rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--fog);
-}
-
-.calc-control .big-num {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 2.6rem;
-  color: var(--orange);
-  margin: 10px 0 22px;
-}
-
-.calc-control input[type="range"] {
-  width: 100%;
-  -webkit-appearance: none;
-  height: 4px;
-  border-radius: 2px;
-  background: rgba(167,159,155,0.25);
-  outline: none;
-}
-.calc-control input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 20px; height: 20px;
-  border-radius: 50%;
-  background: var(--orange);
-  cursor: pointer;
-  box-shadow: 0 0 0 6px rgba(255,90,31,0.18);
-}
-.calc-control input[type="range"]::-moz-range-thumb {
-  width: 20px; height: 20px;
-  border: none;
-  border-radius: 50%;
-  background: var(--orange);
-  cursor: pointer;
-  box-shadow: 0 0 0 6px rgba(255,90,31,0.18);
-}
-
-.calc-note {
-  margin-top: 16px; font-size: 0.78rem; color: var(--fog); line-height: 1.5;
-  padding: 10px 14px; border-radius: 8px; background: rgba(255,90,31,0.06); border: 1px solid rgba(255,90,31,0.2);
-}
-
-.calc-output { display: flex; flex-direction: column; gap: 18px; }
-
-.calc-out-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  padding-bottom: 14px;
-  border-bottom: 1px solid rgba(167,159,155,0.14);
-}
-.calc-out-row .lbl { font-size: 0.88rem; color: var(--fog); }
-.calc-out-row .num { font-family: var(--font-display); font-weight: 700; font-size: 1.6rem; }
-
-.calc-box .btn-primary { margin-top: 8px; }
 
 /* ============================================
    FAQ
@@ -1298,6 +1265,82 @@ button {
 }
 .video-modal-close:hover { background: var(--orange); }
 .video-modal-close svg { width: 16px; height: 16px; color: var(--paper); }
+
+.pv-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s var(--ease-out);
+}
+.pv-modal.is-open { opacity: 1; pointer-events: auto; }
+
+.pv-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(6,8,18,0.88);
+  backdrop-filter: blur(6px);
+}
+
+.pv-modal-inner {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  max-height: 88vh;
+  aspect-ratio: 9/16;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--navy-deep);
+  box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+  transform: scale(0.94);
+  transition: transform 0.35s var(--ease-out);
+}
+.pv-modal.is-open .pv-modal-inner { transform: scale(1); }
+
+.pv-modal-inner video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+}
+
+.pv-modal-cat {
+  position: absolute;
+  top: 14px; left: 14px;
+  z-index: 2;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(10,13,30,0.72);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255,90,31,0.4);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--paper);
+}
+
+.pv-modal-error {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+  color: var(--fog);
+  font-size: 0.86rem;
+  background: var(--navy-deep);
+}
+.pv-modal-error.is-visible { display: flex; }
 
 /* ============================================
    SERVICES
@@ -2171,6 +2214,25 @@ button {
 .bc-bubble-bot { align-self: flex-start; background: var(--navy-raise); color: var(--paper); border-radius: 14px 14px 14px 4px; }
 .bc-bubble-user { align-self: flex-end; background: var(--orange); color: var(--navy-deep); font-weight: 600; border-radius: 14px 14px 4px 14px; }
 
+.bc-bubble-bot.is-typing {
+  display: flex; align-items: center; gap: 8px; padding: 9px 14px;
+}
+.bc-typing-avatar {
+  width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+  background: var(--orange); display: flex; align-items: center; justify-content: center;
+  animation: bc-typing-bob 1.1s ease-in-out infinite;
+}
+.bc-typing-avatar .mark { width: 11px; height: 11px; }
+@keyframes bc-typing-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+.bc-typing-dots { display: flex; align-items: center; gap: 4px; }
+.bc-typing-dots span {
+  width: 5px; height: 5px; border-radius: 50%; background: var(--fog);
+  animation: bc-typing-dot 1.1s ease-in-out infinite;
+}
+.bc-typing-dots span:nth-child(2) { animation-delay: 0.15s; }
+.bc-typing-dots span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes bc-typing-dot { 0%, 60%, 100% { opacity: 0.3; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-2px); } }
+
 .bc-input-wrap { padding: 14px 18px 18px; border-top: 1px solid rgba(167,159,155,0.14); }
 .bc-chips { display: none; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
 .bc-chips.is-visible { display: flex; }
@@ -2335,7 +2397,7 @@ button {
   .nav-burger { display: block; }
   .hero { padding-top: 140px; }
   .footer-top { grid-template-columns: 1fr 1fr; }
-  .ig-grid { grid-template-columns: repeat(3, 1fr); }
+  .fan-carousel { max-width: 440px; }
   .portfolio-cta { margin-left: 0; }
 }
 
@@ -2348,7 +2410,6 @@ button {
   .footer-bottom { flex-direction: column; align-items: flex-start; }
   .sticky-cta span.txt { display: none; }
   .sticky-cta { padding: 15px; }
-  .ig-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 
@@ -2383,6 +2444,151 @@ button {
   50%  { transform: perspective(320px) rotateY(180deg) scale(1.12); }
   100% { transform: perspective(320px) rotateY(360deg) scale(1); }
 }
+
+/* ============================================
+   SERVICES — REYN'S CREATIVE DESK
+   ============================================ */
+.rd-section { position: relative; overflow: hidden; }
+.rd-particles { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.rd-particle { position: absolute; width: 3px; height: 3px; border-radius: 50%; background: rgba(255,90,31,0.55); animation: rd-float-p 14s linear infinite; }
+@keyframes rd-float-p {
+  0%   { transform: translateY(0) translateX(0); opacity: 0; }
+  10%  { opacity: 0.8; }
+  90%  { opacity: 0.4; }
+  100% { transform: translateY(-620px) translateX(30px); opacity: 0; }
+}
+.rd-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: 45% 55%;
+  gap: 20px;
+  align-items: center;
+  margin-top: 60px;
+}
+.rd-desk {
+  position: relative; height: 640px; border-radius: 24px;
+  overflow: visible;
+  opacity: 0; transform: translateY(24px);
+  transition: opacity 1s ease, transform 1s ease;
+}
+.rd-desk.is-in { opacity: 1; transform: translateY(0); }
+.rd-desk-img-wrap { position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: center; animation: rd-breathe 6s ease-in-out infinite; }
+@keyframes rd-breathe { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-6px) scale(1.008); } }
+.rd-desk-img { width: 78%; max-width: 380px; object-fit: contain; filter: drop-shadow(0 30px 50px rgba(0,0,0,0.5)); }
+.rd-monitor-glow {
+  position: absolute; left: 50%; top: 28%; width: 220px; height: 140px; transform: translateX(-50%);
+  background: radial-gradient(ellipse at center, rgba(255,90,31,0.28) 0%, transparent 75%);
+  filter: blur(14px); animation: rd-pulse-glow 4s ease-in-out infinite; pointer-events: none;
+}
+@keyframes rd-pulse-glow { 0%,100% { opacity: 0.55; } 50% { opacity: 1; } }
+.rd-desk-caption {
+  position: absolute; left: 4px; top: 4px; z-index: 3;
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 16px 8px 8px; border-radius: 999px;
+  background: rgba(10,13,30,0.55); backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,90,31,0.3);
+  opacity: 0; transform: translateY(-8px);
+  transition: opacity 0.8s ease 0.5s, transform 0.8s ease 0.5s;
+}
+.rd-desk.is-in .rd-desk-caption { opacity: 1; transform: translateY(0); }
+.rd-desk-caption .avatar {
+  width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+  background: var(--orange); display: flex; align-items: center; justify-content: center;
+}
+.rd-desk-caption .avatar svg { width: 15px; height: 15px; color: var(--navy-deep); }
+.rd-desk-caption .name { font-family: var(--font-display); font-weight: 700; font-size: 0.92rem; line-height: 1.2; }
+.rd-desk-caption .role { color: var(--fog); font-size: 0.66rem; letter-spacing: 0.04em; text-transform: uppercase; }
+.rd-hub {
+  position: absolute; right: -18px; top: 42%; width: 40px; height: 40px; border-radius: 50%;
+  background: var(--navy-deep); border: 1.5px solid rgba(255,90,31,0.6);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 0 6px rgba(255,90,31,0.14), 0 0 20px rgba(255,90,31,0.55); z-index: 4;
+}
+.rd-hub .mark { width: 20px; height: 20px; }
+.rd-nodes-wrap { position: relative; height: 640px; }
+.rd-lines { position: absolute; inset: 0; overflow: visible; pointer-events: none; z-index: 1; }
+.rd-lines path {
+  fill: none; stroke: rgba(255,90,31,0.3); stroke-width: 1.4; stroke-dasharray: 340; stroke-dashoffset: 340;
+  transition: stroke-dashoffset 1s ease, stroke 0.4s ease, stroke-width 0.4s ease;
+}
+.rd-nodes-wrap.is-in .rd-lines path { stroke-dashoffset: 0; }
+.rd-lines path.is-lit { stroke: rgba(255,90,31,0.85); stroke-width: 2.2; }
+.rd-node {
+  position: absolute; width: 184px; padding: 16px 16px 14px; border-radius: 18px;
+  background: rgba(29,37,68,0.55); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(167,159,155,0.22); box-shadow: 0 14px 34px rgba(0,0,0,0.35);
+  cursor: pointer; opacity: 0; transform: translateY(14px) scale(0.94);
+  transition: opacity 0.6s ease, transform 0.6s ease, box-shadow 0.35s ease, border-color 0.35s ease;
+  z-index: 2;
+}
+.rd-nodes-wrap.is-in .rd-node { opacity: 1; }
+.rd-node.rd-idle { animation: rd-node-float 5s ease-in-out infinite; }
+@keyframes rd-node-float { 0%,100% { margin-top: 0; } 50% { margin-top: -8px; } }
+.rd-node:hover, .rd-node.is-active {
+  border-color: rgba(255,90,31,0.55);
+  box-shadow: 0 18px 42px rgba(255,90,31,0.22), 0 14px 34px rgba(0,0,0,0.4);
+}
+.rd-node:hover .rd-node-icon, .rd-node.is-active .rd-node-icon { background: rgba(255,90,31,0.22); box-shadow: 0 0 22px rgba(255,90,31,0.4); }
+.rd-node-icon {
+  width: 42px; height: 42px; border-radius: 12px; background: rgba(255,90,31,0.12); border: 1px solid rgba(255,90,31,0.3);
+  display: flex; align-items: center; justify-content: center; margin-bottom: 12px;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+.rd-node-icon svg { width: 20px; height: 20px; color: var(--orange); }
+.rd-node-num { position: absolute; top: 14px; right: 16px; font-family: var(--font-display); font-weight: 700; font-size: 0.7rem; color: rgba(167,159,155,0.5); }
+.rd-node h3 { font-family: var(--font-display); font-weight: 700; font-size: 0.98rem; margin: 0; line-height: 1.3; }
+.rd-node[data-i="0"] { left: 0%;   top: 6%; }
+.rd-node[data-i="1"] { left: 37%; top: 0%; }
+.rd-node[data-i="2"] { left: 70%; top: 20%; }
+.rd-node[data-i="3"] { left: 0%;  top: 48%; }
+.rd-node[data-i="4"] { left: 37%; top: 56%; }
+.rd-node[data-i="5"] { left: 70%; top: 70%; }
+.rd-detail-overlay {
+  position: fixed; inset: 0; z-index: 300; display: flex; align-items: center; justify-content: center; padding: 24px;
+  opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+}
+.rd-detail-overlay.is-open { opacity: 1; pointer-events: auto; }
+.rd-detail-backdrop { position: absolute; inset: 0; background: rgba(6,8,18,0.82); backdrop-filter: blur(4px); }
+.rd-detail-panel {
+  position: relative; width: 100%; max-width: 560px;
+  background: linear-gradient(160deg, var(--navy-raise), var(--navy-deep));
+  border: 1px solid rgba(255,90,31,0.3); border-radius: 22px; padding: 40px 36px 34px;
+  box-shadow: 0 40px 90px rgba(0,0,0,0.55), 0 0 60px rgba(255,90,31,0.1);
+  transform: scale(0.92); transition: transform 0.35s ease;
+}
+.rd-detail-overlay.is-open .rd-detail-panel { transform: scale(1); }
+.rd-detail-close {
+  position: absolute; top: 18px; right: 18px; width: 34px; height: 34px; border-radius: 50%;
+  background: none; border: 1px solid rgba(167,159,155,0.3); color: var(--paper); cursor: pointer;
+  display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+}
+.rd-detail-close:hover { border-color: var(--orange); }
+.rd-detail-icon {
+  width: 56px; height: 56px; border-radius: 16px; background: rgba(255,90,31,0.15); border: 1px solid rgba(255,90,31,0.4);
+  display: flex; align-items: center; justify-content: center; margin-bottom: 20px;
+}
+.rd-detail-icon svg { width: 26px; height: 26px; color: var(--orange); }
+.rd-detail-panel h3 { font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; margin: 0 0 6px; }
+.rd-detail-tagline { color: var(--orange); font-size: 0.86rem; font-weight: 600; margin: 0 0 16px; }
+.rd-detail-desc { color: var(--fog); font-size: 0.92rem; line-height: 1.7; margin: 0 0 22px; }
+.rd-detail-deliverables { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.rd-detail-deliverables li { display: flex; align-items: center; gap: 10px; font-size: 0.88rem; }
+.rd-detail-deliverables svg { width: 16px; height: 16px; color: var(--orange); flex-shrink: 0; }
+.rd-detail-cta {
+  display: inline-flex; align-items: center; gap: 10px; margin-top: 24px;
+  background: var(--orange); color: var(--navy-deep);
+  padding: 13px 24px; border-radius: 999px; font-weight: 700; font-size: 0.86rem;
+  text-decoration: none; border: none; cursor: pointer;
+}
+.rd-detail-cta svg { width: 16px; height: 16px; }
+@media (max-width: 980px) {
+  .rd-grid { grid-template-columns: 1fr; }
+  .rd-desk { height: 420px; }
+  .rd-nodes-wrap { height: auto; }
+  .rd-lines { display: none; }
+  .rd-node { position: static; width: 100%; margin-bottom: 14px; animation: none !important; opacity: 1 !important; transform: none !important; }
+}
+
 </style>
 
 <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAGuElEQVR4nL1Xz29dRxX+zpm5dpy4AZEmtA350dhtgxtAwgvcpPQSFrBJIhAyaiXUCAmUPwCJVhRkHLWlqsQGgYSyQWRVaihIsKpSolcnTRrhIlUlFMV26rwWGmoSnCb+8e7M+VjMvc/Xz04oCDFv8zT3zDnf+fWdGeB/tyTPcw+M6H90qP5/587999LH9YUEAlmHaLH6cFBTl93IzM1OT5+Yq31SYATAqH0QAAKAmwfy3p6leNF5dzsJQAiwEiMIQFbgTfsgI4GrArkA0ZMW7VeXpsZfS9+HHTAWPxCATfftvW1D1EnnZDMJikBIJuMlEJHqSP28QAQQUUAEFiNJ/M5iPNqcfuUPKRogau7UVztfjEEAAUkCFJJCQMg2SCEhBoqBQoFQEjwzY4whWigCQFGnB9XpmR33PPgEAKs5elMAclvR0yJIUackAwDWHaZUG+UBAiTBtCsAHAW+dCaKwDmXPbm9/7M/T94P61ogqvDIzExjEZBHafizc1mWPGYUSNuwiFBEoKWe9n9JMkJJsRZxABBjUTjvHt22a9+xVAvDqzqk2jAAaE6Ov7jbFoZijKOkzKs6RzIKYUIQpMAsEiRrkWmnMQlVPxFBZrEofJZ9Y2vf3m+WIFwdQPs4h+GOTA/qsYmJAgB2735gz0L0T6vqQcBAAhZj4XyWmQUAiCLi2kBI1NMt7cIVAqAR17loH282X/lbKWQAoCxBXMWu3p/cM9eYf3jXIwDw5ptn3nj7wvihGPFV0L1lhqdRuPtCjE8CuqDOOyBFp+xRpISsSrOQNKd+IzP5FgAiz3X5Y+ouXh4e6N3kindct2wsgv1mtoUn7hqbPA8AQwNDHznbU7yPMjrb+vbfr2o/UMVBwGBmQVLepUoLy94t64WAIMY42y2hf3Ly3LVSlm0kuhQFhnks0TKnX9rShXPzj/R/7/l8oPfs+bNXSuMK5L45dfJPMxcah0Kwh80wpS7zSD0c215huViTMTPvs81LyPK0lQqyoypFIarWYnCGDT1devTLW4szc1+5+8DJPPeJGxshnRvR5tT4L67F7sEQ47OktMR5xwRiNekQhICAPAQAyP8uqwG0G987o6ctMXgnezau87/99B2XdwlAjkBTAY0aMOyuTp+Ya14YfwyUoRjji6reQaRitLpuQWrYTwAAGlu4RgSWl4qIiPfWglkENRSd0wklzwvy3M9MvvzHSxdOfTEEHibxTgViBYQ0ZO6one0EUMpX5wgoVEGRzOvNJhvRaIQ0hoddc+rl40XBz9N4XURqSis2Y09tZMtKAG1WqbPLmjNkjTVKDE4nfUvd/4DI2lOQIPD9ttLVKeCqwUXAbjlSS3YjJiaKHX3557Le4iVV/VCprKKqSv186pPUhn6FnmqfBA0gLIrSaZe6ohXXqpdybyx+dNcDW7o1OyrKIyIAaawiXJYCRQUi8m4JWoGxDqVEBZhEjJrBmQMXl+KP5uO1GQKC0ZL38twj0al9rD//eo/PXvOZOwIYyVhx8urQEq8DaLfhiggk+xbV0aFLEYOdnivksU3PT52uYlQhR6MRtu7c9ymfuWedky+QBoutAIivri6shR4QpVEsykkA7TZsA7BuR1EzdIuLLZstlsLRB5/78E8nMFGUjV9qG4t33jm4vqu353GIfNupdJsVMYVbVqYUZfsLTEQkhvjXYuH9U2XabAUA19VSi9zAwp57bzE+ftcLb80AwOC9g7fPovcpFvHEpYunxrbdve+geveM827AYoBZjIC4TsPtZAIgaareG+1nly+/fgN57lPr1sfx4R3r5uf1kxvGLp4DAAdga3/+NRF7ynu/PYTWAokpVbdHVECLoRRb86pVWwYIaPznErD73clTs5XJFQDqq69v//3B8RmnOEBGmFlQUQ9V0IxlQa3Jou2Mt71Hoc5noSgON6dOH++8KWtNXoaHhnp29D30najhVac4YBYiSRMRbyDNopVsdVMKr90+SSJdYEL4cXPq9HEMr76mV0AVGMH2/pd+nWVdh2JsAUCZ2+qKlQpqrZCl+2B9gwEiXtTDQjg2M3nqSOm5oYPlVr4LzDWdsJepjXS5kRKAar53GKwGh6WRK17VwSwuMvK7M1Onf4hbvA063gVYhIiTRIcdgsu+y8pPIiKi6p36zJMIMdoviwKfScZHbvkwWW7DuR7jxgioA8Fkg8slRUnhrxcZQdDYguAKYH8B+Xsz98Lb0403ktSwA0b/7dOsvbb17+2j+fUizsjFNTtEREtsJs5lsRXjjbDOX3nvfOP6stSIAqNAm7/+P0v/m+f5vwAh+pcGA7e/WQAAAABJRU5ErkJggg==">
@@ -2402,9 +2608,9 @@ button {
 <!-- ============ NAV ============ -->
 <header class="nav" id="siteNav">
   <nav class="nav-links nav-left">
-    <a href="index.html#work">Work</a>
-    <a href="index.html#services">Services</a>
-    <a href="index.html#why-us">Why Us</a>
+    <a href="#work">Work</a>
+    <a href="#services">Services</a>
+    <a href="#why-us">Why Us</a>
   </nav>
 
   <a href="index.html" class="nav-logo nav-center">
@@ -2431,131 +2637,221 @@ button {
 </header>
 
 <div class="mobile-nav" id="mobileNav">
-  <a href="index.html#work">Work</a>
-  <a href="index.html#services">Services</a>
-  <a href="index.html#why-us">Why Us</a>
+  <a href="#work">Work</a>
+  <a href="#services">Services</a>
+  <a href="#why-us">Why Us</a>
   <a href="#" class="btn-book" data-book-call>Book a Consultation</a>
 </div>
 
-<!-- ============ GLOW ORB HERO ============ -->
-<section class="ve3-hero" id="main-content">
-  <h1 id="scrubHero"></h1>
-  <p class="intro load-in">We help businesses and brands turn raw footage into cinematic, high-converting video content that captures attention, builds trust, increases engagement, and drives sales.</p>
-
-  <div class="ve3-fan-wrap load-in" id="ve3FanWrap">
-    <div class="ve3-fan-card" style="left:10%; top:55px; --r:-16deg; --d:8px; animation-duration:4s;">
-      <div class="swatch" id="fanCard0" style="background:linear-gradient(160deg,#1D2544,#FF5A1F);"></div>
-    </div>
-    <div class="ve3-fan-card" style="left:24%; top:15px; --r:-8deg; --d:10px; animation-duration:4.6s;">
-      <div class="swatch" id="fanCard1" style="background:linear-gradient(160deg,#0A0D1E,#A79F9B);"></div>
-    </div>
-    <img src="images/reyn-hero-video.png" class="ve3-reyn-img" alt="Reyn, our editor, seated at his desk editing a video — the laptop screen shows a timeline and a promotional preview reading Looking for Editor, Book Now">
-    <div class="ve3-fan-card" style="right:24%; top:15px; --r:8deg; --d:-10px; animation-duration:5.2s;">
-      <div class="swatch" id="fanCard2" style="background:linear-gradient(160deg,#FF5A1F,#0A0D1E);"></div>
-    </div>
-    <div class="ve3-fan-card" style="right:10%; top:55px; --r:16deg; --d:-8px; animation-duration:4.3s;">
-      <div class="swatch" id="fanCard3" style="background:linear-gradient(160deg,#C7431A,#1D2544);"></div>
+<!-- ============ HERO ============ -->
+<section class="hero" id="main-content">
+  <div class="hero-copy load-in">
+    <h1>Digital Marketing<br>That Grows <em>Your Brand.</em></h1>
+    <p class="hero-sub">We combine branding, content creation, and performance marketing into one growth strategy — built for real business results.</p>
+    <div class="hero-cta">
+      <a href="#" class="btn-primary" data-book-call>
+        <span class="play-chip">
+          <svg viewBox="0 0 20 20" width="12" height="12" fill="currentColor"><path d="M5 3l12 7-12 7V3z"/></svg>
+        </span>
+        Book a Free Strategy Call
+      </a>
+      <a href="#work" class="btn-ghost">View Our Work →</a>
     </div>
   </div>
 
-  <div class="cta-row load-in">
-    <a href="#" class="btn-primary" data-quote-popup>
-      <span class="play-chip"><svg viewBox="0 0 20 20" width="12" height="12" fill="currentColor"><path d="M5 3l12 7-12 7V3z"/></svg></span>
-      Get a Custom Quote
-    </a>
-    <a href="#reel" class="btn-ghost">Watch Our Work ↓</a>
+  <div class="hero-fox-wrap load-in">
+    <img src="images/reyn-hero.png" alt="Dreamholic mascot fox holding a laptop, surrounded by growth metrics — Instagram growth 4.2k to 18.6k, +343% growth, month-to-month with no lock-in" class="hero-fox-img" id="heroFoxImg">
   </div>
 </section>
 
-<!-- ============ HORIZONTAL REEL CAROUSEL ============ -->
-<section class="ve3-reel" id="reel">
-  <div class="ve3-reel-head">
-    <div>
-      <div class="eyebrow"><span class="dot"></span> RECENT EDITS</div>
-      <h2 style="margin-top:18px;">Drag through <em>the work.</em></h2>
+<!-- ============ WHY US ============ -->
+<section class="whyus" id="why-us">
+  <div class="whyus-head">
+    <span class="whyus-arrow">
+      <svg viewBox="0 0 20 20" fill="none" stroke="var(--navy-deep)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10h12M11 5l5 5-5 5"/></svg>
+    </span>
+    <h2>Helping Businesses Grow <em>Smarter</em> with Digital Marketing</h2>
+  </div>
+  <p class="whyus-sub">We measure success by the trust our clients place in us — working as an extension of your team to build your brand and grow your business.</p>
+
+  <div class="whyus-grid">
+    <div class="stat-card">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>
+      <span class="num" data-target="2" data-suffix="+">0</span>
+      <span class="label">Years of Growth</span>
     </div>
-    <p>Real client footage, cut the way we'd cut yours. Click any card to watch.</p>
+    <div class="stat-card">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="2.2"/><path d="M8.5 8.5a5 5 0 000 7M15.5 8.5a5 5 0 010 7M5.2 5.2a9.5 9.5 0 000 13.6M18.8 5.2a9.5 9.5 0 010 13.6"/></svg>
+      <span class="num" data-target="12" data-suffix="M+">0</span>
+      <span class="label">Audience Reached</span>
+    </div>
+    <div class="stat-card">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="6" width="14" height="12" rx="2"/><path d="M17 10l4-3v10l-4-3"/></svg>
+      <span class="num" data-target="700" data-suffix="+">0</span>
+      <span class="label">Creative Assets</span>
+    </div>
+    <div class="stat-card hi">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="9" r="3.5"/><path d="M3 20c0-4 2.7-6.5 6-6.5s6 2.5 6 6.5"/><circle cx="17" cy="10" r="2.6"/><path d="M15.3 13.6c3 .3 5.7 2.5 5.7 6.4"/></svg>
+      <span class="num" data-target="90" data-suffix="+">0</span>
+      <span class="label">Brands Partnered</span>
+    </div>
   </div>
 
-  <div class="ve3-filters" id="ve3Filters"></div>
-
-  <div class="ve3-track-wrap" id="ve3Track">
-    <div class="ve3-track" id="ve3TrackInner"></div>
-  </div>
-  <div class="ve3-scroll-hint">
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10h12M11 5l5 5-5 5"/></svg>
-    Drag to see more
-  </div>
-</section>
-
-<!-- ============ BEFORE / AFTER COMPARE ============ -->
-<section class="ve3-compare">
-  <div class="eyebrow"><span class="dot"></span> RAW VS EDITED</div>
-  <h2>See the <em>difference.</em></h2>
-  <p>Drag the handle to compare unedited footage against the final cut.</p>
-
-  <div class="compare-wrap" id="compareWrap">
-    <div class="compare-after" id="compareAfter">
-      <span class="compare-tag right">Edited</span>
+  <div class="pillars">
+    <div class="pillar">
+      <span class="ic">
+        <svg viewBox="0 0 20 20" fill="none" stroke="var(--navy-deep)" stroke-width="1.8"><circle cx="10" cy="10" r="7"/><path d="M10 6v4l3 2"/></svg>
+      </span>
+      <div>
+        <h4>Fast Execution</h4>
+        <p>Marketing moves fast. Our streamlined workflow helps you receive creative updates quickly, so your brand stays active without sacrificing quality.</p>
+      </div>
     </div>
-    <div class="compare-before" id="compareBefore" style="width: 50%;">
-      <span class="compare-tag left">Before</span>
+    <div class="pillar">
+      <span class="ic">
+        <svg viewBox="0 0 20 20" fill="none" stroke="var(--navy-deep)" stroke-width="1.8"><rect x="3" y="5" width="14" height="12" rx="2"/><path d="M3 9h14M7 3v4M13 3v4"/></svg>
+      </span>
+      <div>
+        <h4>Flexible Partnership</h4>
+        <p>We believe trust is earned through performance. That's why we focus on delivering value, maintaining transparency, and building long-term relationships.</p>
+      </div>
     </div>
-    <div class="compare-handle" id="compareHandle" style="left: 50%;">
-      <div class="compare-handle-grip">
-        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 5l-4 5 4 5M13 5l4 5-4 5"/></svg>
+    <div class="pillar">
+      <span class="ic">
+        <svg viewBox="0 0 20 20" fill="none" stroke="var(--navy-deep)" stroke-width="1.8"><path d="M10 4c-3.3 0-6 2.7-6 6 0 4.5 6 8 6 8s6-3.5 6-8c0-3.3-2.7-6-6-6z"/><circle cx="10" cy="10" r="2"/></svg>
+      </span>
+      <div>
+        <h4>Consistent Brand Visibility</h4>
+        <p>Consistency builds recognition. We help your brand maintain an active and engaging digital presence, ensuring your audience always has a reason to remember you.</p>
       </div>
     </div>
   </div>
-  <div class="ve3-compare-hint" id="compareHint">Placeholder panels for now — swap in a real before/after clip whenever you have one.</div>
+</section>
+
+<!-- ============ PORTFOLIO (WORK) ============ -->
+<section class="portfolio" id="work">
+  <div class="portfolio-head">
+    <div class="portfolio-avatar"><span class="mark"></span></div>
+    <div class="portfolio-id">
+      <div class="handle">@dreamholic.media</div>
+      <div class="stats">70+ campaigns · 700+ edits · real client work</div>
+    </div>
+    <a href="video-editing.html" class="portfolio-cta">
+      Need Your Videos Edited?
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 10h12M11 5l5 5-5 5"/></svg>
+    </a>
+  </div>
+
+  <div class="fan-carousel" id="fanCarousel">
+    <div class="fan-cards" id="fanCards"></div>
+  </div>
+</section>
+
+<!-- ============ BEFORE / AFTER RESULTS ============ -->
+<section class="results">
+  <div class="eyebrow"><span class="dot"></span> RESULTS THAT SPEAK</div>
+  <h2 style="font-family:var(--font-display);font-weight:700;font-size:clamp(2rem,3.6vw,2.8rem);margin-top:18px;max-width:560px;">Real brands.<br>Real growth.</h2>
+
+  <div class="results-grid" id="resultsGrid">
+    <div class="result-card">
+      <div class="client">FITNESS BRAND, INSTAGRAM GROWTH</div>
+      <div class="result-row">
+        <div class="result-block before"><span class="tag">Before</span><div class="val">4.2k</div></div>
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 10h12M11 5l5 5-5 5"/></svg>
+        <div class="result-block after"><span class="tag">After (90 days)</span><div class="val">18.6k</div></div>
+      </div>
+      <span class="result-badge">+340% followers</span>
+    </div>
+    <div class="result-card">
+      <div class="client">D2C SKINCARE BRAND, META ADS</div>
+      <div class="result-row">
+        <div class="result-block before"><span class="tag">Before</span><div class="val">₹38 CPL</div></div>
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 10h12M11 5l5 5-5 5"/></svg>
+        <div class="result-block after"><span class="tag">After (60 days)</span><div class="val">₹14 CPL</div></div>
+      </div>
+      <span class="result-badge">−63% cost per lead</span>
+    </div>
+    <div class="result-card">
+      <div class="client">RESTAURANT CHAIN, ENGAGEMENT</div>
+      <div class="result-row">
+        <div class="result-block before"><span class="tag">Before</span><div class="val">1.1%</div></div>
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 10h12M11 5l5 5-5 5"/></svg>
+        <div class="result-block after"><span class="tag">After (90 days)</span><div class="val">6.4%</div></div>
+      </div>
+      <span class="result-badge">+480% engagement rate</span>
+    </div>
+  </div>
 </section>
 
 <!-- ============ TESTIMONIALS ============ -->
-<section class="ve3-testimonials">
-  <div class="ve3-testimonials-head">
-    <div class="eyebrow"><span class="dot"></span> WHAT CLIENTS SAY</div>
-    <h2>Don't take our <em>word for it.</em></h2>
+<section class="testimonials" id="testimonialsSection" style="display:none;">
+  <div class="eyebrow"><span class="dot"></span> WHAT CLIENTS SAY</div>
+  <h2 style="font-family:var(--font-display);font-weight:700;font-size:clamp(2rem,3.6vw,2.8rem);margin-top:18px;max-width:560px;">Don't take our word for it.</h2>
+  <div class="testimonials-grid" id="testimonialsGrid"></div>
+</section>
+
+<!-- ============ SERVICES ============ -->
+<section class="services rd-section" id="services">
+  <div class="rd-particles" id="rdParticles"></div>
+
+  <div class="services-head">
+    <div>
+      <div class="eyebrow"><span class="dot"></span> WHAT WE DO</div>
+      <h2>Every service starts<br>at <em>Reyn's</em> desk.</h2>
+    </div>
+    <p>Built for visibility, engagement and revenue — six services working together as one team, not six vendors to manage. Click a node to see what's inside.</p>
   </div>
-  <div class="ve3-t-grid">
-    <div class="ve3-t-card">
-      <div class="quote-mark">"</div>
-      <p>Turnaround was genuinely 48 hours like they promised. Our reels have never looked this consistent.</p>
-      <div class="who">
-        <span class="avatar">R</span>
-        <div><div class="name">Rohan M.</div><div class="role">Fitness Brand Owner</div></div>
+
+  <div class="rd-grid">
+    <svg class="rd-lines" id="rdLines"></svg>
+    <div class="rd-desk" id="rdDesk">
+      <div class="rd-monitor-glow"></div>
+      <div class="rd-desk-img-wrap">
+        <img class="rd-desk-img" id="rdReynImg" src="" alt="Reyn, Dreamholic's mascot, working on his laptop" loading="lazy">
+      </div>
+      <div class="rd-hub"><span class="mark"></span></div>
+      <div class="rd-desk-caption">
+        <span class="avatar"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 4c-2.4 0-4.5 1.6-5.2 3.9C3.6 8.4 3 9.3 3 10.4c0 1.7 1.3 3 3 3h.3M10 4c2.4 0 4.5 1.6 5.2 3.9.8.6 1.4 1.4 1.4 2.5 0 1.7-1.3 3-3 3h-.3M6.3 13.4c0 2 1.7 3.6 3.7 3.6s3.7-1.6 3.7-3.6"/></svg></span>
+        <span>
+          <div class="name">Reyn</div>
+          <div class="role">Creative Director, Dreamholic</div>
+        </span>
       </div>
     </div>
-    <div class="ve3-t-card">
-      <div class="quote-mark">"</div>
-      <p>I send raw phone footage and get back something that looks like a proper ad. Worth every rupee.</p>
-      <div class="who">
-        <span class="avatar">P</span>
-        <div><div class="name">Priya S.</div><div class="role">D2C Skincare Founder</div></div>
-      </div>
-    </div>
-    <div class="ve3-t-card">
-      <div class="quote-mark">"</div>
-      <p>No back and forth, no missed deadlines. They just get it done and it always looks right.</p>
-      <div class="who">
-        <span class="avatar">A</span>
-        <div><div class="name">Arjun K.</div><div class="role">Restaurant Chain Marketing</div></div>
-      </div>
+
+    <div class="rd-nodes-wrap" id="rdNodesWrap">
     </div>
   </div>
 </section>
 
-<!-- ============ SPOTLIGHT FINAL CTA ============ -->
-<section class="ve3-spotlight">
-  <div class="ve3-spotlight-card">
-    <div class="ve3-spotlight-icon">
-      <div class="ve3-spotlight-icon-inner">
-        <svg viewBox="0 0 20 20" width="16" height="16" fill="var(--orange)"><path d="M5 3l12 7-12 7V3z"/></svg>
-      </div>
-    </div>
-    <div class="label">Build your own plan</div>
-    <h3>Custom Quote</h3>
-    <p>No fixed packages — tell us what you need and we'll quote it straight, usually within the hour.</p>
-    <a href="#" class="btn-primary" data-quote-popup>Get a Custom Quote</a>
+<div class="rd-detail-overlay" id="rdDetailOverlay">
+  <div class="rd-detail-backdrop" id="rdDetailBackdrop"></div>
+  <div class="rd-detail-panel" id="rdDetailPanel"></div>
+</div>
+<!-- ============ FAQ ============ -->
+<section class="faq">
+  <div class="eyebrow"><span class="dot"></span> FAQ</div>
+  <h2 style="font-family:var(--font-display);font-weight:700;font-size:clamp(2rem,3.6vw,2.8rem);margin-top:18px;margin-bottom:30px;">Everything you need to know<br>before partnering with us.</h2>
+
+  <div class="faq-item">
+    <button class="faq-q"><span>Can I choose only the services I need?</span><span class="plus"><svg viewBox="0 0 20 20" fill="none" stroke="var(--paper)" stroke-width="2"><path d="M10 4v12M4 10h12"/></svg></span></button>
+    <div class="faq-a"><p>Yes — whether it's Meta Ads, Social Media Management, Video Production, Influencer Marketing, or a complete solution, we build a plan around your goals and budget, managing everything from content planning to production if you need us to.</p></div>
+  </div>
+  <div class="faq-item">
+    <button class="faq-q"><span>How long does it take to see results?</span><span class="plus"><svg viewBox="0 0 20 20" fill="none" stroke="var(--paper)" stroke-width="2"><path d="M10 4v12M4 10h12"/></svg></span></button>
+    <div class="faq-a"><p>Paid advertising can generate enquiries within days, while organic social media growth typically builds over several months. Our focus is sustainable, long-term growth through consistent strategy and optimization.</p></div>
+  </div>
+  <div class="faq-item">
+    <button class="faq-q"><span>Do you work with startups, local businesses, and established brands?</span><span class="plus"><svg viewBox="0 0 20 20" fill="none" stroke="var(--paper)" stroke-width="2"><path d="M10 4v12M4 10h12"/></svg></span></button>
+    <div class="faq-a"><p>Absolutely. We work with startups, SMEs, personal brands, event companies and established businesses across industries — every strategy is customized to your business stage, market and growth goals.</p></div>
+  </div>
+  <div class="faq-item">
+    <button class="faq-q"><span>How do you measure the success of a marketing campaign?</span><span class="plus"><svg viewBox="0 0 20 20" fill="none" stroke="var(--paper)" stroke-width="2"><path d="M10 4v12M4 10h12"/></svg></span></button>
+    <div class="faq-a"><p>Through meaningful business metrics — brand visibility, engagement, qualified leads, website traffic, conversions and return on advertising spend (ROAS) — not just likes and follower counts.</p></div>
+  </div>
+  <div class="faq-item">
+    <button class="faq-q"><span>Why choose Dreamholic Media House over other digital marketing agencies?</span><span class="plus"><svg viewBox="0 0 20 20" fill="none" stroke="var(--paper)" stroke-width="2"><path d="M10 4v12M4 10h12"/></svg></span></button>
+    <div class="faq-a"><p>We start with a customized strategy built around your specific goals — not a one-size-fits-all package — then combine creativity, content production, performance marketing and brand management under one team, building integrated systems that increase visibility, generate qualified leads, and deliver measurable growth.</p></div>
   </div>
 </section>
 
@@ -2578,7 +2874,7 @@ button {
           <span class="sub">MEDIA HOUSE</span>
         </span>
       </a>
-      <p>Coimbatore's video editing team for brand films, ad cuts, reels and explainers — cinematic edits that turn footage into results.</p>
+      <p>Dreamholic Media House is a full-service digital marketing agency in Coimbatore helping businesses build stronger brands through social media management, performance marketing, content production, branding, and advertising.</p>
       <div class="footer-socials">
         <a href="https://www.instagram.com/dreamholic.media" target="_blank" rel="noopener" aria-label="Instagram">
           <svg viewBox="0 0 24 24" fill="none" stroke="var(--paper)" stroke-width="1.6"><rect x="4" y="4" width="16" height="16" rx="4"/><circle cx="12" cy="12" r="3.4"/><circle cx="16.6" cy="7.4" r="0.6" fill="var(--paper)" stroke="none"/></svg>
@@ -2598,7 +2894,7 @@ button {
         <li><a href="index.html">Home</a></li>
         <li><a href="index.html#why-us">Why Us</a></li>
         <li><a href="index.html#services">Services</a></li>
-        <li><a href="#" data-quote-popup>Get a Quote</a></li>
+        <li><a href="#" data-book-call>Book a Consultation</a></li>
       </ul>
     </div>
 
@@ -2616,7 +2912,7 @@ button {
   <div class="footer-bottom">
     <span>© 2026 Dreamholic Media House, Coimbatore. All rights reserved.</span>
     <a href="#" id="privacyLinkTrigger" style="color:var(--fog);font-size:0.8rem;text-decoration:underline;">Privacy Policy &amp; Terms</a>
-    <span class="tagline">Cut like a reel, run like a studio.</span>
+    <span class="tagline">Content That Connects. Marketing That Converts.</span>
   </div>
 </footer>
 
@@ -2660,6 +2956,29 @@ button {
 
       <p class="privacy-contact">Questions about this policy? Email <a href="mailto:dreamholicmediahouse@gmail.com">dreamholicmediahouse@gmail.com</a>.</p>
     </div>
+  </div>
+</div>
+
+<!-- ============ VIDEO LIGHTBOX ============ -->
+<div class="video-modal" id="videoModal">
+  <div class="video-modal-backdrop" id="videoModalBackdrop"></div>
+  <div class="video-modal-inner">
+    <button class="video-modal-close" id="videoModalClose" aria-label="Close video">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 5l10 10M15 5L5 15"/></svg>
+    </button>
+    <iframe id="videoModalFrame" src="" title="Dreamholic video" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+  </div>
+</div>
+
+<div class="pv-modal" id="pvModal">
+  <div class="pv-modal-backdrop" id="pvModalBackdrop"></div>
+  <div class="pv-modal-inner">
+    <button class="video-modal-close" id="pvModalClose" aria-label="Close video">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 5l10 10M15 5L5 15"/></svg>
+    </button>
+    <span class="pv-modal-cat" id="pvModalCat"></span>
+    <video id="pvModalVideo" playsinline controls></video>
+    <div class="pv-modal-error" id="pvModalError">Couldn't load this clip — check your connection and try again.</div>
   </div>
 </div>
 
@@ -2888,6 +3207,55 @@ if (videoModal) {
   modalBackdrop.addEventListener('click', closeVideoModal);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeVideoModal(); });
 
+  // Popup for real uploaded portfolio clips (as opposed to the YouTube-embed modal above)
+  const pvModal = document.getElementById('pvModal');
+  const pvVideo = document.getElementById('pvModalVideo');
+  const pvCat = document.getElementById('pvModalCat');
+  const pvError = document.getElementById('pvModalError');
+  const pvClose = document.getElementById('pvModalClose');
+  const pvBackdrop = document.getElementById('pvModalBackdrop');
+  let pvStallTimer = null;
+
+  function openPortfolioVideoModal(videoUrl, categoryLabel, posterUrl) {
+    if (!videoUrl) return;
+    pvError.classList.remove('is-visible');
+    pvVideo.style.display = '';
+    pvVideo.poster = posterUrl || '';
+    pvVideo.src = videoUrl;
+    pvVideo.muted = false;
+    pvVideo.currentTime = 0;
+    pvVideo.play().catch(() => {});
+    pvCat.textContent = categoryLabel || '';
+    pvCat.style.display = categoryLabel ? '' : 'none';
+    pvModal.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+
+    clearTimeout(pvStallTimer);
+    pvStallTimer = setTimeout(() => {
+      if (pvVideo.readyState < 2) { // hasn't got usable data yet — likely stuck
+        pvVideo.style.display = 'none';
+        pvError.classList.add('is-visible');
+      }
+    }, 8000);
+  }
+  function closePortfolioVideoModal() {
+    pvModal.classList.remove('is-open');
+    pvVideo.pause();
+    pvVideo.src = '';
+    clearTimeout(pvStallTimer);
+    pvError.classList.remove('is-visible');
+    document.body.style.overflow = '';
+  }
+  pvVideo.addEventListener('error', () => {
+    clearTimeout(pvStallTimer);
+    pvVideo.style.display = 'none';
+    pvError.classList.add('is-visible');
+  });
+  pvVideo.addEventListener('canplay', () => clearTimeout(pvStallTimer));
+  pvClose.addEventListener('click', closePortfolioVideoModal);
+  pvBackdrop.addEventListener('click', closePortfolioVideoModal);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePortfolioVideoModal(); });
+
   // Hero CTA + play button
   document.querySelectorAll('[data-yt]').forEach((el) => {
     if (el.closest('.hero')) {
@@ -2899,8 +3267,13 @@ if (videoModal) {
     }
   });
 
-  // Portfolio tiles -> live video (autoplay muted loop), thumbnail fallback, and view-count badge
-  const tiles = document.querySelectorAll('.ig-tile');
+  // Portfolio -> cinematic 3D showcase carousel. Cards come from whichever
+  // portfolio_videos rows the admin has marked "Show in homepage showcase";
+  // falls back to all portfolio videos if none are marked yet so it never
+  // renders empty. Loops continuously, ~5.5s per video, click the active
+  // card to watch fullscreen, click a side card to bring it to the front.
+  const fanCardsWrap = document.getElementById('fanCards');
+  const fanCarouselEl = document.getElementById('fanCarousel');
 
   async function loadHomepagePortfolio(attempt) {
     attempt = attempt || 1;
@@ -2908,7 +3281,10 @@ if (videoModal) {
       try {
         const { data, error } = await supabaseClient.from('portfolio_videos').select('*').order('sort_order', { ascending: true });
         if (!error && data && data.length) {
-          PORTFOLIO_VIDEOS = data.map((d) => ({ id: d.youtube_id || '', views: d.views || '', thumbnail_url: d.thumbnail_url || '', video_url: d.video_url || '' }));
+          PORTFOLIO_VIDEOS = data.map((d) => ({
+            id: d.youtube_id || '', views: d.views || '', thumbnail_url: d.thumbnail_url || '',
+            video_url: d.video_url || '', category: d.category || '', showOnHome: !!d.show_on_homepage
+          }));
         } else if (attempt < 6) {
           // Free-tier Supabase can take a few seconds to wake up on the first hit of the day —
           // that showed up as tiles staying blank until a manual refresh. Keep retrying with
@@ -2924,38 +3300,124 @@ if (videoModal) {
   }
 
   function renderHomepageTiles() {
-    tiles.forEach((tile, i) => {
-      const entry = PORTFOLIO_VIDEOS[i];
-      if (!entry) return;
-      const badge = tile.querySelector('.stat-badge');
-      const countEl = tile.querySelector('.tile-count');
-      const swatch = tile.querySelector('.swatch');
+    if (!fanCardsWrap) return;
+    const usable = (e) => e.thumbnail_url || e.video_url || isValidYtId(e.id);
+    const marked = PORTFOLIO_VIDEOS.filter((e) => e.showOnHome && usable(e));
+    let pool = (marked.length ? marked : PORTFOLIO_VIDEOS.filter(usable)).slice(0, 15);
 
-      const applyThumbFallback = () => {
-        if (entry.thumbnail_url) {
-          swatch.style.backgroundImage = `url(${entry.thumbnail_url})`;
-          swatch.style.backgroundSize = 'cover';
-          swatch.style.backgroundPosition = 'center';
-        }
-      };
+    // If Supabase couldn't be reached (or nothing's configured yet), show
+    // branded placeholder cards rather than leaving the section blank.
+    if (!pool.length) {
+      pool = [
+        { category: 'personal-branding', views: '' },
+        { category: 'business-video', views: '' },
+        { category: '3d-speed-ramp', views: '' },
+        { category: 'ad-video', views: '' },
+        { category: 'wedding', views: '' }
+      ];
+    }
 
-      if (entry.video_url) {
-        createNativeVideoCard(swatch, entry.video_url, applyThumbFallback);
-      } else if (entry.thumbnail_url) {
-        applyThumbFallback();
-      } else if (isValidYtId(entry.id)) {
+    fanCardsWrap.innerHTML = '';
+    const cardEls = pool.map((entry, i) => {
+      const card = document.createElement('div');
+      card.className = 'fan-card';
+      card.dataset.videoUrl = entry.video_url || '';
+      card.dataset.thumbUrl = entry.thumbnail_url || '';
+      card.dataset.ytId = isValidYtId(entry.id) ? entry.id : '';
+      const catLabel = entry.category
+        ? entry.category.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+        : 'Our Work';
+      card.dataset.catLabel = catLabel;
+      card.innerHTML = `
+        <div class="swatch"></div>
+        <div class="shade"></div>
+        <div class="stat-badge"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z"/><circle cx="10" cy="10" r="2.4"/></svg><span class="tile-count">${entry.views || ''}</span></div>
+        <div class="info">
+          <div class="cat">${catLabel}</div>
+          <div class="watch">WATCH<span class="arrow"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span></div>
+        </div>
+      `;
+      const swatch = card.querySelector('.swatch');
+      if (entry.thumbnail_url) {
+        swatch.style.backgroundImage = `url(${entry.thumbnail_url})`;
+      } else if (entry.id && isValidYtId(entry.id)) {
         swatch.style.backgroundImage = `url(https://img.youtube.com/vi/${entry.id}/hqdefault.jpg)`;
-        swatch.style.backgroundSize = 'cover';
-        swatch.style.backgroundPosition = 'center';
-        tile.style.cursor = 'pointer';
-        tile.addEventListener('click', () => openVideoModal(entry.id));
+      } else if (!entry.video_url) {
+        const grads = [
+          'linear-gradient(160deg, #1D2544, #FF5A1F)',
+          'linear-gradient(160deg, #0A0D1E, #A79F9B)',
+          'linear-gradient(160deg, #FF5A1F, #0A0D1E)',
+          'linear-gradient(160deg, #1D2544, #A79F9B)',
+          'linear-gradient(160deg, #C7431A, #1D2544)'
+        ];
+        swatch.style.background = grads[i % grads.length];
       }
-
-      if (entry.views) {
-        countEl.textContent = entry.views;
-        if (parseViewsNum(entry.views) >= 100000) badge.classList.add('is-milestone');
-      }
+      fanCardsWrap.appendChild(card);
+      return card;
     });
+
+    let activeIndex = 0;
+    let autoplayTimer = null;
+
+    function applySlots(orbit) {
+      cardEls.forEach((card, i) => {
+        let diff = i - activeIndex;
+        const n = cardEls.length;
+        if (diff > n / 2) diff -= n;
+        if (diff < -n / 2) diff += n;
+
+        const swatch = card.querySelector('.swatch');
+        if (diff === 0) {
+          card.dataset.active = 'true';
+          delete card.dataset.offset;
+          if (!swatch.querySelector('video') && card.dataset.videoUrl) {
+            createNativeVideoCard(swatch, card.dataset.videoUrl, () => {
+              if (!swatch.style.backgroundImage) {
+                swatch.style.background = 'linear-gradient(160deg, var(--navy-raise), var(--navy-deep))';
+              }
+            }, card.dataset.thumbUrl);
+          }
+        } else {
+          delete card.dataset.active;
+          card.dataset.offset = Math.abs(diff) > 3 ? 'hidden' : String(diff);
+          const v = swatch.querySelector('video');
+          if (v) v.remove();
+          const btn = swatch.querySelector('.yt-mute-btn');
+          if (btn) btn.remove();
+        }
+      });
+      if (orbit && fanCarouselEl) {
+        fanCarouselEl.style.perspectiveOrigin = activeIndex % 2 === 0 ? '47% 45%' : '53% 45%';
+      }
+    }
+
+    function goTo(index, restart) {
+      activeIndex = ((index % cardEls.length) + cardEls.length) % cardEls.length;
+      applySlots(true);
+      if (restart) startAutoplay();
+    }
+
+    function startAutoplay() {
+      if (autoplayTimer) clearInterval(autoplayTimer);
+      autoplayTimer = setInterval(() => { goTo(activeIndex + 1); }, 5500);
+    }
+
+    cardEls.forEach((card, i) => {
+      card.addEventListener('click', () => {
+        if (card.dataset.active === 'true') {
+          if (card.dataset.videoUrl) {
+            openPortfolioVideoModal(card.dataset.videoUrl, card.dataset.catLabel, card.dataset.thumbUrl);
+          } else if (card.dataset.ytId) {
+            openVideoModal(card.dataset.ytId);
+          }
+        } else {
+          goTo(i, true);
+        }
+      });
+    });
+
+    applySlots(false);
+    startAutoplay();
   }
 
   window.__loaderTrack(loadHomepagePortfolio());
@@ -3066,7 +3528,7 @@ window.addEventListener('load', () => {
 
 /* ---------- SCROLL REVEAL (everything below the fold) ---------- */
 const scrollTargets = document.querySelectorAll(
-  '.whyus-head, .stat-card, .pillar, .whyus-contact, .ig-tile, .result-card, .calc-box, .faq-item, .footer-brand, .footer-col, .ve2-row, .rate-row, .custom-plan-card'
+  '.whyus-head, .stat-card, .pillar, .whyus-contact, .fan-carousel, .result-card, .calc-box, .faq-item, .footer-brand, .footer-col, .ve2-row, .rate-row, .custom-plan-card'
 );
 scrollTargets.forEach((el) => el.classList.add('load-in'));
 
@@ -3222,11 +3684,17 @@ if (reelsSlider) {
   let answers = {};
 
   function bot(msg) {
-    const b = document.createElement('div');
-    b.className = 'bc-bubble-bot';
-    b.textContent = msg;
-    log.appendChild(b);
+    const typing = document.createElement('div');
+    typing.className = 'bc-bubble-bot is-typing';
+    typing.innerHTML = '<span class="bc-typing-avatar"><span class="mark"></span></span><span class="bc-typing-dots"><span></span><span></span><span></span></span>';
+    log.appendChild(typing);
     log.scrollTop = log.scrollHeight;
+    setTimeout(() => {
+      typing.classList.remove('is-typing');
+      typing.innerHTML = '';
+      typing.textContent = msg;
+      log.scrollTop = log.scrollHeight;
+    }, 550);
   }
   function user(msg) {
     const b = document.createElement('div');
@@ -3565,11 +4033,17 @@ if (reelsSlider) {
   let answers = { name: '', phone: '', categoryKey: '', categoryLabel: '', tier: null, qty: 0, addons: [] };
 
   function bot(msg) {
-    const b = document.createElement('div');
-    b.className = 'bc-bubble-bot';
-    b.textContent = msg;
-    log.appendChild(b);
+    const typing = document.createElement('div');
+    typing.className = 'bc-bubble-bot is-typing';
+    typing.innerHTML = '<span class="bc-typing-avatar"><span class="mark"></span></span><span class="bc-typing-dots"><span></span><span></span><span></span></span>';
+    log.appendChild(typing);
     log.scrollTop = log.scrollHeight;
+    setTimeout(() => {
+      typing.classList.remove('is-typing');
+      typing.innerHTML = '';
+      typing.textContent = msg;
+      log.scrollTop = log.scrollHeight;
+    }, 550);
   }
   function user(msg) {
     const b = document.createElement('div');
@@ -3931,253 +4405,174 @@ if (reelsSlider) {
   });
 })();
 
-</script>
-<script>
-  const reduceMotionVE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+/* ---------------------------------------------------------------
+   SERVICES — REYN'S CREATIVE DESK
+   --------------------------------------------------------------- */
+(function () {
+  const section = document.getElementById('rdNodesWrap');
+  if (!section) return;
 
-  /* =====================================================
-     RECENT EDITS — tries Supabase's "portfolio_videos"
-     table first (see SUPABASE_URL/KEY in main.js). Falls
-     back to this placeholder list if Supabase isn't
-     configured yet, or the table is empty.
-     - id: YouTube video ID, opens in a new tab when set
-     - category: personal | business | speedramp | longform | ai
-     ===================================================== */
-  const EDITS_PORTFOLIO_FALLBACK = [
-    { id: '', views: '', category: 'personal' },
-    { id: '', views: '', category: 'business' },
-    { id: '', views: '', category: 'speedramp' },
-    { id: '', views: '', category: 'longform' },
-    { id: '', views: '', category: 'ai' },
-    { id: '', views: '', category: 'business' }
-  ];
-  let CATEGORY_LIST = [
-    { key: 'personal', label: 'Personal Branding' },
-    { key: 'business', label: 'Business Video' },
-    { key: 'speedramp', label: '3D / Speed Ramp' },
-    { key: 'longform', label: 'Long Video' },
-    { key: 'ai', label: 'AI Videos' }
-  ];
-  function categoryLabel(key) {
-    const found = CATEGORY_LIST.find((c) => c.key === key);
-    return found ? found.label : 'Edit';
-  }
-  async function loadCategoryList() {
-    if (!supabaseClient) return;
-    try {
-      const { data, error } = await supabaseClient.from('categories').select('*').order('sort_order', { ascending: true });
-      if (!error && data && data.length) {
-        CATEGORY_LIST = data.map((r) => ({ key: r.key, label: r.label }));
-      }
-    } catch (e) { /* keep fallback */ }
-  }
-  let currentFilter = null;
-  function renderFilterPills() {
-    const wrap = document.getElementById('ve3Filters');
-    wrap.innerHTML = CATEGORY_LIST.map((c, i) => `<button class="ve3-filter-pill${i === 0 ? ' is-active' : ''}" data-filter="${c.key}">${c.label}</button>`).join('');
-    currentFilter = CATEGORY_LIST.length ? CATEGORY_LIST[0].key : null;
-    const pills = wrap.querySelectorAll('.ve3-filter-pill');
-    pills.forEach((pill) => {
-      pill.addEventListener('click', () => {
-        pills.forEach((p) => p.classList.remove('is-active'));
-        pill.classList.add('is-active');
-        currentFilter = pill.dataset.filter;
-        applyFilter();
-      });
-    });
-  }
-  function applyFilter() {
-    document.querySelectorAll('.ve3-card').forEach((card) => {
-      card.classList.toggle('is-hidden', card.dataset.category !== currentFilter);
-    });
-  }
-  const FALLBACK_GRADS = [
-    'linear-gradient(160deg, #1D2544, #FF5A1F)',
-    'linear-gradient(160deg, #0A0D1E, #A79F9B)',
-    'linear-gradient(160deg, #FF5A1F, #0A0D1E)',
-    'linear-gradient(160deg, #1D2544, #A79F9B)',
-    'linear-gradient(160deg, #C7431A, #1D2544)',
-    'linear-gradient(160deg, #0A0D1E, #FF5A1F)'
+  const ICONS = {
+    instagram: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="0.6" fill="currentColor" stroke="none"/></svg>',
+    target: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/></svg>',
+    camera: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="7" width="14" height="11" rx="2"/><path d="M17 10l4-2.5v9L17 14"/></svg>',
+    network: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="6" cy="6" r="2.3"/><circle cx="18" cy="6" r="2.3"/><circle cx="12" cy="18" r="2.3"/><path d="M7.8 7.5L10.5 16M16.2 7.5L13.5 16M8.3 6h7.4"/></svg>',
+    star: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M12 3l2.7 5.9 6.3.6-4.7 4.4 1.3 6.2L12 17l-5.6 3.1 1.3-6.2L3 9.5l6.3-.6L12 3z"/></svg>',
+    clapper: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M3 10h18v9a1 1 0 01-1 1H4a1 1 0 01-1-1v-9z"/><path d="M3 10l1.5-4.5L18 8 16.5 12M8 5.5L9.5 10M13 6.5L14.5 11"/></svg>',
+    check: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 10l4 4 8-8"/></svg>',
+    arrow: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 10h12M11 5l5 5-5 5"/></svg>'
+  };
+
+  const RD_SERVICES = [
+    { num: '01', icon: 'instagram', title: 'Social Media Management', tagline: "Build a brand people remember.",
+      desc: "Strategic content planning, creative design, and consistent posting that turns followers into an active, engaged audience.",
+      deliverables: ['Content Strategy & Planning', 'Creative Design & Posting', 'Community Engagement'] },
+    { num: '02', icon: 'target', title: 'Meta Ads & Performance', tagline: "Campaigns designed for measurable growth.",
+      desc: "Data-driven Meta Ads campaigns — audience research, creative testing, and conversion optimization for quality leads and maximum ROI.",
+      deliverables: ['Audience Research', 'Campaign Optimization', 'Lead Generation'] },
+    { num: '03', icon: 'camera', title: 'Video Production & Editing', tagline: "Content engineered for attention.",
+      desc: "Cinematic reels, promo videos, and branded content edited to match platform trends and keep audiences watching.",
+      deliverables: ['Reels & Short-form Content', 'Brand Films', 'Professional Editing'],
+      link: { href: 'video-editing.html', label: 'Need to edit your videos?' } },
+    { num: '04', icon: 'network', title: 'Influencer Marketing', tagline: "Connect with creators who influence decisions.",
+      desc: "Influencer discovery, collaboration management, and campaigns that reach targeted audiences through authentic storytelling.",
+      deliverables: ['Influencer Discovery', 'Campaign Management', 'Performance Tracking'] },
+    { num: '05', icon: 'star', title: 'Celebrity Management', tagline: "Turn popularity into brand value.",
+      desc: "Celebrity partnerships, campaign planning, and promotions that strengthen brand visibility and audience trust.",
+      deliverables: ['Celebrity Partnerships', 'Brand Promotions', 'Campaign Execution'] },
+    { num: '06', icon: 'clapper', title: 'Advertising Films', tagline: "Create campaigns that look premium and sell.",
+      desc: "Cinematic advertising films — strategic concepts and professional storytelling that showcase your brand beyond ordinary ads.",
+      deliverables: ['Creative Concept Development', 'Professional Production', 'Cinematic Storytelling'] }
   ];
 
-  async function loadEditsPortfolio(attempt) {
-    attempt = attempt || 1;
-    if (supabaseClient) {
-      try {
-        const { data, error } = await supabaseClient
-          .from('portfolio_videos')
-          .select('*')
-          .order('sort_order', { ascending: true });
-        if (!error && data && data.length) {
-          return data.map((d) => ({ id: d.youtube_id || '', views: d.views || '', category: d.category || 'business', thumbnail_url: d.thumbnail_url || '', video_url: d.video_url || '' }));
-        }
-        if (attempt < 6) {
-          // Free-tier Supabase can take a few seconds to wake up on the first hit of the
-          // day — retry with backoff before giving up and showing video-less placeholders.
-          await new Promise((r) => setTimeout(r, 1200 * attempt));
-          return loadEditsPortfolio(attempt + 1);
-        }
-      } catch (e) {
-        if (attempt < 6) {
-          await new Promise((r) => setTimeout(r, 1200 * attempt));
-          return loadEditsPortfolio(attempt + 1);
-        }
-      }
-    }
-    return EDITS_PORTFOLIO_FALLBACK;
-  }
+  const nodesWrap = section;
+  const linesSvg = document.getElementById('rdLines');
+  const desk = document.getElementById('rdDesk');
+  const hub = desk.querySelector('.rd-hub');
+  const rdGrid = document.querySelector('.rd-grid');
 
-  function renderPortfolio(items) {
-    const track = document.getElementById('ve3TrackInner');
-    track.innerHTML = items.map((item, i) => {
-      const grad = FALLBACK_GRADS[i % FALLBACK_GRADS.length];
-      const bg = item.thumbnail_url
-        ? `background-image:url(${item.thumbnail_url});background-size:cover;background-position:center;`
-        : `background:${grad};`;
-      return `
-        <div class="ve3-card" data-category="${item.category}">
-          <div class="swatch" style="${item.video_url ? '' : bg}"></div>
-          <div class="label">${categoryLabel(item.category)}</div>
-        </div>
-      `;
-    }).join('');
-
-    wireCarouselPlayers(track, items);
-    applyFilter();
-  }
-
-  function wireCarouselPlayers(track, items) {
-    track.querySelectorAll('.ve3-card').forEach((card, i) => {
-      const item = items[i];
-      const swatch = card.querySelector('.swatch');
-      if (item && item.video_url) {
-        const grad = FALLBACK_GRADS[i % FALLBACK_GRADS.length];
-        createNativeVideoCard(swatch, item.video_url, () => {
-          if (item.thumbnail_url) {
-            swatch.style.backgroundImage = `url(${item.thumbnail_url})`;
-            swatch.style.backgroundSize = 'cover';
-            swatch.style.backgroundPosition = 'center';
-          } else {
-            swatch.style.background = grad;
-          }
-        }, item.thumbnail_url);
-      }
-    });
-  }
-
-  async function loadHeroFanPhotos() {
-    if (!supabaseClient) return;
-    try {
-      const { data } = await supabaseClient.from('site_content').select('*').in('key', ['hero_fan_photo_0', 'hero_fan_photo_1', 'hero_fan_photo_2', 'hero_fan_photo_3']);
-      (data || []).forEach((row) => {
-        const i = row.key.slice(-1);
-        const el = document.getElementById(`fanCard${i}`);
-        if (el && row.value) {
-          el.style.backgroundImage = `url(${row.value})`;
-          el.style.backgroundSize = 'cover';
-          el.style.backgroundPosition = 'center';
-        }
-      });
-    } catch (e) { /* keep placeholder gradients */ }
-  }
-
-  window.addEventListener('load', () => {
-    document.querySelectorAll('.ve3-hero .load-in').forEach((el, i) => {
-      setTimeout(() => el.classList.add('is-in'), 150 + i * 160);
-    });
-    runScrubHero();
-    window.__loaderTrack(loadHeroFanPhotos());
-    window.__loaderTrack(loadCategoryList().then(() => {
-      renderFilterPills();
-      return loadEditsPortfolio().then(renderPortfolio);
-    }));
+  RD_SERVICES.forEach((s, i) => {
+    const node = document.createElement('div');
+    node.className = 'rd-node rd-idle';
+    node.dataset.i = i;
+    node.style.animationDelay = `${i * 0.4}s`;
+    node.innerHTML = `
+      <span class="rd-node-num">${s.num}</span>
+      <div class="rd-node-icon">${ICONS[s.icon]}</div>
+      <h3>${s.title}</h3>
+    `;
+    node.addEventListener('click', () => openRdDetail(i));
+    node.addEventListener('mouseenter', () => rdLitLine(i, true));
+    node.addEventListener('mouseleave', () => rdLitLine(i, false));
+    nodesWrap.appendChild(node);
   });
 
-  function runScrubHero() {
-    const el = document.getElementById('scrubHero');
-    const words = ["Someone's", 'already', 'editing', 'your', 'next', 'reel.'];
-    const orangeFrom = 3;
+  const nodeEls = Array.from(nodesWrap.querySelectorAll('.rd-node'));
 
-    if (reduceMotionVE) {
-      el.innerHTML = "Someone's already editing <em>your next reel.</em>";
-      return;
-    }
+  function rdDrawLines() {
+    linesSvg.innerHTML = '';
+    // hub and nodes live in different columns of the same grid — measure
+    // everything relative to that shared grid so the coordinates always
+    // line up correctly, instead of mixing two different containers.
+    const gridRect = rdGrid.getBoundingClientRect();
+    const hubRect = hub.getBoundingClientRect();
+    const originX = hubRect.left + hubRect.width / 2 - gridRect.left;
+    const originY = hubRect.top + hubRect.height / 2 - gridRect.top;
 
-    el.innerHTML = words.map((w, i) =>
-      `<span class="word" style="${i >= orangeFrom ? 'font-style:italic;' : ''}">${w}</span>`
-    ).join(' ') + '<span class="ve3-scrub-cursor" id="scrubCursor"></span>';
-
-    const wordEls = el.querySelectorAll('.word');
-    const cursor = document.getElementById('scrubCursor');
-
-    function play() {
-      cursor.classList.add('is-active');
-      wordEls.forEach((w, i) => {
-        setTimeout(() => {
-          w.style.opacity = '1';
-          w.style.transform = 'scale(1.16) translateY(0)';
-          w.style.color = i >= orangeFrom ? '#FF5A1F' : '#F7F5F1';
-          setTimeout(() => { w.style.transform = 'scale(1) translateY(0)'; }, 150);
-          if (i === wordEls.length - 1) {
-            setTimeout(() => cursor.classList.remove('is-active'), 300);
-          }
-        }, i * 260);
-      });
-    }
-    play();
-
-    setInterval(() => {
-      wordEls.forEach((w) => {
-        w.style.opacity = '0';
-        w.style.transform = 'scale(0.6) translateY(10px)';
-      });
-      setTimeout(play, 400);
-    }, 6000);
+    nodeEls.forEach((node, i) => {
+      const r = node.getBoundingClientRect();
+      const nx = r.left - gridRect.left + 20;
+      const ny = r.top - gridRect.top + r.height / 2;
+      const midX = (originX + nx) / 2;
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', `M${originX},${originY} C${midX},${originY} ${midX},${ny} ${nx},${ny}`);
+      path.dataset.i = i;
+      linesSvg.appendChild(path);
+      // use the path's real length so every line — short or long — fully
+      // reaches its card instead of stopping at a fixed guessed distance
+      const len = path.getTotalLength();
+      path.style.strokeDasharray = len;
+      path.style.strokeDashoffset = len;
+      requestAnimationFrame(() => { path.style.strokeDashoffset = 0; });
+    });
   }
 
-  (function () {
-    const track = document.getElementById('ve3Track');
-    let isDown = false, startX, scrollLeft;
-    track.addEventListener('mousedown', (e) => {
-      isDown = true;
-      track.classList.add('is-dragging');
-      startX = e.pageX - track.offsetLeft;
-      scrollLeft = track.scrollLeft;
+  function rdLitLine(i, on) {
+    const path = linesSvg.querySelector(`path[data-i="${i}"]`);
+    if (path) path.classList.toggle('is-lit', on);
+  }
+
+  const rdIo = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        desk.classList.add('is-in');
+        setTimeout(() => {
+          nodesWrap.classList.add('is-in');
+          rdDrawLines();
+        }, 250);
+        rdIo.disconnect();
+      }
     });
-    track.addEventListener('mouseleave', () => { isDown = false; track.classList.remove('is-dragging'); });
-    track.addEventListener('mouseup', () => { isDown = false; track.classList.remove('is-dragging'); });
-    track.addEventListener('mousemove', (e) => {
-      if (!isDown) return;
-      e.preventDefault();
-      const x = e.pageX - track.offsetLeft;
-      track.scrollLeft = scrollLeft - (x - startX) * 1.4;
+  }, { threshold: 0.3 });
+  rdIo.observe(document.getElementById('services'));
+
+  window.addEventListener('resize', () => { if (nodesWrap.classList.contains('is-in')) rdDrawLines(); });
+
+  document.getElementById('services').addEventListener('mousemove', (e) => {
+    const rect = nodesWrap.getBoundingClientRect();
+    const mx = (e.clientX - rect.left - rect.width / 2) / rect.width;
+    const my = (e.clientY - rect.top - rect.height / 2) / rect.height;
+    nodeEls.forEach((node, i) => {
+      const depth = 6 + (i % 3) * 3;
+      node.style.transform = `translate(${mx * depth}px, ${my * depth}px)`;
     });
-  })();
+  });
 
-  /* (filter pill click handling now happens inside renderFilterPills, since pills are rendered dynamically) */
+  const rdOverlay = document.getElementById('rdDetailOverlay');
+  const rdPanel = document.getElementById('rdDetailPanel');
+  const rdBackdrop = document.getElementById('rdDetailBackdrop');
 
-  (function () {
-    const wrap = document.getElementById('compareWrap');
-    const before = document.getElementById('compareBefore');
-    const handle = document.getElementById('compareHandle');
-    let dragging = false;
+  window.openRdDetail = function (i) {
+    const s = RD_SERVICES[i];
+    nodeEls.forEach((n) => n.classList.remove('is-active'));
+    nodeEls[i].classList.add('is-active');
+    rdPanel.innerHTML = `
+      <button class="rd-detail-close" id="rdDetailClose">&times;</button>
+      <div class="rd-detail-icon">${ICONS[s.icon]}</div>
+      <h3>${s.title}</h3>
+      <p class="rd-detail-tagline">${s.tagline}</p>
+      <p class="rd-detail-desc">${s.desc}</p>
+      <ul class="rd-detail-deliverables">
+        ${s.deliverables.map((d) => `<li>${ICONS.check}${d}</li>`).join('')}
+      </ul>
+      ${s.link ? `<a href="${s.link.href}" class="rd-detail-cta">${s.link.label} ${ICONS.arrow}</a>` : ''}
+    `;
+    rdOverlay.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+    document.getElementById('rdDetailClose').addEventListener('click', closeRdDetail);
+  };
+  function closeRdDetail() {
+    rdOverlay.classList.remove('is-open');
+    document.body.style.overflow = '';
+    nodeEls.forEach((n) => n.classList.remove('is-active'));
+  }
+  rdBackdrop.addEventListener('click', closeRdDetail);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeRdDetail(); });
 
-    function setPos(clientX) {
-      const rect = wrap.getBoundingClientRect();
-      let pct = ((clientX - rect.left) / rect.width) * 100;
-      pct = Math.max(0, Math.min(100, pct));
-      before.style.width = pct + '%';
-      handle.style.left = pct + '%';
-    }
+  const rdParticlesWrap = document.getElementById('rdParticles');
+  for (let i = 0; i < 26; i++) {
+    const p = document.createElement('span');
+    p.className = 'rd-particle';
+    p.style.left = `${Math.random() * 100}%`;
+    p.style.bottom = `${Math.random() * 20}%`;
+    p.style.animationDuration = `${10 + Math.random() * 10}s`;
+    p.style.animationDelay = `${Math.random() * 12}s`;
+    rdParticlesWrap.appendChild(p);
+  }
 
-    wrap.addEventListener('mousedown', (e) => { dragging = true; setPos(e.clientX); });
-    window.addEventListener('mousemove', (e) => { if (dragging) setPos(e.clientX); });
-    window.addEventListener('mouseup', () => { dragging = false; });
+  document.getElementById('rdReynImg').src = "images/reyn-services.png";
+})();
 
-    wrap.addEventListener('touchstart', (e) => { dragging = true; setPos(e.touches[0].clientX); });
-    wrap.addEventListener('touchmove', (e) => { if (dragging) setPos(e.touches[0].clientX); });
-    wrap.addEventListener('touchend', () => { dragging = false; });
-  })();
 </script>
 </body>
 </html>
