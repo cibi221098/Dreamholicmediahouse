@@ -7,28 +7,6 @@
 <link rel="dns-prefetch" href="https://llucoscjisstcmcwivjf.supabase.co">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
-<!-- Kick off Supabase as early as possible — the connection + first data
-     queries start here in <head>, in parallel with the rest of the page
-     downloading/parsing, instead of waiting until the very end of the
-     document like before. The body script below reuses these promises
-     instead of starting fresh queries once the DOM is ready. -->
-<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer>
-(function () {
-  const SUPABASE_URL = 'https://llucoscjisstcmcwivjf.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxsdWNvc2NqaXNzdGNtY3dpdmpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM4NDM5NTIsImV4cCI6MjA5OTQxOTk1Mn0.qH-czncHpyX-lwE1DuC1Xit_icaJC9qQsOJyfna51ho';
-  window.__dhSupabase = (SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase)
-    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-    : null;
-  window.__dhPrefetch = {};
-  if (window.__dhSupabase) {
-    window.__dhPrefetch.portfolio = window.__dhSupabase.from('portfolio_videos').select('*').order('sort_order', { ascending: true });
-    window.__dhPrefetch.siteContent = window.__dhSupabase.from('site_content').select('*');
-    window.__dhPrefetch.clientResults = window.__dhSupabase.from('client_results').select('*').order('sort_order', { ascending: true });
-    window.__dhPrefetch.testimonials = window.__dhSupabase.from('testimonials').select('*').order('sort_order', { ascending: true });
-  }
-})();
-</script>
 
 <title>Video Editing & Social Media Agency in Coimbatore | Dreamholic Media House</title>
 <meta name="description" content="Coimbatore-based video editing, Meta Ads, influencer marketing and celebrity management agency. Dreamholic Media House turns raw footage into scroll-stopping content for brands across Tamil Nadu.">
@@ -2800,7 +2778,8 @@ button {
   </div>
 </div>
 
-<script defer>const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /* ---------- SITE LOADER ----------
    Animated logo splash that masks the initial page load / Supabase
@@ -2837,11 +2816,20 @@ button {
 })();
 
 /* =====================================================
-   SUPABASE — client is created early in <head> now (see the
-   prefetch script) so the connection and first queries start
-   as soon as the page begins loading. This just reuses it.
+   SUPABASE — fill these in once your project is ready
+   (Supabase dashboard -> Settings -> API -> Project URL
+   and anon public key). This is the ONE place to paste
+   them; every page picks them up from here.
+
+   Leave blank and every page falls back to its own
+   built-in placeholder data automatically — nothing
+   breaks, it just won't be "live" until these are set.
    ===================================================== */
-const supabaseClient = window.__dhSupabase || null;
+const SUPABASE_URL = 'https://llucoscjisstcmcwivjf.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxsdWNvc2NqaXNzdGNtY3dpdmpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM4NDM5NTIsImV4cCI6MjA5OTQxOTk1Mn0.qH-czncHpyX-lwE1DuC1Xit_icaJC9qQsOJyfna51ho';
+const supabaseClient = (SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase)
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
 
 /* =====================================================
    VIDEO CONFIG — drop your YouTube video IDs in here.
@@ -3087,9 +3075,7 @@ if (videoModal) {
     attempt = attempt || 1;
     if (supabaseClient) {
       try {
-        const { data, error } = attempt === 1 && window.__dhPrefetch && window.__dhPrefetch.portfolio
-          ? await window.__dhPrefetch.portfolio
-          : await supabaseClient.from('portfolio_videos').select('*').order('sort_order', { ascending: true });
+        const { data, error } = await supabaseClient.from('portfolio_videos').select('*').order('sort_order', { ascending: true });
         if (!error && data && data.length) {
           PORTFOLIO_VIDEOS = data.map((d) => ({
             id: d.youtube_id || '', views: d.views || '', thumbnail_url: d.thumbnail_url || '',
@@ -3590,7 +3576,7 @@ if (reelsSlider) {
     return { num: parseFloat(m[1]), suffix: m[2] };
   }
 
-  window.__loaderTrack((window.__dhPrefetch && window.__dhPrefetch.siteContent ? window.__dhPrefetch.siteContent : supabaseClient.from('site_content').select('*')).then(({ data }) => {
+  window.__loaderTrack(supabaseClient.from('site_content').select('*').then(({ data }) => {
     const content = {};
     (data || []).forEach((r) => { content[r.key] = r.value; });
     if (!Object.keys(content).length) return;
@@ -3647,7 +3633,7 @@ if (reelsSlider) {
   }).catch(() => {}));
 
   if (resultsGrid) {
-    window.__loaderTrack((window.__dhPrefetch && window.__dhPrefetch.clientResults ? window.__dhPrefetch.clientResults : supabaseClient.from('client_results').select('*').order('sort_order', { ascending: true })).then(({ data }) => {
+    window.__loaderTrack(supabaseClient.from('client_results').select('*').order('sort_order', { ascending: true }).then(({ data }) => {
       if (!data || !data.length) return;
       resultsGrid.innerHTML = data.map((r) => `
         <div class="result-card">
@@ -3666,7 +3652,7 @@ if (reelsSlider) {
   const testimonialsSection = document.getElementById('testimonialsSection');
   const testimonialsGrid = document.getElementById('testimonialsGrid');
   if (testimonialsSection && testimonialsGrid) {
-    window.__loaderTrack((window.__dhPrefetch && window.__dhPrefetch.testimonials ? window.__dhPrefetch.testimonials : supabaseClient.from('testimonials').select('*').order('sort_order', { ascending: true })).then(({ data }) => {
+    window.__loaderTrack(supabaseClient.from('testimonials').select('*').order('sort_order', { ascending: true }).then(({ data }) => {
       if (!data || !data.length) return;
       testimonialsGrid.innerHTML = data.map((t) => `
         <div class="testimonial-card">
