@@ -2918,13 +2918,10 @@ if (videoModal) {
         const { data, error } = await supabaseClient.from('portfolio_videos').select('*').order('sort_order', { ascending: true });
         if (!error && data && data.length) {
           PORTFOLIO_VIDEOS = data.map((d) => ({ id: d.youtube_id || '', views: d.views || '', thumbnail_url: d.thumbnail_url || '', video_url: d.video_url || '' }));
-        } else if (attempt < 6) {
-          // Free-tier Supabase can take a few seconds to wake up on the first hit of the day —
-          // that showed up as tiles staying blank until a manual refresh. Keep retrying with
-          // backoff (empty data counts as a miss too, not just a hard error) before giving up.
-          setTimeout(() => loadHomepagePortfolio(attempt + 1), 1200 * attempt);
-          return;
         }
+        // A successful-but-empty response means the table genuinely has no rows
+        // right now — retrying just gets the same empty answer again, so show
+        // the fallback right away. Only real errors/exceptions below retry.
       } catch (e) {
         if (attempt < 6) { setTimeout(() => loadHomepagePortfolio(attempt + 1), 1200 * attempt); return; }
       }
@@ -3953,7 +3950,7 @@ if (reelsSlider) {
      - category: personal | business | speedramp | longform | ai
      ===================================================== */
   const EDITS_PORTFOLIO_FALLBACK = [
-    { id: '', views: '', category: 'personal' },
+    { id: '', video_url: 'videos/personal-branding-1.mp4', views: '', category: 'personal' },
     { id: '', views: '', category: 'business' },
     { id: '', views: '', category: 'speedramp' },
     { id: '', views: '', category: 'longform' },
@@ -4020,12 +4017,9 @@ if (reelsSlider) {
         if (!error && data && data.length) {
           return data.map((d) => ({ id: d.youtube_id || '', views: d.views || '', category: d.category || 'business', thumbnail_url: d.thumbnail_url || '', video_url: d.video_url || '' }));
         }
-        if (attempt < 6) {
-          // Free-tier Supabase can take a few seconds to wake up on the first hit of the
-          // day — retry with backoff before giving up and showing video-less placeholders.
-          await new Promise((r) => setTimeout(r, 1200 * attempt));
-          return loadEditsPortfolio(attempt + 1);
-        }
+        // A successful-but-empty response means the table genuinely has no rows
+        // right now — retrying just gets the same empty answer again, so fall
+        // back to the placeholder list right away instead of waiting ~18s.
       } catch (e) {
         if (attempt < 6) {
           await new Promise((r) => setTimeout(r, 1200 * attempt));
@@ -4040,16 +4034,23 @@ if (reelsSlider) {
     const track = document.getElementById('ve3TrackInner');
     track.innerHTML = items.map((item, i) => {
       const grad = FALLBACK_GRADS[i % FALLBACK_GRADS.length];
-      const bg = item.thumbnail_url
+      const ytThumb = !item.video_url && isValidYtId(item.id) ? `https://img.youtube.com/vi/${item.id}/hqdefault.jpg` : '';
+      const bg = ytThumb
+        ? `background-image:url(${ytThumb});background-size:cover;background-position:center;`
+        : item.thumbnail_url
         ? `background-image:url(${item.thumbnail_url});background-size:cover;background-position:center;`
         : `background:${grad};`;
       return `
-        <div class="ve3-card" data-category="${item.category}">
+        <div class="ve3-card" data-category="${item.category}"${!item.video_url && isValidYtId(item.id) ? ` data-yt-id="${item.id}" style="cursor:pointer;"` : ''}>
           <div class="swatch" style="${item.video_url ? '' : bg}"></div>
           <div class="label">${categoryLabel(item.category)}</div>
         </div>
       `;
     }).join('');
+
+    track.querySelectorAll('.ve3-card[data-yt-id]').forEach((card) => {
+      card.addEventListener('click', () => openVideoModal(card.dataset.ytId));
+    });
 
     wireCarouselPlayers(track, items);
     applyFilter();
