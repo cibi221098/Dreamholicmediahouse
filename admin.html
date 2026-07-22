@@ -2558,6 +2558,7 @@ create policy "public all call_bookings" on call_bookings for all using (true) w
       <div class="thumb-preview" id="portfolioThumbPreview"></div>
       <div class="admin-status" id="portfolioThumbAutoNote"></div>
       <input type="file" accept="image/*" id="portfolioThumbFile">
+      <button type="button" class="btn-outline" id="portfolioGrabExistingThumbBtn" style="display:none;margin-top:8px;font-size:13px;padding:6px 12px;">🪄 Auto-generate from the already-uploaded video</button>
     </div>
     <div class="field">
       <label>Video file (mp4, plays automatically on the site)</label>
@@ -4354,6 +4355,7 @@ if (reelsSlider) {
     document.getElementById('portfolioThumbAutoNote').textContent = row && row.thumbnail_url ? `✓ Uploaded: ${fileNameFromUrl(row.thumbnail_url)}` : '';
     document.getElementById('portfolioVideoFile').value = '';
     document.getElementById('portfolioVideoFileName').textContent = row && row.video_url ? `✓ Uploaded: ${fileNameFromUrl(row.video_url)} — choose a new file to replace it` : '';
+    document.getElementById('portfolioGrabExistingThumbBtn').style.display = (row && row.video_url) ? 'block' : 'none';
     document.getElementById('portfolioModalDelete').style.display = row ? 'block' : 'none';
     document.getElementById('portfolioModalShowHome').checked = !!(row && row.show_on_homepage);
     document.getElementById('portfolioModalStatus').textContent = '';
@@ -4421,6 +4423,52 @@ if (reelsSlider) {
     const file = e.target.files[0];
     document.getElementById('portfolioVideoFileName').textContent = file ? `Selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(1)}MB)` : '';
     if (file) autoGenerateThumbnail(file);
+  });
+
+  // Same idea as autoGenerateThumbnail, but for a video that's already sitting in Supabase
+  // (no new file to grab from locally) — used for backfilling thumbnails on old uploads.
+  // Needs crossOrigin='anonymous' since the video is loaded from a different host; Supabase's
+  // public storage URLs allow this by default, but if a bucket's CORS setup ever blocks it,
+  // this fails gracefully with a message rather than a silent blank thumbnail.
+  function autoGenerateThumbnailFromUrl(videoUrl) {
+    const note = document.getElementById('portfolioThumbAutoNote');
+    note.textContent = 'Auto-picking a thumbnail from the video…';
+    const videoEl = document.createElement('video');
+    videoEl.crossOrigin = 'anonymous';
+    videoEl.muted = true;
+    videoEl.playsInline = true;
+    videoEl.preload = 'auto';
+    videoEl.src = videoUrl;
+
+    videoEl.addEventListener('loadedmetadata', () => {
+      videoEl.currentTime = Math.min(0.8, (videoEl.duration || 1) * 0.1);
+    });
+    videoEl.addEventListener('seeked', () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = videoEl.videoWidth;
+        canvas.height = videoEl.videoHeight;
+        canvas.getContext('2d').drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob((blob) => {
+          if (!blob) { note.textContent = 'Couldn\'t generate a thumbnail — try uploading one manually.'; return; }
+          autoThumbFile = new File([blob], `auto_thumb_${Date.now()}.jpg`, { type: 'image/jpeg' });
+          document.getElementById('portfolioThumbPreview').style.backgroundImage = `url(${URL.createObjectURL(blob)})`;
+          note.textContent = '✓ Auto-picked — click Save to keep it, or upload your own image instead';
+        }, 'image/jpeg', 0.85);
+      } catch (err) {
+        // Most likely a CORS-tainted canvas — the browser loaded the video fine but won't
+        // let us read pixels out of it into a file. Manual upload is the only path here.
+        note.textContent = 'Couldn\'t auto-generate (browser blocked reading the video frame) — please upload a thumbnail manually.';
+      }
+    });
+    videoEl.addEventListener('error', () => {
+      note.textContent = 'Couldn\'t load the video to grab a frame — please upload a thumbnail manually.';
+    });
+  }
+
+  document.getElementById('portfolioGrabExistingThumbBtn').addEventListener('click', () => {
+    const videoUrl = currentPortfolioRow && currentPortfolioRow.video_url;
+    if (videoUrl) autoGenerateThumbnailFromUrl(videoUrl);
   });
 
 
