@@ -3996,6 +3996,7 @@ if (reelsSlider) {
     document.querySelectorAll('.ve3-card').forEach((card) => {
       card.classList.toggle('is-hidden', card.dataset.category !== currentFilter);
     });
+    wireVisibleCards();
   }
   const FALLBACK_GRADS = [
     'linear-gradient(160deg, #1D2544, #FF5A1F)',
@@ -4030,7 +4031,12 @@ if (reelsSlider) {
     return EDITS_PORTFOLIO_FALLBACK;
   }
 
+  let PORTFOLIO_ITEMS = [];
+  const wiredCardIndices = new Set();
+
   function renderPortfolio(items) {
+    PORTFOLIO_ITEMS = items;
+    wiredCardIndices.clear();
     const track = document.getElementById('ve3TrackInner');
     track.innerHTML = items.map((item, i) => {
       const grad = FALLBACK_GRADS[i % FALLBACK_GRADS.length];
@@ -4052,26 +4058,32 @@ if (reelsSlider) {
       card.addEventListener('click', () => openVideoModal(card.dataset.ytId));
     });
 
-    wireCarouselPlayers(track, items);
-    applyFilter();
+    applyFilter(); // toggles visibility AND lazily wires up video playback for whatever's now visible
   }
 
-  function wireCarouselPlayers(track, items) {
+  // Only starts playback for cards that are (a) actually visible under the current
+  // filter and (b) not already wired up. Previously every video across every category
+  // tried to autoplay at once on page load, which overloaded free-tier bandwidth and
+  // caused several to stall/fail — falling back to a flat color when no thumbnail
+  // existed as backup. Now at most one category's worth of videos plays at a time.
+  function wireVisibleCards() {
+    const track = document.getElementById('ve3TrackInner');
     track.querySelectorAll('.ve3-card').forEach((card, i) => {
-      const item = items[i];
+      if (wiredCardIndices.has(i) || card.classList.contains('is-hidden')) return;
+      const item = PORTFOLIO_ITEMS[i];
+      if (!item || !item.video_url) return;
+      wiredCardIndices.add(i);
       const swatch = card.querySelector('.swatch');
-      if (item && item.video_url) {
-        const grad = FALLBACK_GRADS[i % FALLBACK_GRADS.length];
-        createNativeVideoCard(swatch, item.video_url, () => {
-          if (item.thumbnail_url) {
-            swatch.style.backgroundImage = `url(${item.thumbnail_url})`;
-            swatch.style.backgroundSize = 'cover';
-            swatch.style.backgroundPosition = 'center';
-          } else {
-            swatch.style.background = grad;
-          }
-        }, item.thumbnail_url);
-      }
+      const grad = FALLBACK_GRADS[i % FALLBACK_GRADS.length];
+      createNativeVideoCard(swatch, item.video_url, () => {
+        if (item.thumbnail_url) {
+          swatch.style.backgroundImage = `url(${item.thumbnail_url})`;
+          swatch.style.backgroundSize = 'cover';
+          swatch.style.backgroundPosition = 'center';
+        } else {
+          swatch.style.background = grad;
+        }
+      }, item.thumbnail_url);
     });
   }
 
