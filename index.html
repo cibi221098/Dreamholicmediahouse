@@ -3428,7 +3428,11 @@ if (videoModal) {
         swatch.style.backgroundImage = `url(${entry.thumbnail_url})`;
       } else if (entry.id && isValidYtId(entry.id)) {
         swatch.style.backgroundImage = `url(https://img.youtube.com/vi/${entry.id}/hqdefault.jpg)`;
-      } else if (!entry.video_url) {
+      } else {
+        // No thumbnail and no YouTube id — show a gradient fallback rather than leaving
+        // the card blank. This also covers videos that DO have a video_url but no saved
+        // thumbnail: previously those stayed completely empty until they happened to
+        // become the active card and the video itself finished loading.
         const grads = [
           'linear-gradient(160deg, #1D2544, #FF5A1F)',
           'linear-gradient(160deg, #0A0D1E, #A79F9B)',
