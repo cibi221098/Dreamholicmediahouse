@@ -3208,6 +3208,10 @@ const PORTFOLIO_VIDEOS_FALLBACK = [
   { id: '', views: '' }
 ];
 let PORTFOLIO_VIDEOS = PORTFOLIO_VIDEOS_FALLBACK;
+// Maps a category's stored key (e.g. "personal") to its current, admin-editable
+// display label (e.g. "Talking Head Edits"). Populated from the "categories"
+// table so renamed categories show up correctly on the homepage carousel too.
+let CATEGORY_LABEL_MAP = {};
 function isValidYtId(id) { return !!id && /^[a-zA-Z0-9_-]{9,15}$/.test(id); }
 
 function parseViewsNum(str) {
@@ -3354,7 +3358,14 @@ if (videoModal) {
     attempt = attempt || 1;
     if (supabaseClient) {
       try {
-        const { data, error } = await supabaseClient.from('portfolio_videos').select('*').order('sort_order', { ascending: true });
+        const [{ data, error }, catsRes] = await Promise.all([
+          supabaseClient.from('portfolio_videos').select('*').order('sort_order', { ascending: true }),
+          supabaseClient.from('categories').select('key,label')
+        ]);
+        if (catsRes && catsRes.data && catsRes.data.length) {
+          CATEGORY_LABEL_MAP = {};
+          catsRes.data.forEach((c) => { CATEGORY_LABEL_MAP[c.key] = c.label; });
+        }
         if (!error && data && data.length) {
           PORTFOLIO_VIDEOS = data.map((d) => ({
             id: d.youtube_id || '', views: d.views || '', thumbnail_url: d.thumbnail_url || '',
@@ -3400,7 +3411,7 @@ if (videoModal) {
       card.dataset.thumbUrl = entry.thumbnail_url || '';
       card.dataset.ytId = isValidYtId(entry.id) ? entry.id : '';
       const catLabel = entry.category
-        ? entry.category.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+        ? (CATEGORY_LABEL_MAP[entry.category] || entry.category.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()))
         : 'Our Work';
       card.dataset.catLabel = catLabel;
       card.innerHTML = `
