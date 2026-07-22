@@ -4613,9 +4613,11 @@ if (reelsSlider) {
     document.getElementById('tierModalPrice').value = row ? (row.price || '') : '';
     const videoSelect = document.getElementById('tierModalVideo');
     videoSelect.innerHTML = '<option value="">— None —</option>' +
-      portfolioCache.filter((p) => p.video_url).map((p) =>
-        `<option value="${p.id}" ${row && row.video_url === p.video_url ? 'selected' : ''}>${p.views || 'Untitled'} — ${(CATEGORY_LIST.find((c2) => c2.key === p.category) || {}).label || p.category}</option>`
-      ).join('');
+      portfolioCache.filter((p) => p.video_url).map((p) => {
+        const label = p.views || fileNameFromUrl(p.video_url) || 'Untitled';
+        const catLabel = (CATEGORY_LIST.find((c2) => c2.key === p.category) || {}).label || p.category;
+        return `<option value="${p.id}" ${row && row.video_url === p.video_url ? 'selected' : ''}>${label} — ${catLabel}</option>`;
+      }).join('');
     document.getElementById('tierModalDelete').style.display = row ? 'block' : 'none';
     document.getElementById('tierModalStatus').textContent = '';
     document.getElementById('tierModalOverlay').classList.add('is-open');
