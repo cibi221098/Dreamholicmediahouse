@@ -1,7 +1,7 @@
 name: Keep Supabase Alive
 
-# Pings the Dreamholic Supabase project every few days so it never
-# sits idle for a full 7 days (which is when Supabase auto-pauses
+# Pings the Dreamholic Media House Supabase project every few days so it
+# never sits idle for a full 7 days (which is when Supabase auto-pauses
 # free-tier projects). Running twice a week is a safe margin even if
 # one run happens to fail.
 
@@ -17,8 +17,8 @@ jobs:
       - name: Ping Supabase REST API
         run: |
           response=$(curl -s -o /dev/null -w "%{http_code}" \
-            "https://llucoscjisstcmcwivjf.supabase.co/rest/v1/categories?select=id&limit=1" \
-            -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxsdWNvc2NqaXNzdGNtY3dpdmpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM4NDM5NTIsImV4cCI6MjA5OTQxOTk1Mn0.qH-czncHpyX-lwE1DuC1Xit_icaJC9qQsOJyfna51ho")
+            "https://pyuflvtlidscqhzadjxk.supabase.co/rest/v1/categories?select=id&limit=1" \
+            -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5dWZsdnRsaWRzY3FoemFkanhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ2NTAxODIsImV4cCI6MjEwMDIyNjE4Mn0.ynOVz3yIP7pJ_UZHpCGBqhNFwdke4rrXzu-OKmAtlbI")
           echo "Supabase responded with HTTP $response"
           if [ "$response" -ge 400 ]; then
             echo "Ping failed — check the project isn't already paused or the anon key hasn't changed."
