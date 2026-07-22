@@ -4075,21 +4075,9 @@ if (reelsSlider) {
     });
   }
 
-  async function loadHeroFanPhotos() {
-    if (!supabaseClient) return;
-    try {
-      const { data } = await supabaseClient.from('site_content').select('*').in('key', ['hero_fan_photo_0', 'hero_fan_photo_1', 'hero_fan_photo_2', 'hero_fan_photo_3']);
-      (data || []).forEach((row) => {
-        const i = row.key.slice(-1);
-        const el = document.getElementById(`fanCard${i}`);
-        if (el && row.value) {
-          el.style.backgroundImage = `url(${row.value})`;
-          el.style.backgroundSize = 'cover';
-          el.style.backgroundPosition = 'center';
-        }
-      });
-    } catch (e) { /* keep placeholder gradients */ }
-  }
+  // Hero fan photos are hardcoded images (images/veh1.jpg..veh4.jpg) now, not Supabase-driven —
+  // this used to pull from site_content and would override the hardcoded images with stale data.
+  async function loadHeroFanPhotos() { /* no-op: photos are hardcoded, see ve3-fan-card markup above */ }
 
   window.addEventListener('load', () => {
     document.querySelectorAll('.ve3-hero .load-in').forEach((el, i) => {
