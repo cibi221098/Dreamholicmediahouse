@@ -2455,34 +2455,6 @@ button {
       </div>
 
       <div class="admin-section">
-        <h2>Hero Fan Photos</h2>
-        <div class="sub">The 4 photos floating around Reyn in the video-editing hero. Static images only, no video.</div>
-        <div class="admin-simple-grid" id="heroFanPhotoRows">
-          <div class="admin-simple-field">
-            <label>Photo 1</label>
-            <div class="thumb-preview" id="heroFanPreview0" style="width:100px;"></div>
-            <input type="file" accept="image/*" data-fan-index="0">
-          </div>
-          <div class="admin-simple-field">
-            <label>Photo 2</label>
-            <div class="thumb-preview" id="heroFanPreview1" style="width:100px;"></div>
-            <input type="file" accept="image/*" data-fan-index="1">
-          </div>
-          <div class="admin-simple-field">
-            <label>Photo 3</label>
-            <div class="thumb-preview" id="heroFanPreview2" style="width:100px;"></div>
-            <input type="file" accept="image/*" data-fan-index="2">
-          </div>
-          <div class="admin-simple-field">
-            <label>Photo 4</label>
-            <div class="thumb-preview" id="heroFanPreview3" style="width:100px;"></div>
-            <input type="file" accept="image/*" data-fan-index="3">
-          </div>
-        </div>
-        <div class="admin-status" id="heroFanStatus"></div>
-      </div>
-
-      <div class="admin-section">
         <h2>Raw vs Edited (Before/After)</h2>
         <div class="sub">The drag-to-compare slider on the video-editing page. Upload real footage for each side — both play in sync as visitors drag.</div>
         <div class="admin-simple-grid">
@@ -2584,6 +2556,7 @@ create policy "public all call_bookings" on call_bookings for all using (true) w
     <div class="field">
       <label>Thumbnail (shown while video loads)</label>
       <div class="thumb-preview" id="portfolioThumbPreview"></div>
+      <div class="admin-status" id="portfolioThumbAutoNote"></div>
       <input type="file" accept="image/*" id="portfolioThumbFile">
     </div>
     <div class="field">
@@ -4103,29 +4076,8 @@ if (reelsSlider) {
     document.getElementById('statClients').value = siteContentCache.stat_clients || '';
     if (siteContentCache.raw_video_url) document.getElementById('rawVideoFileName').textContent = '✓ Video already uploaded — choose a new file to replace it';
     if (siteContentCache.edited_video_url) document.getElementById('editedVideoFileName').textContent = '✓ Video already uploaded — choose a new file to replace it';
-    for (let i = 0; i < 4; i++) {
-      const url = siteContentCache[`hero_fan_photo_${i}`];
-      if (url) document.getElementById(`heroFanPreview${i}`).style.backgroundImage = `url(${url})`;
-    }
   }
 
-  document.querySelectorAll('[data-fan-index]').forEach((input) => {
-    input.addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const i = e.target.dataset.fanIndex;
-      const statusEl = document.getElementById('heroFanStatus');
-      statusEl.textContent = 'Uploading...';
-      const fileName = `hero-fan/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
-      const { error: uploadError } = await supabaseClient.storage.from('thumbnails').upload(fileName, file, { upsert: true, cacheControl: '31536000' });
-      if (uploadError) { statusEl.textContent = `Failed: ${uploadError.message}`; return; }
-      const { data: urlData } = supabaseClient.storage.from('thumbnails').getPublicUrl(fileName);
-      const error = await upsertContent(`hero_fan_photo_${i}`, urlData.publicUrl);
-      if (error) { statusEl.textContent = `Failed: ${error.message}`; return; }
-      document.getElementById(`heroFanPreview${i}`).style.backgroundImage = `url(${urlData.publicUrl})`;
-      statusEl.textContent = 'Saved ✓';
-    });
-  });
 
   async function upsertContent(key, value) {
     const { error } = await supabaseClient.from('site_content').upsert([{ key, value }], { onConflict: 'key' });
@@ -4376,9 +4328,22 @@ if (reelsSlider) {
     });
   }
 
+  // Turns a stored Supabase URL back into a readable filename, e.g.
+  // ".../portfolio/1753000000000_npr_jewellery_coimbatore.mp4" -> "npr_jewellery_coimbatore.mp4"
+  function fileNameFromUrl(url) {
+    if (!url) return '';
+    const last = url.split('/').pop().split('?')[0];
+    try { return decodeURIComponent(last).replace(/^\d+_/, ''); }
+    catch (e) { return last.replace(/^\d+_/, ''); }
+  }
+
   let currentPortfolioId = null;
+  let currentPortfolioRow = null;
+  let autoThumbFile = null; // holds a frame auto-grabbed from the video, used only if no manual thumbnail is chosen
   function openPortfolioModal(row) {
     currentPortfolioId = row ? row.id : null;
+    currentPortfolioRow = row || null;
+    autoThumbFile = null;
     document.getElementById('portfolioModalTitle').textContent = row ? 'Edit Video' : 'Add Video';
     document.getElementById('portfolioModalViews').value = row ? (row.views || '') : '';
     const catSelect = document.getElementById('portfolioModalCategory');
@@ -4386,8 +4351,9 @@ if (reelsSlider) {
     const preview = document.getElementById('portfolioThumbPreview');
     preview.style.backgroundImage = row && row.thumbnail_url ? `url(${row.thumbnail_url})` : 'none';
     document.getElementById('portfolioThumbFile').value = '';
+    document.getElementById('portfolioThumbAutoNote').textContent = row && row.thumbnail_url ? `✓ Uploaded: ${fileNameFromUrl(row.thumbnail_url)}` : '';
     document.getElementById('portfolioVideoFile').value = '';
-    document.getElementById('portfolioVideoFileName').textContent = row && row.video_url ? '✓ Video already uploaded — choose a new file to replace it' : '';
+    document.getElementById('portfolioVideoFileName').textContent = row && row.video_url ? `✓ Uploaded: ${fileNameFromUrl(row.video_url)} — choose a new file to replace it` : '';
     document.getElementById('portfolioModalDelete').style.display = row ? 'block' : 'none';
     document.getElementById('portfolioModalShowHome').checked = !!(row && row.show_on_homepage);
     document.getElementById('portfolioModalStatus').textContent = '';
@@ -4403,19 +4369,67 @@ if (reelsSlider) {
   document.getElementById('portfolioThumbFile').addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    autoThumbFile = null; // manual choice always wins over an auto-grabbed frame
+    document.getElementById('portfolioThumbAutoNote').textContent = '';
     document.getElementById('portfolioThumbPreview').style.backgroundImage = `url(${URL.createObjectURL(file)})`;
   });
+
+  // Grabs a frame straight out of the chosen video and uses it as the thumbnail,
+  // so you don't have to screenshot/export one separately for every upload.
+  // Only kicks in if you haven't manually picked a thumbnail image yourself.
+  function autoGenerateThumbnail(videoFile) {
+    const thumbFileInput = document.getElementById('portfolioThumbFile');
+    if (thumbFileInput.files[0]) return; // manual thumbnail already chosen — leave it alone
+
+    const note = document.getElementById('portfolioThumbAutoNote');
+    note.textContent = 'Auto-picking a thumbnail from the video…';
+    const videoEl = document.createElement('video');
+    videoEl.muted = true;
+    videoEl.playsInline = true;
+    videoEl.preload = 'auto';
+    const objectUrl = URL.createObjectURL(videoFile);
+    videoEl.src = objectUrl;
+
+    const cleanup = () => URL.revokeObjectURL(objectUrl);
+
+    videoEl.addEventListener('loadedmetadata', () => {
+      // A little into the clip rather than frame 0, so it's less likely to land on a black/blank frame.
+      videoEl.currentTime = Math.min(0.8, (videoEl.duration || 1) * 0.1);
+    });
+    videoEl.addEventListener('seeked', () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = videoEl.videoWidth;
+        canvas.height = videoEl.videoHeight;
+        canvas.getContext('2d').drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob((blob) => {
+          if (!blob) { note.textContent = ''; cleanup(); return; }
+          autoThumbFile = new File([blob], `auto_thumb_${Date.now()}.jpg`, { type: 'image/jpeg' });
+          document.getElementById('portfolioThumbPreview').style.backgroundImage = `url(${URL.createObjectURL(blob)})`;
+          note.textContent = '✓ Auto-picked from your video — upload an image above to use your own instead';
+          cleanup();
+        }, 'image/jpeg', 0.85);
+      } catch (err) {
+        note.textContent = '';
+        cleanup();
+      }
+    });
+    videoEl.addEventListener('error', () => { note.textContent = ''; cleanup(); });
+  }
+
   document.getElementById('portfolioVideoFile').addEventListener('change', (e) => {
     const file = e.target.files[0];
     document.getElementById('portfolioVideoFileName').textContent = file ? `Selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(1)}MB)` : '';
+    if (file) autoGenerateThumbnail(file);
   });
+
 
   async function savePortfolioModal() {
     const status = document.getElementById('portfolioModalStatus');
     status.textContent = 'Saving...';
     const views = document.getElementById('portfolioModalViews').value;
     const category = document.getElementById('portfolioModalCategory').value;
-    const thumbFile = document.getElementById('portfolioThumbFile').files[0];
+    const thumbFile = document.getElementById('portfolioThumbFile').files[0] || autoThumbFile;
     const videoFile = document.getElementById('portfolioVideoFile').files[0];
     let thumbnail_url, video_url;
 
@@ -4455,10 +4469,34 @@ if (reelsSlider) {
   }
   document.getElementById('portfolioModalSave').addEventListener('click', savePortfolioModal);
 
+  // Pulls the storage path (e.g. "portfolio/12345_clip.mp4") back out of a public
+  // Supabase URL so we know exactly what file to remove from a given bucket.
+  function storagePathFromPublicUrl(url, bucket) {
+    if (!url) return null;
+    const marker = `/storage/v1/object/public/${bucket}/`;
+    const idx = url.indexOf(marker);
+    return idx === -1 ? null : url.slice(idx + marker.length);
+  }
+
   document.getElementById('portfolioModalDelete').addEventListener('click', async () => {
     if (!currentPortfolioId) return;
+    const status = document.getElementById('portfolioModalStatus');
+    status.textContent = 'Deleting...';
+
+    // Remove the underlying files from storage too, so deleting here doesn't leave
+    // orphaned video/thumbnail files quietly eating into your Supabase storage quota.
+    const videoPath = storagePathFromPublicUrl(currentPortfolioRow && currentPortfolioRow.video_url, 'videos');
+    const thumbPath = storagePathFromPublicUrl(currentPortfolioRow && currentPortfolioRow.thumbnail_url, 'thumbnails');
+    try {
+      if (videoPath) await supabaseClient.storage.from('videos').remove([videoPath]);
+      if (thumbPath) await supabaseClient.storage.from('thumbnails').remove([thumbPath]);
+    } catch (e) {
+      // Even if storage cleanup hiccups, still proceed to remove the database row below —
+      // an orphaned file is a much smaller problem than a video that won't delete at all.
+    }
+
     const { error } = await supabaseClient.from('portfolio_videos').delete().eq('id', currentPortfolioId);
-    if (error) { document.getElementById('portfolioModalStatus').textContent = `Failed: ${error.message}`; return; }
+    if (error) { status.textContent = `Failed: ${error.message}`; return; }
     closePortfolioModal();
     loadPortfolio();
   });
