@@ -3850,6 +3850,17 @@ if (reelsSlider) {
     }, 1200);
   }
 
+  // People often type a full greeting ("hi this is Sathis") instead of just their name.
+  // Strip common intro phrases so the bot doesn't echo the whole sentence back as their "name".
+  function extractName(raw) {
+    let s = raw.trim();
+    s = s.replace(/^(?:hi+|hello+|hey+|helo+)\b[,!.]?\s*/i, '');
+    s = s.replace(/^(?:this is|i am|i'm|iam|myself|my name is|name is|its|it's)\b\s*/i, '');
+    s = s.trim() || raw.trim();
+    const words = s.split(/\s+/).slice(0, 3); // cap at 3 words so a runaway sentence can't leak through either
+    return words.join(' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  }
+
   function handleSend() {
     const val = input.value.trim();
     if (!val) return;
@@ -3860,8 +3871,9 @@ if (reelsSlider) {
         setTimeout(() => bot('Could you share your actual name? Just want to make sure we address you correctly.'), 400);
         return;
       }
-      user(val); answers.name = val; input.value = '';
-      setTimeout(() => { bot(`Wonderful to connect with you, ${val}. Can you please share your contact number?`); state = 1; }, 400);
+      const name = extractName(val);
+      user(val); answers.name = name; input.value = '';
+      setTimeout(() => { bot(`Wonderful to connect with you, ${name}. Can you please share your contact number?`); state = 1; }, 400);
 
     } else if (state === 1) {
       const digitsOnly = val.replace(/\D/g, '');
@@ -4460,6 +4472,17 @@ if (reelsSlider) {
     bot("Hey! Who am I speaking with?");
   }
 
+  // People often type a full greeting ("hi this is Sathis") instead of just their name.
+  // Strip common intro phrases so the bot doesn't echo the whole sentence back as their "name".
+  function extractName(raw) {
+    let s = raw.trim();
+    s = s.replace(/^(?:hi+|hello+|hey+|helo+)\b[,!.]?\s*/i, '');
+    s = s.replace(/^(?:this is|i am|i'm|iam|myself|my name is|name is|its|it's)\b\s*/i, '');
+    s = s.trim() || raw.trim();
+    const words = s.split(/\s+/).slice(0, 3); // cap at 3 words so a runaway sentence can't leak through either
+    return words.join(' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  }
+
   function handleSend() {
     const val = input.value.trim();
     if (!val) return;
@@ -4470,8 +4493,9 @@ if (reelsSlider) {
         setTimeout(() => bot('Could you share your actual name?'), 350);
         return;
       }
-      user(val); answers.name = val; input.value = '';
-      setTimeout(() => { bot(`Nice to meet you, ${val}. What's the best 10-digit number to reach you on?`); state = 1; }, 350);
+      const name = extractName(val);
+      user(val); answers.name = name; input.value = '';
+      setTimeout(() => { bot(`Nice to meet you, ${name}. What's the best 10-digit number to reach you on?`); state = 1; }, 350);
 
     } else if (state === 1) {
       const digitsOnly = val.replace(/\D/g, '');
