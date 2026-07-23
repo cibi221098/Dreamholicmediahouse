@@ -2487,10 +2487,9 @@ button {
 
       <div class="admin-section">
         <h2>Volume Discounts</h2>
-        <div class="sub">Automatic discount applied on the quote page based on how many videos/month a client picks — e.g. "8+ videos → 5% off". Add 2–3 tiers; the highest one a client qualifies for is used.</div>
-        <div id="discountRows"></div>
-        <button class="btn-outline admin-add" id="addDiscountRowBtn" style="margin-top:6px;">+ Add discount tier</button>
-        <button class="btn-primary" id="saveDiscountsBtn" style="margin-top:16px;">Save Discounts</button>
+        <div class="sub">Automatic discount applied on the quote page based on how many videos/month a client picks — e.g. "8+ videos → 5% off". Add 2–3 tiers; the highest one a client qualifies for is used. Click a card to edit it.</div>
+        <div id="discountRows" class="admin-thumb-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));"><div class="loading-msg">Loading...</div></div>
+        <button class="btn-outline admin-add" id="addDiscountRowBtn">+ Add Discount Tier</button>
         <div class="admin-status" id="discountStatus"></div>
       </div>
 
@@ -2719,6 +2718,20 @@ create policy "public all call_bookings" on call_bookings for all using (true) w
       <button class="btn-primary" id="addonModalSave" style="flex:1;justify-content:center;">Save</button>
     </div>
     <div class="admin-status" id="addonModalStatus"></div>
+  </div>
+</div>
+
+<div class="admin-modal-overlay" id="discountModalOverlay">
+  <div class="admin-modal">
+    <button class="admin-modal-close" id="discountModalClose">✕</button>
+    <h3 id="discountModalTitle">Edit Discount Tier</h3>
+    <div class="field"><label>Min videos/month</label><input id="discountModalMinQty" type="number" min="1" placeholder="e.g. 8"></div>
+    <div class="field"><label>Discount %</label><input id="discountModalPercent" type="number" min="0" max="100" placeholder="e.g. 5"></div>
+    <div class="admin-modal-actions">
+      <button class="btn-outline" id="discountModalDelete" style="border-color:rgba(226,75,74,0.4);color:#E24B4A;">Delete</button>
+      <button class="btn-primary" id="discountModalSave" style="flex:1;justify-content:center;">Save</button>
+    </div>
+    <div class="admin-status" id="discountModalStatus"></div>
   </div>
 </div>
 
@@ -4107,45 +4120,66 @@ if (reelsSlider) {
     wrap.innerHTML = '';
     if (!discountRowsState.length) {
       wrap.innerHTML = '<div class="sub">No discount tiers yet — everyone pays full price until you add one.</div>';
+      return;
     }
     discountRowsState.forEach((row, i) => {
-      const rowEl = document.createElement('div');
-      rowEl.style.cssText = 'display:flex;gap:10px;align-items:flex-end;margin-bottom:10px;';
-      rowEl.innerHTML = `
-        <div class="field" style="margin:0;flex:1;"><label>Min videos/month</label><input type="number" min="1" value="${row.minQty}" data-idx="${i}" data-field="minQty"></div>
-        <div class="field" style="margin:0;flex:1;"><label>Discount %</label><input type="number" min="0" max="100" value="${row.percent}" data-idx="${i}" data-field="percent"></div>
-        <button class="btn-outline" data-remove="${i}" style="border-color:rgba(226,75,74,0.4);color:#E24B4A;padding:11px 14px;">✕</button>
-      `;
-      wrap.appendChild(rowEl);
-    });
-    wrap.querySelectorAll('input').forEach((input) => {
-      input.addEventListener('input', (e) => {
-        const idx = parseInt(e.target.dataset.idx, 10);
-        const field = e.target.dataset.field;
-        discountRowsState[idx][field] = parseFloat(e.target.value) || 0;
-      });
-    });
-    wrap.querySelectorAll('[data-remove]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        discountRowsState.splice(parseInt(btn.dataset.remove, 10), 1);
-        renderDiscountRows();
-      });
+      const el = document.createElement('div');
+      el.className = 'admin-thumb-card';
+      el.style.cursor = 'pointer';
+      el.innerHTML = `<div style="padding:14px;"><div style="color:var(--paper);font-weight:600;font-size:0.84rem;">${row.minQty}+ videos/month</div><div style="color:var(--orange);font-weight:700;font-size:0.9rem;margin-top:4px;">${row.percent}% off</div></div>`;
+      el.addEventListener('click', () => openDiscountModal(i));
+      wrap.appendChild(el);
     });
   }
+
+  let currentDiscountIndex = null;
+  function openDiscountModal(index) {
+    currentDiscountIndex = index === undefined || index === null ? null : index;
+    const row = currentDiscountIndex !== null ? discountRowsState[currentDiscountIndex] : null;
+    document.getElementById('discountModalTitle').textContent = row ? 'Edit Discount Tier' : 'Add Discount Tier';
+    document.getElementById('discountModalMinQty').value = row ? row.minQty : '';
+    document.getElementById('discountModalPercent').value = row ? row.percent : '';
+    document.getElementById('discountModalDelete').style.display = row ? 'block' : 'none';
+    document.getElementById('discountModalStatus').textContent = '';
+    document.getElementById('discountModalOverlay').classList.add('is-open');
+  }
+  function closeDiscountModal() { document.getElementById('discountModalOverlay').classList.remove('is-open'); }
+  document.getElementById('discountModalClose').addEventListener('click', closeDiscountModal);
+  document.getElementById('discountModalOverlay').addEventListener('click', (e) => { if (e.target.id === 'discountModalOverlay') closeDiscountModal(); });
   document.getElementById('addDiscountRowBtn').addEventListener('click', () => {
-    if (discountRowsState.length >= 5) return;
-    discountRowsState.push({ minQty: 8, percent: 5 });
+    if (discountRowsState.length >= 5) { document.getElementById('discountStatus').textContent = 'Maximum of 5 discount tiers.'; return; }
+    openDiscountModal(null);
+  });
+
+  document.getElementById('discountModalSave').addEventListener('click', async () => {
+    const status = document.getElementById('discountModalStatus');
+    const minQty = parseFloat(document.getElementById('discountModalMinQty').value) || 0;
+    const percent = parseFloat(document.getElementById('discountModalPercent').value) || 0;
+    if (!minQty || !percent) { status.textContent = 'Enter both a minimum quantity and a discount %.'; return; }
+    status.textContent = 'Saving...';
+    const updated = [...discountRowsState];
+    if (currentDiscountIndex !== null) {
+      updated[currentDiscountIndex] = { minQty, percent };
+    } else {
+      updated.push({ minQty, percent });
+    }
+    updated.sort((a, b) => a.minQty - b.minQty);
+    const error = await upsertContent('volume_discounts', JSON.stringify(updated));
+    if (error) { status.textContent = `Failed: ${error.message}`; return; }
+    discountRowsState = updated;
+    closeDiscountModal();
     renderDiscountRows();
   });
-  document.getElementById('saveDiscountsBtn').addEventListener('click', async () => {
-    const status = document.getElementById('discountStatus');
-    status.textContent = 'Saving...';
-    const sorted = [...discountRowsState].sort((a, b) => a.minQty - b.minQty);
-    const error = await upsertContent('volume_discounts', JSON.stringify(sorted));
+  document.getElementById('discountModalDelete').addEventListener('click', async () => {
+    if (currentDiscountIndex === null) return;
+    const status = document.getElementById('discountModalStatus');
+    status.textContent = 'Deleting...';
+    const updated = discountRowsState.filter((_, i) => i !== currentDiscountIndex);
+    const error = await upsertContent('volume_discounts', JSON.stringify(updated));
     if (error) { status.textContent = `Failed: ${error.message}`; return; }
-    discountRowsState = sorted;
+    discountRowsState = updated;
+    closeDiscountModal();
     renderDiscountRows();
-    status.textContent = 'Saved ✓ — live on the quote page now.';
   });
 
 
