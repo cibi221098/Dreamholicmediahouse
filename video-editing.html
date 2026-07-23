@@ -2185,6 +2185,12 @@ button {
   font-weight: 700; box-shadow: 0 0 0 3px rgba(255,90,31,0.25);
   animation: bc-cta-pulse 1.8s ease-in-out infinite;
 }
+/* Full-width standout bar variant — used for "confirm and move on" moments so
+   the CTA doesn't blend in among the small pill-shaped option chips next to it. */
+.bc-chip-cta-bar {
+  display: block; width: 100%; margin-top: 14px; padding: 13px 22px;
+  text-align: center; font-size: 0.9rem; border-radius: 999px;
+}
 @keyframes bc-cta-pulse {
   0%, 100% { box-shadow: 0 0 0 3px rgba(255,90,31,0.25); }
   50% { box-shadow: 0 0 0 6px rgba(255,90,31,0.12); }
@@ -2199,6 +2205,7 @@ button {
 .qp-qty-wrap { width: 100%; }
 .qp-qty-label { color: var(--paper); font-size: 0.86rem; font-weight: 600; margin-bottom: 10px; }
 .qp-qty-label span { color: var(--orange); font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; }
+.qp-qty-discount { min-height: 20px; color: var(--orange); font-size: 0.82rem; font-weight: 600; margin-top: 10px; }
 .qp-qty-slider {
   -webkit-appearance: none; appearance: none; width: 100%; height: 4px; border-radius: 999px;
   background: rgba(167,159,155,0.25); outline: none; cursor: pointer;
@@ -3629,11 +3636,25 @@ if (reelsSlider) {
     panelVideo.appendChild(tag);
   }
 
+  // Volume discount: more than 15 videos/month gets 15% off, more than 7 gets 5% off,
+  // otherwise no discount. Kept as one shared function so the live total, the qty-step
+  // message, and the final WhatsApp summary can never disagree with each other.
+  function getDiscountRate(qty) {
+    if (qty > 15) return 0.15;
+    if (qty > 7) return 0.05;
+    return 0;
+  }
+
   function updateTotal() {
     const base = answers.tier ? answers.tier.price : 0;
     const addonSum = answers.addons.reduce((s, a) => s + a.price, 0);
-    const total = (base + addonSum) * (answers.qty || 0);
-    panelTotal.innerHTML = `₹${total.toLocaleString('en-IN')}<span> /mo</span>`;
+    const qty = answers.qty || 0;
+    const discountRate = getDiscountRate(qty);
+    const subtotal = (base + addonSum) * qty;
+    const total = Math.round(subtotal * (1 - discountRate));
+    panelTotal.innerHTML = discountRate
+      ? `₹${total.toLocaleString('en-IN')}<span> /mo · ${Math.round(discountRate * 100)}% off applied</span>`
+      : `₹${total.toLocaleString('en-IN')}<span> /mo</span>`;
     if (answers.categoryKey && answers.tier && answers.qty) {
       panelGo.classList.add('is-ready');
       panelGo.textContent = 'Get Quote & WhatsApp';
@@ -3675,13 +3696,13 @@ if (reelsSlider) {
         answers.categoryKey = c.key;
         answers.categoryLabel = c.label;
         updateCategoryPanelGrid(c.key);
-        confirmBtn.style.display = 'inline-block';
+        confirmBtn.style.display = 'block';
       });
       chipsWrap.appendChild(chip);
     });
 
     const confirmBtn = document.createElement('span');
-    confirmBtn.className = 'bc-chip bc-chip-cta';
+    confirmBtn.className = 'bc-chip bc-chip-cta bc-chip-cta-bar';
     confirmBtn.style.background = 'var(--orange)';
     confirmBtn.style.color = 'var(--navy-deep)';
     confirmBtn.style.display = 'none';
@@ -3696,68 +3717,24 @@ if (reelsSlider) {
   }
 
   function showStyleStep() {
-    const tiers = (TIERS_BY_CATEGORY[answers.categoryKey] || []).slice(0, 4);
-    bot(`Which style of ${answers.categoryLabel} do you want?`);
+    // Pricing is now one package price per category (no more per-style tiers to
+    // choose between), so we just take that category's configured price/sample
+    // video directly and show it — no selection grid needed anymore.
+    const pkg = (TIERS_BY_CATEGORY[answers.categoryKey] || [])[0] || null;
+    answers.tier = pkg;
     textRow.classList.add('is-hidden');
 
-    if (!tiers.length) {
-      // nothing configured for this category yet — nothing to pick, skip straight to quantity
+    if (!pkg) {
+      // nothing configured for this category yet — nothing to show, skip straight to quantity
+      bot(`Great choice — let's talk numbers.`);
       setTimeout(() => { showQtyStep(); }, 350);
       return;
     }
 
-    modalEl.classList.add('is-wide');
-    panelCol.style.display = 'none';
-
-    const grid = document.createElement('div');
-    grid.className = 'qp-tier-grid' + (tiers.length <= 1 ? ' qp-single-col' : '');
-    grid.style.gridColumn = '1 / -1';
-
-    let selectedTier = null;
-    let selectedCard = null;
-
-    tiers.forEach((t, i) => {
-      const card = document.createElement('div');
-      card.className = 'qp-tier-card';
-      const applyFallback = () => {
-        card.style.background = t.thumbnail_url ? `center / cover no-repeat url(${t.thumbnail_url})` : (FALLBACK_GRADS[answers.categoryKey] || FALLBACK_GRADS.business);
-      };
-      if (t.video_url) { createNativeVideoCard(card, t.video_url, applyFallback, t.thumbnail_url); } else { applyFallback(); }
-
-      const info = document.createElement('div');
-      info.className = 'qp-tier-info';
-      info.innerHTML = `<div class="qp-tier-name">${t.tier_name || `Style ${i + 1}`}</div><div class="qp-tier-price">₹${Number(t.price).toLocaleString('en-IN')}/video</div>`;
-      card.appendChild(info);
-
-      card.addEventListener('click', () => {
-        if (selectedCard) selectedCard.classList.remove('is-selected');
-        card.classList.add('is-selected');
-        selectedCard = card;
-        selectedTier = t;
-        continueBtn.classList.add('is-ready');
-      });
-      grid.appendChild(card);
-    });
-    gridEl.appendChild(grid);
-
-    const continueBtn = document.createElement('div');
-    continueBtn.className = 'qp-gallery-continue';
-    continueBtn.style.gridColumn = '1 / -1';
-    continueBtn.textContent = 'Confirm this style ▸';
-    continueBtn.addEventListener('click', () => {
-      if (!selectedTier) return;
-      user(selectedTier.tier_name || 'Selected style');
-      grid.remove();
-      continueBtn.remove();
-      modalEl.classList.remove('is-wide');
-      panelCol.style.display = '';
-      textRow.classList.remove('is-hidden');
-      answers.tier = selectedTier;
-      updateSelectedTierPanel(selectedTier);
-      updateTotal();
-      setTimeout(() => { showQtyStep(); }, 350);
-    });
-    gridEl.appendChild(continueBtn);
+    bot(`${answers.categoryLabel} is ₹${Number(pkg.price).toLocaleString('en-IN')}/video. Here's a sample of that style →`);
+    updateSelectedTierPanel(pkg);
+    updateTotal();
+    setTimeout(() => { showQtyStep(); }, 500);
   }
 
   function showQtyStep() {
@@ -3781,6 +3758,9 @@ if (reelsSlider) {
     label.className = 'qp-qty-label';
     label.innerHTML = `<span class="qp-qty-num">1</span> video / month`;
 
+    const discountNote = document.createElement('div');
+    discountNote.className = 'qp-qty-discount';
+
     const slider = document.createElement('input');
     slider.type = 'range';
     slider.className = 'qp-qty-slider';
@@ -3793,11 +3773,16 @@ if (reelsSlider) {
       const n = parseInt(slider.value, 10);
       answers.qty = n;
       label.innerHTML = `<span class="qp-qty-num">${n}</span> video${n > 1 ? 's' : ''} / month`;
+      const rate = getDiscountRate(n);
+      discountNote.textContent = rate
+        ? `🎉 You've selected more than ${n > 15 ? 15 : 7} — ${Math.round(rate * 100)}% offer applied!`
+        : '';
       updateTotal();
     });
 
     wrap.appendChild(label);
     wrap.appendChild(slider);
+    wrap.appendChild(discountNote);
     chipsWrap.appendChild(wrap);
 
     const confirmBtn = document.createElement('span');
@@ -3844,24 +3829,29 @@ if (reelsSlider) {
   }
 
   function finishQuote() {
-    bot(`Thanks, ${answers.name}! Here's your estimate on the right. Sending this to our team now.`);
-    state = 'done';
     const base = answers.tier ? answers.tier.price : 0;
     const addonSum = answers.addons.reduce((s, a) => s + a.price, 0);
-    const total = (base + addonSum) * (answers.qty || 0);
+    const qty = answers.qty || 0;
+    const discountRate = getDiscountRate(qty);
+    const subtotal = (base + addonSum) * qty;
+    const total = Math.round(subtotal * (1 - discountRate));
+    const discountLine = discountRate ? `${Math.round(discountRate * 100)}% volume discount applied (${qty} videos/month)` : '';
+
+    bot(`Thanks, ${answers.name}! Here's your estimate on the right${discountLine ? ` — ${discountLine}` : ''}. Sending this to our team now.`);
+    state = 'done';
     if (supabaseClient) {
       supabaseClient.from('quote_requests').insert([{
         name: answers.name, phone: answers.phone, video_type: answers.categoryLabel,
         editing_style: answers.tier ? answers.tier.tier_name : '', quantity: answers.qty,
-        budget: total, message: answers.addons.map((a) => a.name).join(', ')
+        budget: total, message: [answers.addons.map((a) => a.name).join(', '), discountLine].filter(Boolean).join(' | ')
       }]).then(({ error }) => { if (error) console.error('Supabase save failed:', error); });
     }
     const lines = [
       `Hi Dreamholic team, I'd like a quote — ${answers.name}`,
       `Phone: ${answers.phone}`,
       `Style: ${answers.categoryLabel}`,
-      `Tier: ${answers.tier ? answers.tier.tier_name : ''}`,
       `Quantity: ${answers.qty} videos/month`,
+      discountLine ? `Discount: ${discountLine}` : '',
       answers.addons.length ? `Add-ons: ${answers.addons.map((a) => a.name).join(', ')}` : '',
       `Estimated total: ₹${total.toLocaleString('en-IN')}/month`
     ].filter(Boolean).join('\n');
