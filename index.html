@@ -3224,15 +3224,6 @@ let PORTFOLIO_VIDEOS = PORTFOLIO_VIDEOS_FALLBACK;
 let CATEGORY_LABEL_MAP = {};
 function isValidYtId(id) { return !!id && /^[a-zA-Z0-9_-]{9,15}$/.test(id); }
 
-function parseViewsNum(str) {
-  if (!str) return 0;
-  const s = String(str).trim().toUpperCase().replace(/,/g, '');
-  const num = parseFloat(s);
-  if (s.endsWith('M')) return num * 1000000;
-  if (s.endsWith('K')) return num * 1000;
-  return num || 0;
-}
-
 /* ---------- VIDEO LIGHTBOX ---------- */
 const videoModal = document.getElementById('videoModal');
 if (videoModal) {
@@ -4202,19 +4193,6 @@ if (reelsSlider) {
       grid.appendChild(cell);
     });
     panelVideo.appendChild(grid);
-    panelVideo.appendChild(tag);
-  }
-
-  function updateSelectedTierPanel(tier) {
-    panelVideo.innerHTML = '';
-    panelVideo.style.background = 'var(--navy-ink)';
-    const tag = document.createElement('span');
-    tag.className = 'qp-panel-tag';
-    tag.textContent = tier.tier_name ? `${answers.categoryLabel} — ${tier.tier_name}` : answers.categoryLabel;
-    const applyFallback = () => {
-      panelVideo.style.background = tier.thumbnail_url ? `center / cover no-repeat url(${tier.thumbnail_url})` : (FALLBACK_GRADS[answers.categoryKey] || FALLBACK_GRADS.business);
-    };
-    if (tier.video_url) { createNativeVideoCard(panelVideo, tier.video_url, applyFallback, tier.thumbnail_url); } else { applyFallback(); }
     panelVideo.appendChild(tag);
   }
 
