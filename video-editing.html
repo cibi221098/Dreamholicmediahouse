@@ -1822,6 +1822,7 @@ button {
 .ve3-reel {
   padding: 90px 0 100px;
   border-top: 1px solid rgba(167,159,155,0.12);
+  scroll-margin-top: 110px; /* keeps a shared #portfolio link from landing under the fixed nav */
 }
 .ve3-reel-head {
   max-width: var(--container); margin: 0 auto; padding: 0 var(--edge);
@@ -2471,12 +2472,12 @@ button {
       <span class="play-chip"><svg viewBox="0 0 20 20" width="12" height="12" fill="currentColor"><path d="M5 3l12 7-12 7V3z"/></svg></span>
       Get a Custom Quote
     </a>
-    <a href="#reel" class="btn-ghost">Watch Our Work ↓</a>
+    <a href="#portfolio" class="btn-ghost">Watch Our Work ↓</a>
   </div>
 </section>
 
 <!-- ============ HORIZONTAL REEL CAROUSEL ============ -->
-<section class="ve3-reel" id="reel">
+<section class="ve3-reel" id="portfolio">
   <div class="ve3-reel-head">
     <div>
       <div class="eyebrow"><span class="dot"></span> RECENT EDITS</div>
@@ -3504,15 +3505,19 @@ if (reelsSlider) {
   let CATEGORIES = FALLBACK_CATEGORIES;
   let TIERS_BY_CATEGORY = FALLBACK_TIERS;
   let ADDONS = FALLBACK_ADDONS;
+  // Fallback matches the original hardcoded behavior (5% at 8+, 15% at 16+) in case
+  // the admin hasn't configured this yet or the fetch fails.
+  let DISCOUNT_TIERS = [{ minQty: 8, percent: 5 }, { minQty: 16, percent: 15 }];
   let dataLoaded = false;
 
   async function loadQuoteData() {
     if (dataLoaded || !supabaseClient) return;
     try {
-      const [catsRes, tiersRes, addonsRes] = await Promise.all([
+      const [catsRes, tiersRes, addonsRes, discountRes] = await Promise.all([
         supabaseClient.from('categories').select('*').order('sort_order', { ascending: true }),
         supabaseClient.from('pricing_tiers').select('*').order('sort_order', { ascending: true }),
-        supabaseClient.from('addons').select('*').order('sort_order', { ascending: true })
+        supabaseClient.from('addons').select('*').order('sort_order', { ascending: true }),
+        supabaseClient.from('site_content').select('*').eq('key', 'volume_discounts')
       ]);
       if (catsRes.data && catsRes.data.length) CATEGORIES = catsRes.data.map((r) => ({ key: r.key, label: r.label }));
       if (tiersRes.data && tiersRes.data.length) {
@@ -3521,6 +3526,12 @@ if (reelsSlider) {
         TIERS_BY_CATEGORY = grouped;
       }
       if (addonsRes.data && addonsRes.data.length) ADDONS = addonsRes.data;
+      if (discountRes.data && discountRes.data.length && discountRes.data[0].value) {
+        try {
+          const parsed = JSON.parse(discountRes.data[0].value);
+          if (Array.isArray(parsed)) DISCOUNT_TIERS = parsed;
+        } catch (e) { /* keep fallback */ }
+      }
       dataLoaded = true;
     } catch (e) { /* fall back to placeholders */ }
   }
@@ -3636,13 +3647,16 @@ if (reelsSlider) {
     panelVideo.appendChild(tag);
   }
 
-  // Volume discount: more than 15 videos/month gets 15% off, more than 7 gets 5% off,
-  // otherwise no discount. Kept as one shared function so the live total, the qty-step
-  // message, and the final WhatsApp summary can never disagree with each other.
+  // Volume discount: reads whatever tiers the admin has configured (see DISCOUNT_TIERS
+  // above). Finds the highest minQty the given quantity qualifies for. Kept as one shared
+  // function so the live total, the qty-step message, and the final WhatsApp summary can
+  // never disagree with each other.
   function getDiscountRate(qty) {
-    if (qty > 15) return 0.15;
-    if (qty > 7) return 0.05;
-    return 0;
+    let rate = 0;
+    DISCOUNT_TIERS.forEach((tier) => {
+      if (qty >= tier.minQty) rate = Math.max(rate, (tier.percent || 0) / 100);
+    });
+    return rate;
   }
 
   function updateTotal() {
@@ -3717,22 +3731,20 @@ if (reelsSlider) {
   }
 
   function showStyleStep() {
-    // Pricing is now one package price per category (no more per-style tiers to
-    // choose between), so we just take that category's configured price/sample
-    // video directly and show it — no selection grid needed anymore.
+    // Pricing is now one package price per category (no more per-style tiers to choose
+    // between). The multi-video grid from the category step (up to 4 sample videos) stays
+    // visible as-is — we just confirm the price and move on, no need to swap it out.
     const pkg = (TIERS_BY_CATEGORY[answers.categoryKey] || [])[0] || null;
     answers.tier = pkg;
     textRow.classList.add('is-hidden');
 
     if (!pkg) {
-      // nothing configured for this category yet — nothing to show, skip straight to quantity
       bot(`Great choice — let's talk numbers.`);
       setTimeout(() => { showQtyStep(); }, 350);
       return;
     }
 
-    bot(`${answers.categoryLabel} is ₹${Number(pkg.price).toLocaleString('en-IN')}/video. Here's a sample of that style →`);
-    updateSelectedTierPanel(pkg);
+    bot(`${answers.categoryLabel} is ₹${Number(pkg.price).toLocaleString('en-IN')}/video.`);
     updateTotal();
     setTimeout(() => { showQtyStep(); }, 500);
   }
@@ -3774,9 +3786,11 @@ if (reelsSlider) {
       answers.qty = n;
       label.innerHTML = `<span class="qp-qty-num">${n}</span> video${n > 1 ? 's' : ''} / month`;
       const rate = getDiscountRate(n);
-      discountNote.textContent = rate
-        ? `🎉 You've selected more than ${n > 15 ? 15 : 7} — ${Math.round(rate * 100)}% offer applied!`
-        : '';
+      if (rate) {
+        discountNote.textContent = `🎉 You've selected ${n}+ videos — ${Math.round(rate * 100)}% offer applied!`;
+      } else {
+        discountNote.textContent = '';
+      }
       updateTotal();
     });
 
