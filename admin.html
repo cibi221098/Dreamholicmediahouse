@@ -2480,9 +2480,18 @@ button {
 
       <div class="admin-section">
         <h2>Pricing Tiers</h2>
-        <div class="sub">One price + one sample video per category, shown on the quote page (e.g. "Talking Head Edits — ₹1,800/video"). Client no longer picks between multiple styles — just click a category's card below to set or edit its package.</div>
+        <div class="sub">One price per category, plus up to 4 sample videos to showcase it on the quote page. The first entry sets the price — extra entries (up to 4 total) are just more videos, no separate price needed.</div>
         <div id="tiersByCategory"><div class="loading-msg">Loading...</div></div>
         <div class="admin-status" id="tiersStatus"></div>
+      </div>
+
+      <div class="admin-section">
+        <h2>Volume Discounts</h2>
+        <div class="sub">Automatic discount applied on the quote page based on how many videos/month a client picks — e.g. "8+ videos → 5% off". Add 2–3 tiers; the highest one a client qualifies for is used.</div>
+        <div id="discountRows"></div>
+        <button class="btn-outline admin-add" id="addDiscountRowBtn" style="margin-top:6px;">+ Add discount tier</button>
+        <button class="btn-primary" id="saveDiscountsBtn" style="margin-top:16px;">Save Discounts</button>
+        <div class="admin-status" id="discountStatus"></div>
       </div>
 
       <div class="admin-section">
@@ -2681,11 +2690,14 @@ create policy "public all call_bookings" on call_bookings for all using (true) w
     <button class="admin-modal-close" id="tierModalClose">✕</button>
     <h3 id="tierModalTitle">Edit Pricing Tier</h3>
     <div class="field"><label>Category</label><select id="tierModalCategory"></select></div>
-    <div class="field"><label>Tier name</label><input id="tierModalName" placeholder="e.g. Level 1"></div>
-    <div class="field"><label>Description</label><input id="tierModalDescription" placeholder="e.g. Broll + Simple text"></div>
-    <div class="field"><label>Price (₹)</label><input id="tierModalPrice" type="number" placeholder="e.g. 1800"></div>
+    <div id="tierPriceFieldsWrap">
+      <div class="field"><label>Package name</label><input id="tierModalName" placeholder="e.g. Talking Head Package"></div>
+      <div class="field"><label>Description</label><input id="tierModalDescription" placeholder="e.g. Broll + Simple text"></div>
+      <div class="field"><label>Price (₹)</label><input id="tierModalPrice" type="number" placeholder="e.g. 1800"></div>
+    </div>
+    <div class="admin-status" id="tierExtraNote" style="display:none;margin-bottom:14px;">This category already has its price set — this is just an extra sample video to showcase alongside it (no separate price).</div>
     <div class="field">
-      <label>Example video for this tier</label>
+      <label>Sample video</label>
       <select id="tierModalVideo"><option value="">— None —</option></select>
     </div>
     <div class="admin-modal-actions">
@@ -4066,6 +4078,7 @@ if (reelsSlider) {
 
   /* ---------- SITE CONTENT (showreel, stats, compare videos) ---------- */
   let siteContentCache = {};
+  let discountRowsState = [];
   async function loadSiteContent() {
     const { data, error } = await supabaseClient.from('site_content').select('*');
     if (!error && data) {
@@ -4077,7 +4090,63 @@ if (reelsSlider) {
     document.getElementById('statClients').value = siteContentCache.stat_clients || '';
     if (siteContentCache.raw_video_url) document.getElementById('rawVideoFileName').textContent = '✓ Video already uploaded — choose a new file to replace it';
     if (siteContentCache.edited_video_url) document.getElementById('editedVideoFileName').textContent = '✓ Video already uploaded — choose a new file to replace it';
+
+    try {
+      discountRowsState = siteContentCache.volume_discounts
+        ? JSON.parse(siteContentCache.volume_discounts)
+        : [{ minQty: 8, percent: 5 }, { minQty: 16, percent: 15 }];
+      if (!Array.isArray(discountRowsState)) throw new Error('not an array');
+    } catch (e) {
+      discountRowsState = [{ minQty: 8, percent: 5 }, { minQty: 16, percent: 15 }];
+    }
+    renderDiscountRows();
   }
+
+  function renderDiscountRows() {
+    const wrap = document.getElementById('discountRows');
+    wrap.innerHTML = '';
+    if (!discountRowsState.length) {
+      wrap.innerHTML = '<div class="sub">No discount tiers yet — everyone pays full price until you add one.</div>';
+    }
+    discountRowsState.forEach((row, i) => {
+      const rowEl = document.createElement('div');
+      rowEl.style.cssText = 'display:flex;gap:10px;align-items:flex-end;margin-bottom:10px;';
+      rowEl.innerHTML = `
+        <div class="field" style="margin:0;flex:1;"><label>Min videos/month</label><input type="number" min="1" value="${row.minQty}" data-idx="${i}" data-field="minQty"></div>
+        <div class="field" style="margin:0;flex:1;"><label>Discount %</label><input type="number" min="0" max="100" value="${row.percent}" data-idx="${i}" data-field="percent"></div>
+        <button class="btn-outline" data-remove="${i}" style="border-color:rgba(226,75,74,0.4);color:#E24B4A;padding:11px 14px;">✕</button>
+      `;
+      wrap.appendChild(rowEl);
+    });
+    wrap.querySelectorAll('input').forEach((input) => {
+      input.addEventListener('input', (e) => {
+        const idx = parseInt(e.target.dataset.idx, 10);
+        const field = e.target.dataset.field;
+        discountRowsState[idx][field] = parseFloat(e.target.value) || 0;
+      });
+    });
+    wrap.querySelectorAll('[data-remove]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        discountRowsState.splice(parseInt(btn.dataset.remove, 10), 1);
+        renderDiscountRows();
+      });
+    });
+  }
+  document.getElementById('addDiscountRowBtn').addEventListener('click', () => {
+    if (discountRowsState.length >= 5) return;
+    discountRowsState.push({ minQty: 8, percent: 5 });
+    renderDiscountRows();
+  });
+  document.getElementById('saveDiscountsBtn').addEventListener('click', async () => {
+    const status = document.getElementById('discountStatus');
+    status.textContent = 'Saving...';
+    const sorted = [...discountRowsState].sort((a, b) => a.minQty - b.minQty);
+    const error = await upsertContent('volume_discounts', JSON.stringify(sorted));
+    if (error) { status.textContent = `Failed: ${error.message}`; return; }
+    discountRowsState = sorted;
+    renderDiscountRows();
+    status.textContent = 'Saved ✓ — live on the quote page now.';
+  });
 
 
   async function upsertContent(key, value) {
@@ -4574,24 +4643,18 @@ if (reelsSlider) {
       const categoryTiers = rows.filter((r) => r.category === c.key);
       renderTierList(c.key, categoryTiers);
 
-      if (categoryTiers.length > 1) {
-        // Leftover from the old multi-tier quote flow. The live site now only ever reads the
-        // first one (marked "✓ Live" below) — flagging this so it's obvious, not silently ignored.
-        const warn = document.createElement('div');
-        warn.className = 'admin-status';
-        warn.style.color = '#E2A64B';
-        warn.textContent = `⚠ ${c.label} has ${categoryTiers.length} saved packages, but only the one marked "✓ Live" is actually shown to clients. Consider deleting the rest to avoid confusion.`;
-        wrap.appendChild(warn);
-      }
-
       const addBtn = document.createElement('button');
       addBtn.className = 'btn-outline admin-add';
-      if (categoryTiers.length >= 1) {
-        // One package per category is all the live quote builder uses now — click the
-        // existing card above to edit its price/video instead of adding a second one.
-        addBtn.style.display = 'none';
-      } else {
+      if (categoryTiers.length >= 4) {
+        addBtn.textContent = `${c.label} has the max of 4 videos`;
+        addBtn.disabled = true;
+        addBtn.style.opacity = '0.4';
+        addBtn.style.cursor = 'not-allowed';
+      } else if (categoryTiers.length === 0) {
         addBtn.textContent = `+ Set package for ${c.label}`;
+        addBtn.onclick = () => openTierModal(null, c.key);
+      } else {
+        addBtn.textContent = `+ Add sample video to ${c.label} (${categoryTiers.length}/4)`;
         addBtn.onclick = () => openTierModal(null, c.key);
       }
       addBtn.style.marginBottom = '10px';
@@ -4605,8 +4668,11 @@ if (reelsSlider) {
       const el = document.createElement('div');
       el.className = 'admin-thumb-card';
       el.style.cursor = 'pointer';
-      const liveBadge = i === 0 ? `<div style="color:#3FBF6B;font-weight:700;font-size:0.72rem;margin-bottom:4px;">✓ Live</div>` : `<div style="color:var(--fog);font-size:0.72rem;margin-bottom:4px;">Not shown to clients</div>`;
-      el.innerHTML = `<div style="padding:14px;">${liveBadge}<div style="color:var(--paper);font-weight:600;font-size:0.84rem;">${row.tier_name}</div><div style="color:var(--orange);font-weight:700;font-size:0.9rem;margin-top:4px;">₹${Number(row.price).toLocaleString('en-IN')}</div></div>`;
+      const badge = i === 0
+        ? `<div style="color:#3FBF6B;font-weight:700;font-size:0.72rem;margin-bottom:4px;">✓ Package price</div>`
+        : `<div style="color:var(--fog);font-size:0.72rem;margin-bottom:4px;">Extra sample video</div>`;
+      const priceLine = i === 0 ? `<div style="color:var(--orange);font-weight:700;font-size:0.9rem;margin-top:4px;">₹${Number(row.price).toLocaleString('en-IN')}</div>` : '';
+      el.innerHTML = `<div style="padding:14px;">${badge}<div style="color:var(--paper);font-weight:600;font-size:0.84rem;">${i === 0 ? row.tier_name : `Sample ${i + 1}`}</div>${priceLine}</div>`;
       el.addEventListener('click', () => openTierModal(row, categoryKey));
       list.appendChild(el);
     });
@@ -4615,12 +4681,22 @@ if (reelsSlider) {
   let currentTierId = null;
   function openTierModal(row, categoryKey) {
     currentTierId = row ? row.id : null;
-    document.getElementById('tierModalTitle').textContent = row ? 'Edit Pricing Tier' : 'Add Pricing Tier';
+    const category = row ? row.category : categoryKey;
+    const categoryRows = tiersCache.filter((t) => t.category === category);
+    // Position 0 in a category is the one whose price is actually used on the live site;
+    // anything after that is purely an extra sample video with no price of its own.
+    const isExtra = row ? categoryRows.findIndex((r) => r.id === row.id) > 0 : categoryRows.length > 0;
+
+    document.getElementById('tierModalTitle').textContent = row
+      ? (isExtra ? 'Edit Sample Video' : 'Edit Package')
+      : (isExtra ? 'Add Sample Video' : 'Set Package');
     const catSelect = document.getElementById('tierModalCategory');
-    catSelect.innerHTML = CATEGORY_LIST.map((c) => `<option value="${c.key}" ${c.key === (row ? row.category : categoryKey) ? 'selected' : ''}>${c.label}</option>`).join('');
+    catSelect.innerHTML = CATEGORY_LIST.map((c) => `<option value="${c.key}" ${c.key === category ? 'selected' : ''}>${c.label}</option>`).join('');
     document.getElementById('tierModalName').value = row ? (row.tier_name || '') : '';
     document.getElementById('tierModalDescription').value = row ? (row.description || '') : '';
     document.getElementById('tierModalPrice').value = row ? (row.price || '') : '';
+    document.getElementById('tierPriceFieldsWrap').style.display = isExtra ? 'none' : '';
+    document.getElementById('tierExtraNote').style.display = isExtra ? 'block' : 'none';
     const videoSelect = document.getElementById('tierModalVideo');
     videoSelect.innerHTML = '<option value="">— None —</option>' +
       portfolioCache.filter((p) => p.video_url).map((p) => {
@@ -4639,18 +4715,17 @@ if (reelsSlider) {
   document.getElementById('tierModalSave').addEventListener('click', async () => {
     const status = document.getElementById('tierModalStatus');
     const category = document.getElementById('tierModalCategory').value;
-    if (!currentTierId) {
-      const existingCount = tiersCache.filter((t) => t.category === category).length;
-      if (existingCount >= 4) { status.textContent = 'This category already has the maximum of 4 tiers.'; return; }
-    }
+    const categoryRows = tiersCache.filter((t) => t.category === category);
+    const isExtra = currentTierId ? categoryRows.findIndex((r) => r.id === currentTierId) > 0 : categoryRows.length > 0;
+    if (!currentTierId && categoryRows.length >= 4) { status.textContent = 'This category already has the maximum of 4 videos.'; return; }
     status.textContent = 'Saving...';
     const videoId = document.getElementById('tierModalVideo').value;
     const videoSource = videoId ? portfolioCache.find((p) => p.id === videoId) : null;
     const payload = {
       category,
-      tier_name: document.getElementById('tierModalName').value,
-      description: document.getElementById('tierModalDescription').value,
-      price: parseFloat(document.getElementById('tierModalPrice').value) || 0,
+      tier_name: isExtra ? `Sample video ${categoryRows.length + 1}` : (document.getElementById('tierModalName').value || 'Package'),
+      description: isExtra ? '' : document.getElementById('tierModalDescription').value,
+      price: isExtra ? 0 : (parseFloat(document.getElementById('tierModalPrice').value) || 0),
       video_url: videoSource ? videoSource.video_url : '',
       thumbnail_url: videoSource ? (videoSource.thumbnail_url || '') : ''
     };
