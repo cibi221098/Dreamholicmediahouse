@@ -3305,7 +3305,7 @@ if (reelsSlider) {
     s = s.replace(/^(?:this is|i am|i'm|iam|myself|my name is|name is|its|it's)\b\s*/i, '');
     s = s.trim() || raw.trim();
     const words = s.split(/\s+/).slice(0, 3); // cap at 3 words so a runaway sentence can't leak through either
-    return words.join(' ').replace(/\b\w/g, (c) => c.toUpperCase());
+    return words.join(' ').toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
   }
 
   function handleSend() {
@@ -3921,7 +3921,7 @@ if (reelsSlider) {
     s = s.replace(/^(?:this is|i am|i'm|iam|myself|my name is|name is|its|it's)\b\s*/i, '');
     s = s.trim() || raw.trim();
     const words = s.split(/\s+/).slice(0, 3); // cap at 3 words so a runaway sentence can't leak through either
-    return words.join(' ').replace(/\b\w/g, (c) => c.toUpperCase());
+    return words.join(' ').toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
   }
 
   function handleSend() {
