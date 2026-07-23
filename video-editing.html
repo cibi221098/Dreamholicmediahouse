@@ -3646,19 +3646,6 @@ if (reelsSlider) {
     panelVideo.appendChild(tag);
   }
 
-  function updateSelectedTierPanel(tier) {
-    panelVideo.innerHTML = '';
-    panelVideo.style.background = 'var(--navy-ink)';
-    const tag = document.createElement('span');
-    tag.className = 'qp-panel-tag';
-    tag.textContent = tier.tier_name ? `${answers.categoryLabel} — ${tier.tier_name}` : answers.categoryLabel;
-    const applyFallback = () => {
-      panelVideo.style.background = tier.thumbnail_url ? `center / cover no-repeat url(${tier.thumbnail_url})` : (FALLBACK_GRADS[answers.categoryKey] || FALLBACK_GRADS.business);
-    };
-    if (tier.video_url) { createNativeVideoCard(panelVideo, tier.video_url, applyFallback, tier.thumbnail_url); } else { applyFallback(); }
-    panelVideo.appendChild(tag);
-  }
-
   // Volume discount: reads whatever tiers the admin has configured (see DISCOUNT_TIERS
   // above). Finds the highest minQty the given quantity qualifies for. Kept as one shared
   // function so the live total, the qty-step message, and the final WhatsApp summary can
