@@ -2480,7 +2480,7 @@ button {
 
       <div class="admin-section">
         <h2>Pricing Tiers</h2>
-        <div class="sub">The variations under each style on the quote page (e.g. "Level 1 | ₹1,800"). Add as many per category as you want.</div>
+        <div class="sub">One price + one sample video per category, shown on the quote page (e.g. "Talking Head Edits — ₹1,800/video"). Client no longer picks between multiple styles — just click a category's card below to set or edit its package.</div>
         <div id="tiersByCategory"><div class="loading-msg">Loading...</div></div>
         <div class="admin-status" id="tiersStatus"></div>
       </div>
@@ -4574,15 +4574,24 @@ if (reelsSlider) {
       const categoryTiers = rows.filter((r) => r.category === c.key);
       renderTierList(c.key, categoryTiers);
 
+      if (categoryTiers.length > 1) {
+        // Leftover from the old multi-tier quote flow. The live site now only ever reads the
+        // first one (marked "✓ Live" below) — flagging this so it's obvious, not silently ignored.
+        const warn = document.createElement('div');
+        warn.className = 'admin-status';
+        warn.style.color = '#E2A64B';
+        warn.textContent = `⚠ ${c.label} has ${categoryTiers.length} saved packages, but only the one marked "✓ Live" is actually shown to clients. Consider deleting the rest to avoid confusion.`;
+        wrap.appendChild(warn);
+      }
+
       const addBtn = document.createElement('button');
       addBtn.className = 'btn-outline admin-add';
-      if (categoryTiers.length >= 4) {
-        addBtn.textContent = `${c.label} has the max of 4 tiers`;
-        addBtn.disabled = true;
-        addBtn.style.opacity = '0.4';
-        addBtn.style.cursor = 'not-allowed';
+      if (categoryTiers.length >= 1) {
+        // One package per category is all the live quote builder uses now — click the
+        // existing card above to edit its price/video instead of adding a second one.
+        addBtn.style.display = 'none';
       } else {
-        addBtn.textContent = `+ Add tier to ${c.label}`;
+        addBtn.textContent = `+ Set package for ${c.label}`;
         addBtn.onclick = () => openTierModal(null, c.key);
       }
       addBtn.style.marginBottom = '10px';
@@ -4592,11 +4601,12 @@ if (reelsSlider) {
   function renderTierList(categoryKey, rows) {
     const list = document.getElementById(`tierList_${categoryKey}`);
     list.innerHTML = '';
-    rows.forEach((row) => {
+    rows.forEach((row, i) => {
       const el = document.createElement('div');
       el.className = 'admin-thumb-card';
       el.style.cursor = 'pointer';
-      el.innerHTML = `<div style="padding:14px;"><div style="color:var(--paper);font-weight:600;font-size:0.84rem;">${row.tier_name}</div><div style="color:var(--orange);font-weight:700;font-size:0.9rem;margin-top:4px;">₹${Number(row.price).toLocaleString('en-IN')}</div></div>`;
+      const liveBadge = i === 0 ? `<div style="color:#3FBF6B;font-weight:700;font-size:0.72rem;margin-bottom:4px;">✓ Live</div>` : `<div style="color:var(--fog);font-size:0.72rem;margin-bottom:4px;">Not shown to clients</div>`;
+      el.innerHTML = `<div style="padding:14px;">${liveBadge}<div style="color:var(--paper);font-weight:600;font-size:0.84rem;">${row.tier_name}</div><div style="color:var(--orange);font-weight:700;font-size:0.9rem;margin-top:4px;">₹${Number(row.price).toLocaleString('en-IN')}</div></div>`;
       el.addEventListener('click', () => openTierModal(row, categoryKey));
       list.appendChild(el);
     });
